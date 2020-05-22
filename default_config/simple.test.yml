@@ -10,9 +10,9 @@ users:
     weight: 0
     task_set:
       tasks:
-        - simple_locustfile.small_event_task
-        - simple_locustfile.medium_event_task
-        - simple_locustfile.large_event_task
+        - small_event_task
+        - medium_event_task
+        - large_event_task
 
   # A task that generates random events based on config parameters
   RandomEvents:
@@ -21,14 +21,14 @@ users:
     weight: 1
     task_set:
       tasks:
-        simple_locustfile.random_envelope_event_task_factory:
+        random_envelope_event_task_factory:
           weight: 0
           # This task generally accepts the same arguments as `random_event_task_factory`.
           with_level: true
           num_event_groups: 1
           num_releases: 10
 
-        simple_locustfile.random_event_task_factory:
+        random_event_task_factory:
           weight: 1
           with_level: true
 

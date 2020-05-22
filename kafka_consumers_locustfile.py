@@ -12,17 +12,14 @@ from tasks.kafka_tasks import (
     kafka_outcome_task,
     kafka_random_outcome_task,
     kafka_configurable_outcome_task_factory,
-    canned_kafka_event_task,
+    random_kafka_event_task_factory,
 )
 
 accepted_outcome = kafka_outcome_task(Outcome.ACCEPTED)
 rate_limited_outcome = kafka_outcome_task(Outcome.RATE_LIMITED)
 random_outcome = kafka_random_outcome_task
 kafka_configurable_outcome_factory = kafka_configurable_outcome_task_factory
-
-kafka_small_event = canned_kafka_event_task("small_event", send_outcome=True)
-kafka_medium_event = canned_kafka_event_task("medium_event", send_outcome=True)
-kafka_large_event = canned_kafka_event_task("large_event", send_outcome=True)
+random_kafka_event_task_factory = random_kafka_event_task_factory
 
 _config_path = full_path_from_module_relative_path(
     __file__, "config/kafka_consumers.test.yml"

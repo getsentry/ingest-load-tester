@@ -22,7 +22,6 @@ def base_event_generator(
     with_event_id=True,
     with_level=True,
     num_event_groups=1,
-    max_message_length=10000,
     max_users=None,
     min_breadcrumbs=None,
     max_breadcrumbs=None,
@@ -32,6 +31,7 @@ def base_event_generator(
     breadcrumb_messages=None,
     with_native_stacktrace=False,
     num_releases=10,
+    **kwargs  # absorbs parameters used by other parts of the task set configuration
 ):
     event_generator = schema_generator(
         event_id=(lambda: uuid.uuid4().hex) if with_event_id else None,
