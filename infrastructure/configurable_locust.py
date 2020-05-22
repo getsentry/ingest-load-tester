@@ -13,13 +13,13 @@ except ImportError:
 from locust import TaskSet, HttpLocust, constant, between, constant_pacing, Locust
 
 
-def create_task_set(user_name, config):
+def create_task_set(user_name, config, module_name):
     task_set_config = config.get("task_set", {})
 
     tasks_info = task_set_config.get("tasks")
     if isinstance(tasks_info, abc.Sequence):
         # we have a list of tasks with no params just load them
-        _tasks = [load_object(task_name) for task_name in tasks_info]
+        _tasks = [load_object(task_name, module_name) for task_name in tasks_info]
     elif isinstance(tasks_info, abc.Mapping):
         # we have tasks with attributes
         _tasks = {}
@@ -34,11 +34,11 @@ def create_task_set(user_name, config):
 
             if len(task_info) > 0:
                 # we have other attributes besides frequency, the tasks are actually task factory functions
-                task_factory = load_object(task_func_name)
+                task_factory = load_object(task_func_name, module_name)
                 task = task_factory(task_info)
                 _tasks[task] = weight
             else:
-                task = load_object(task_func_name)
+                task = load_object(task_func_name, module_name)
                 _tasks[task] = weight
     else:
         raise ValueError(
@@ -90,7 +90,7 @@ def _get_wait_time(locust_info):
     return eval(wait_expr, globals(), env_locals)
 
 
-def create_locust_class(name, config_file_name, host=None, base_classes=None):
+def create_locust_class(name, config_file_name, module_name,  host=None, base_classes=None):
     if base_classes is None:
         base_classes = (HttpLocust,)
 
@@ -105,7 +105,7 @@ def create_locust_class(name, config_file_name, host=None, base_classes=None):
     if _weight == 0:
         return None  # locust is disabled don't bother loading it
 
-    _task_set = create_task_set(name, locust_info)
+    _task_set = create_task_set(name, locust_info, module_name)
     _wait_time = _get_wait_time(locust_info)
     if host is None:
         _host = relay_address()
