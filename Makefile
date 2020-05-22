@@ -21,10 +21,10 @@ about:
 	less readme.md
 .PHONY: about
 
-config: setup-deps setup-brew setup-config
+config: setup-venv setup-brew setup-config
 .PHONY: config
 
-fake-sentry: setup-deps
+fake-sentry: setup-venv
 	.venv/bin/python -m fake_sentry.fake_sentry
 .PHONY: fake-sentry
 
@@ -34,7 +34,7 @@ ifndef TEST
 endif
 .PHONY: check-test
 
-load-test: check-test setup-deps
+load-test: check-test setup-venv
 	.venv/bin/locust -f $(TEST)_locustfile.py
 .PHONY: load-test
 
