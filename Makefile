@@ -42,9 +42,6 @@ setup-brew:
 	brew bundle
 .PHONY: setup-brew
 
-setup-deps: setup-venv
-	.venv/bin/pip install -U -r requirements.txt
-.PHONY: setup-python-deps
 
 setup-config: $(CONFIG_FILES)
 .PHONY: setup-config
@@ -56,13 +53,14 @@ config/%.yml: default_config/%.yml
 setup-venv: .venv/bin/python
 .PHONY: setup-venv
 
-.venv/bin/python: Makefile
+.venv/bin/python:
 	@rm -rf .venv
 	@which virtualenv || sudo easy_install virtualenv
 	virtualenv -p $$PYTHON_VERSION .venv
+	.venv/bin/pip install -U -r requirements.txt
 
-format: .setup-deps
+format: setup-venv
 	.venv/bin/black .
 
-style: .setup-deps
+style: setup-venv
 	.venv/bin/black --check .
