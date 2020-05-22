@@ -63,3 +63,6 @@ setup-venv: .venv/bin/python
 
 format: .setup-deps
 	.venv/bin/black .
+
+style: .setup-deps
+	.venv/bin/black --check .
