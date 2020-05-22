@@ -60,3 +60,6 @@ setup-venv: .venv/bin/python
 	@rm -rf .venv
 	@which virtualenv || sudo easy_install virtualenv
 	virtualenv -p $$PYTHON_VERSION .venv
+
+format: .setup-deps
+	.venv/bin/black .

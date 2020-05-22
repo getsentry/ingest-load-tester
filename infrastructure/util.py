@@ -4,6 +4,7 @@ from importlib import import_module
 from uuid import uuid4
 from sentry_relay.processing import StoreNormalizer
 
+
 def full_path_from_module_relative_path(module_name, *args):
     dir_path = os.path.dirname(os.path.realpath(module_name))
     return os.path.join(dir_path, *args)
@@ -14,7 +15,7 @@ def send_message(client, project_id, project_key, msg_body, headers=None):
     headers = {
         "X-Sentry-Auth": _auth_header(project_key),
         "Content-Type": "application/json; charset=UTF-8",
-        **(headers or {})
+        **(headers or {}),
     }
     return client.post(url, headers=headers, json=msg_body)
 
@@ -25,7 +26,7 @@ def send_envelope(client, project_id, project_key, envelope, headers=None):
     headers = {
         "X-Sentry-Auth": _auth_header(project_key),
         "Content-Type": "application/x-sentry-envelope",
-        **(headers or {})
+        **(headers or {}),
     }
 
     data = envelope.serialize()
@@ -75,10 +76,10 @@ def get_at_path(obj, path, default=None):
 
     path = path.strip()
 
-    if len(path) ==  0:
+    if len(path) == 0:
         return default
 
-    path = path.split('.')
+    path = path.split(".")
 
     sub_obj = obj
     for name in path:
@@ -95,12 +96,12 @@ def load_object(name: str):
     Note: Relative names will be resolved relative to this module (and it is not a recommended practice).
     For reliable results specify the full class name i.e. `package.module.object_name`
     """
-    class_offset = name.rfind('.')
+    class_offset = name.rfind(".")
     if class_offset == -1:
         object = locals().get(name)
     else:
         module = import_module(name[:class_offset])
-        object = getattr(module, name[class_offset + 1:])
+        object = getattr(module, name[class_offset + 1 :])
 
     if object is None:
         raise ValueError("Could not find object", name)
@@ -110,7 +111,5 @@ def load_object(name: str):
 
 
 def normalize_event(event, project_id):
-    normalizer = StoreNormalizer(
-        project_id=project_id,
-    )
+    normalizer = StoreNormalizer(project_id=project_id,)
     return normalizer.normalize_event(event)

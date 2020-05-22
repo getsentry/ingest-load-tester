@@ -13,9 +13,10 @@ BASE_IMAGES_WITH_FRAMES = [
             "image_addr": "0x0000000100000000",
             "name": "Foo.app/Contents/Foo",
         },
-        [{"instruction_addr": "0x0000000100000fa0"}]
+        [{"instruction_addr": "0x0000000100000fa0"}],
     )
 ]
+
 
 def native_data_generator(**event_kwargs):
     """
@@ -32,12 +33,14 @@ def native_data_generator(**event_kwargs):
             image = dict(image)
             shift = int(random.random() * 2000) - 1000
 
-            image['image_addr'] = hex(int(image['image_addr'], 16) + shift)
+            image["image_addr"] = hex(int(image["image_addr"], 16) + shift)
             images.append(image)
 
             for frame in image_frames:
                 frame = dict(frame)
-                frame['instruction_addr'] = hex(int(frame['instruction_addr'], 16) + shift)
+                frame["instruction_addr"] = hex(
+                    int(frame["instruction_addr"], 16) + shift
+                )
                 frames.append(frame)
 
         return frames, images

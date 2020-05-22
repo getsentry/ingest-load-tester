@@ -35,7 +35,9 @@ def schema_generator(**fields):
 
 def version_generator(num_segments=3, max_version_segment=10):
     def inner():
-        return ".".join(str(random.randrange(max_version_segment)) for _ in range(num_segments))
+        return ".".join(
+            str(random.randrange(max_version_segment)) for _ in range(num_segments)
+        )
 
     return inner
 
@@ -55,16 +57,60 @@ def string_databag_generator(max_length=10000):
     return inner
 
 
-_articles1 = ['The', "A"]
-_articles2 = ['The', "An"]
-_predicate = ["eats", "talks with", "looks at", "annoys", "collects",
-              "sprays", "disrespects", "embarrasses", "empathises with",
-              "slaps", "plays with", "runs after", "swims after"]
-_subject = ["man", "dog", "child", "woman", "girl", "boy", "lion", "cat",
-            "wombat", "lamma", "alpaca", "vicuna", "guanaco", "leopard",
-            "cougar", "wallaby", "bear", "skunk", "rabbit", "badger"]
-_direct_object = _subject + ["meal", "baby", "table", "glass", "chronometer", "parliament", "computer",
-                             "cellular phone", "toy", "tortilla", "laptop", "bottle", "fountain pen"]
+_articles1 = ["The", "A"]
+_articles2 = ["The", "An"]
+_predicate = [
+    "eats",
+    "talks with",
+    "looks at",
+    "annoys",
+    "collects",
+    "sprays",
+    "disrespects",
+    "embarrasses",
+    "empathises with",
+    "slaps",
+    "plays with",
+    "runs after",
+    "swims after",
+]
+_subject = [
+    "man",
+    "dog",
+    "child",
+    "woman",
+    "girl",
+    "boy",
+    "lion",
+    "cat",
+    "wombat",
+    "lamma",
+    "alpaca",
+    "vicuna",
+    "guanaco",
+    "leopard",
+    "cougar",
+    "wallaby",
+    "bear",
+    "skunk",
+    "rabbit",
+    "badger",
+]
+_direct_object = _subject + [
+    "meal",
+    "baby",
+    "table",
+    "glass",
+    "chronometer",
+    "parliament",
+    "computer",
+    "cellular phone",
+    "toy",
+    "tortilla",
+    "laptop",
+    "bottle",
+    "fountain pen",
+]
 
 
 def sentence_generator():
@@ -76,12 +122,12 @@ def sentence_generator():
             if direct_object != subject:
                 break
 
-        if subject[0] == 'a':
+        if subject[0] == "a":
             article1 = random.choice(_articles2)
         else:
             article1 = random.choice(_articles1)
 
-        if _direct_object[0] == 'a':
+        if _direct_object[0] == "a":
             article2 = random.choice(_articles2)
         else:
             article2 = random.choice(_articles1)

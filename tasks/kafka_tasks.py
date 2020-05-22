@@ -70,7 +70,9 @@ def kafka_configurable_outcome_task_factory(task_params):
             if acc_freq >= outcome_idx:
                 break
         else:
-            raise ValueError("kafka_configurable_outcome_task bug, invalid math, we should never get here")
+            raise ValueError(
+                "kafka_configurable_outcome_task bug, invalid math, we should never get here"
+            )
         _kafka_send_outcome(task_set, outcome)
 
     return task
@@ -88,17 +90,19 @@ def canned_kafka_event_task(event_name: str, send_outcome: bool):
 def _kafka_send_outcome(task_set: TaskSet, outcome: Outcome):
     project_info = get_project_info(task_set)
     event_id = get_uuid()
-    kafka_send_outcome(task_set, project_info.id, outcome, event_id, reason=outcome.reason())
+    kafka_send_outcome(
+        task_set, project_info.id, outcome, event_id, reason=outcome.reason()
+    )
 
 
 def _kafka_send_event(task_set, event, send_outcome=True):
     project_info = get_project_info(task_set)
     event_id = get_uuid()
-    event['event_id'] = event_id
+    event["event_id"] = event_id
 
     # set required attributes for processing in a central place
     event["project"] = project_info.id
-    event['timestamp'] = time.time()
+    event["timestamp"] = time.time()
 
     kafka_send_event(task_set, event, project_info.id)
 

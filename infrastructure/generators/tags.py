@@ -2,6 +2,7 @@ import random
 
 from infrastructure.generators.util import version_generator
 
+
 def tags_generator(min=0, max=100, tag_values_per_tag=100):
     """
     Generate tags dictionary, at least `min` tags and at most `max`.
@@ -11,6 +12,7 @@ def tags_generator(min=0, max=100, tag_values_per_tag=100):
 
     Tag value cardinality can be controlled with `tag_values_per_tag`.
     """
+
     def inner():
         tags = {}
 

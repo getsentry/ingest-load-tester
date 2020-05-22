@@ -41,7 +41,9 @@ def create_task_set(user_name, config):
                 task = load_object(task_func_name)
                 _tasks[task] = weight
     else:
-        raise ValueError("Could not find a tasks dictionary attribute for user_name", user_name)
+        raise ValueError(
+            "Could not find a tasks dictionary attribute for user_name", user_name
+        )
 
     if len(_tasks) == 0:
         raise ("User with 0 tasks enabled", user_name)
@@ -83,7 +85,7 @@ def _get_wait_time(locust_info):
         # add recognized functions (no attempt to recognize anything beyond what is here)
         "between": between,
         "constant": constant,
-        "constant_pacing": constant_pacing
+        "constant_pacing": constant_pacing,
     }
     return eval(wait_expr, globals(), env_locals)
 
@@ -114,6 +116,7 @@ def create_locust_class(name, config_file_name, host=None, base_classes=None):
         """
         Root class for a configurable Locust.
         """
+
         task_set = _task_set
         wait_time = _wait_time
         weight = _weight
@@ -152,5 +155,5 @@ def get_project_info(task_set: TaskSet) -> ProjectInfo:
         num_projects: 10
     """
     locust_params = task_set.get_locust_params()
-    num_projects = locust_params.get('num_projects', 1)
+    num_projects = locust_params.get("num_projects", 1)
     return generate_project_info(num_projects)

@@ -3,10 +3,14 @@ import random
 
 from infrastructure.generators.util import schema_generator, version_generator
 
+
 def device_context_generator():
     return schema_generator(
         type="device",
-        screen_resolution=[None, lambda: f"{int(random.random() * 1000)}x{int(random.random() * 1000)}"],
+        screen_resolution=[
+            None,
+            lambda: f"{int(random.random() * 1000)}x{int(random.random() * 1000)}",
+        ],
         orientation=["portrait", "landscape", "garbage data", None],
         name=[None, lambda: f"Android SDK built for x{random.random()}"],
         family=[None, lambda: f"Device family {random.random()}"],
@@ -33,6 +37,7 @@ def device_context_generator():
         manufacturer=["Google", "Hasbro"],
     )
 
+
 def app_context_generator():
     return schema_generator(
         type="app",
@@ -41,6 +46,7 @@ def app_context_generator():
         app_build=range(100),
     )
 
+
 def os_context_generator():
     return schema_generator(
         type="os",
@@ -48,5 +54,5 @@ def os_context_generator():
         kernel_version="Linux version 3.10.0+ (bjoernj@bjoernj.mtv.corp.google.com) (gcc version 4.9.x 20150123 (prerelease) (GCC) ) #256 SMP PREEMPT Fri May 19 11:58:12 PDT 2017",
         version=version_generator(3),
         build="sdk_google_phone_x86-userdebug 7.1.1 NYC 5464897 test-keys",
-        name=["Android", "NookPhone"]
+        name=["Android", "NookPhone"],
     )

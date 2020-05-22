@@ -3,11 +3,17 @@ import uuid
 import random
 
 from infrastructure.generators.util import (
-    schema_generator, version_generator, string_databag_generator,
+    schema_generator,
+    version_generator,
+    string_databag_generator,
     sentence_generator,
 )
 from infrastructure.generators.user import user_interface_generator
-from infrastructure.generators.contexts import os_context_generator, device_context_generator, app_context_generator
+from infrastructure.generators.contexts import (
+    os_context_generator,
+    device_context_generator,
+    app_context_generator,
+)
 from infrastructure.generators.breadcrumbs import breadcrumb_generator
 from infrastructure.generators.native import native_data_generator
 
@@ -33,7 +39,7 @@ def base_event_generator(
         fingerprint=lambda: [f"fingerprint{random.randrange(num_event_groups)}"],
         release=lambda: f"release{random.randrange(num_releases)}",
         transaction=[None, lambda: f"mytransaction{random.randrange(100)}"],
-        logentry={"formatted":  sentence_generator()},
+        logentry={"formatted": sentence_generator()},
         logger=["foo.bar.baz", "bam.baz.bad", None],
         timestamp=time.time,
         environment=["production", "development", "staging"],
@@ -41,7 +47,7 @@ def base_event_generator(
         contexts={
             "os": [None, os_context_generator()],
             "device": [None, device_context_generator()],
-            "app": [None, app_context_generator()]
+            "app": [None, app_context_generator()],
         },
         breadcrumbs=breadcrumb_generator(
             min=min_breadcrumbs,
@@ -50,7 +56,7 @@ def base_event_generator(
             levels=breadcrumb_levels,
             types=breadcrumb_types,
             messages=breadcrumb_messages,
-        )
+        ),
     )
 
     if with_native_stacktrace:
@@ -61,12 +67,12 @@ def base_event_generator(
             event = base_gen()
             frames, images = native_gen()
 
-            event['platform'] = 'cocoa'
+            event["platform"] = "cocoa"
             exc = exc_gen()
-            event['exception'] = {'values': [exc]}
+            event["exception"] = {"values": [exc]}
 
-            exc['stacktrace'] = {'frames': frames}
-            event['debug_meta'] = {'images': images}
+            exc["stacktrace"] = {"frames": frames}
+            event["debug_meta"] = {"images": images}
             return event
 
     return event_generator

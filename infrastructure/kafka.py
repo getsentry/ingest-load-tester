@@ -52,7 +52,7 @@ class KafkaProducerMixin:
     def topic_name(self, topic: Topic):
         topics = self.config.get("topics", {})
         val = topic.value
-        return topics.get(val['config_name'], val['default'])
+        return topics.get(val["config_name"], val["default"])
 
     def get_producer(self):
         return self.producer
@@ -64,13 +64,21 @@ def kafka_flush(task_set):
     producer.flush()
 
 
-def kafka_send_outcome(task_set, project_id, outcome: Outcome, event_id=None, org_id=None, reason=None,
-                       key_id=None, remote_addr=None):
+def kafka_send_outcome(
+    task_set,
+    project_id,
+    outcome: Outcome,
+    event_id=None,
+    org_id=None,
+    reason=None,
+    key_id=None,
+    remote_addr=None,
+):
     message = {
         "project_id": project_id,
         "timestamp": datetime.utcnow().isoformat(),
         "outcome": outcome,
-        "event_id": event_id
+        "event_id": event_id,
     }
 
     if event_id is not None:
@@ -89,10 +97,12 @@ def kafka_send_outcome(task_set, project_id, outcome: Outcome, event_id=None, or
         message["remote_addr"] = remote_addr
 
     kafka_mixin = _get_producer_mixin(task_set)
-    kafka_mixin.producer.produce(kafka_mixin.topic_name(Topic.Outcomes), json.dumps(message))
+    kafka_mixin.producer.produce(
+        kafka_mixin.topic_name(Topic.Outcomes), json.dumps(message)
+    )
 
 
-def kafka_send_event(task_set, event, project_id, remote_addr = None):
+def kafka_send_event(task_set, event, project_id, remote_addr=None):
     event_id = event.get("event_id")
     if event_id is None:
         event_id = get_uuid()
@@ -107,14 +117,16 @@ def kafka_send_event(task_set, event, project_id, remote_addr = None):
         "start_time": time.time(),
         "event_id": event_id,
         "project_id": int(project_id),
-        "attachments": []
+        "attachments": [],
     }
 
     if remote_addr is not None:
         wrapped_event["remote_addr"] = remote_addr
 
     kafka_mixin = _get_producer_mixin(task_set)
-    kafka_mixin.producer.produce(kafka_mixin.topic_name(Topic.Events), msgpack.packb(wrapped_event))
+    kafka_mixin.producer.produce(
+        kafka_mixin.topic_name(Topic.Events), msgpack.packb(wrapped_event)
+    )
 
 
 def _get_producer_mixin(task_set):
@@ -128,5 +140,7 @@ def _get_producer_mixin(task_set):
             return current
         current = getattr(current, "parent", None)
 
-    raise ValueError("Could not find KafkaProducerMixin in TaskSet tree",
-                     "Derive your TaskSet or Locust class from KafkaProducerMixin")
+    raise ValueError(
+        "Could not find KafkaProducerMixin in TaskSet tree",
+        "Derive your TaskSet or Locust class from KafkaProducerMixin",
+    )
