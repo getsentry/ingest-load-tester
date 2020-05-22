@@ -90,7 +90,9 @@ def _get_wait_time(locust_info):
     return eval(wait_expr, globals(), env_locals)
 
 
-def create_locust_class(name, config_file_name, module_name,  host=None, base_classes=None):
+def create_locust_class(
+    name, config_file_name, module_name, host=None, base_classes=None
+):
     if base_classes is None:
         base_classes = (HttpLocust,)
 

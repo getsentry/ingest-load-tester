@@ -44,17 +44,11 @@ def canned_envelope_event_task(event_name: str):
     return inner
 
 
-def _get_task_config_args(task_params):
-    return {k: v for k, v in task_params.items() if k != "weight"}
-
-
 def random_event_task_factory(task_params=None):
-    if task_params is not None:
-        kwargs = _get_task_config_args(task_params)
-    else:
-        kwargs = {}
+    if task_params is None:
+        task_params = {}
 
-    event_generator = base_event_generator(**kwargs)
+    event_generator = base_event_generator(**task_params)
 
     def inner(task_set: TaskSet):
         event = event_generator()
@@ -66,12 +60,9 @@ def random_event_task_factory(task_params=None):
 
 
 def random_envelope_event_task_factory(task_params=None):
-    if task_params is not None:
-        kwargs = _get_task_config_args(task_params)
-    else:
-        kwargs = {}
-
-    event_generator = base_event_generator(**kwargs)
+    if task_params is None:
+        task_params = {}
+    event_generator = base_event_generator(**task_params)
 
     def inner(task_set: TaskSet):
         event = event_generator()

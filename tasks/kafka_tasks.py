@@ -1,13 +1,12 @@
 """
 Tasks and task helpers to be used to generate kafka events and outcomes
 """
-import json
 import time
 
 from locust import TaskSet
 
-from infrastructure import EventsCache
 from infrastructure.configurable_locust import get_project_info
+from infrastructure.generators.event import base_event_generator
 from infrastructure.kafka import Outcome, kafka_send_outcome, kafka_send_event
 import random
 
@@ -78,11 +77,16 @@ def kafka_configurable_outcome_task_factory(task_params):
     return task
 
 
-def canned_kafka_event_task(event_name: str, send_outcome: bool):
+def random_kafka_event_task_factory(task_params=None):
+    if task_params is None:
+        task_params = {}
+
+    event_generator = base_event_generator(**task_params)
+
     def inner(task_set: TaskSet):
-        event_body = EventsCache.get_event_by_name(event_name)
-        event = json.loads(event_body)
-        _kafka_send_event(task_set, event, send_outcome)
+        event = event_generator()
+        send_outcome = task_params.get("send_outcome", True)
+        return _kafka_send_event(task_set, event, send_outcome)
 
     return inner
 
