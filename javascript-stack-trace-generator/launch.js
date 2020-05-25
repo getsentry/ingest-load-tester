@@ -30,6 +30,6 @@ function convertStack(frames) {
     const frames = convertStack(stacktraceParser.parse(stack));
     frames.pop();
     const stackDump = JSON.stringify(frames, null, 2) + '\n';
-    fs.writeFileSync("../js_stack_traces/all_frames.json", stackDump);
+    fs.writeFileSync("../js-stack-traces/all_frames.json", stackDump);
     browser.close();
 })();

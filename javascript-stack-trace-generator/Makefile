@@ -1,4 +1,4 @@
-all: update
+all: copy-files
 
 install:
 	yarn install
@@ -9,4 +9,7 @@ minify: install
 update: minify
 	node launch.js
 
-.PHONY: all install minify update
+copy-files: update
+	cp test.* ../js-images
+
+.PHONY: all install minify update copy-files

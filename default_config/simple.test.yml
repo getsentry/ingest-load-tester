@@ -58,3 +58,10 @@ users:
           #
           #   sentry-cli upload-dif . --org sentry --project internal
           with_native_stacktrace: false
+          # Add a javascript stacktrace that can be symbolicated
+          # need to upload the js-images/ folder
+          # note if native stacktrace is enabled the javascript stacktrace will
+          # be ignored
+          with_javascript_stacktrace: false
+          min_frames: 5
+          max_frames: 30

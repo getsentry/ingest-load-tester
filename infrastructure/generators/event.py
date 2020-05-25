@@ -2,10 +2,9 @@ import time
 import uuid
 import random
 
+from infrastructure.generators.javascript_frames import javascript_exception_generator
 from infrastructure.generators.util import (
     schema_generator,
-    version_generator,
-    string_databag_generator,
     sentence_generator,
 )
 from infrastructure.generators.user import user_interface_generator
@@ -30,6 +29,7 @@ def base_event_generator(
     breadcrumb_types=None,
     breadcrumb_messages=None,
     with_native_stacktrace=False,
+    with_javascript_stacktrace=False,
     num_releases=10,
     **kwargs,  # absorbs parameters used by other parts of the task set configuration
 ):
@@ -73,6 +73,14 @@ def base_event_generator(
 
             exc["stacktrace"] = {"frames": frames}
             event["debug_meta"] = {"images": images}
+            return event
+
+    elif with_javascript_stacktrace:
+
+        def event_generator(base_gen=event_generator):
+            event = base_gen()
+            event["platform"] = "javascript"
+            event["exception"] = javascript_exception_generator(**kwargs)()
             return event
 
     return event_generator
