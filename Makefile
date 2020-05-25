@@ -64,3 +64,6 @@ format: setup-venv
 
 style: setup-venv
 	.venv/bin/black --check .
+
+generate-javascript-stack-traces:
+	cd javascript-stack-trace-generator && make all

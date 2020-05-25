@@ -1,0 +1,758 @@
+[
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 48,
+    "function": "i"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1968,
+    "function": "k"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1956,
+    "function": "k"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1939,
+    "function": "k"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1922,
+    "function": "k"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1905,
+    "function": "k"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1888,
+    "function": "k"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1871,
+    "function": "k"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1841,
+    "function": "h"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1829,
+    "function": "h"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1812,
+    "function": "h"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1795,
+    "function": "h"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1778,
+    "function": "h"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1761,
+    "function": "h"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1744,
+    "function": "h"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1714,
+    "function": "d"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1702,
+    "function": "d"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1685,
+    "function": "d"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1668,
+    "function": "d"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1651,
+    "function": "d"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1634,
+    "function": "d"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1617,
+    "function": "d"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1587,
+    "function": "w"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1575,
+    "function": "w"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1558,
+    "function": "w"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1541,
+    "function": "w"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1524,
+    "function": "w"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1507,
+    "function": "w"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1490,
+    "function": "w"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1460,
+    "function": "a"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1448,
+    "function": "a"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1431,
+    "function": "a"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1414,
+    "function": "a"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1397,
+    "function": "a"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1380,
+    "function": "a"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1363,
+    "function": "a"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1333,
+    "function": "r"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1321,
+    "function": "r"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1304,
+    "function": "r"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1287,
+    "function": "r"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1270,
+    "function": "r"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1253,
+    "function": "r"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1236,
+    "function": "r"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1206,
+    "function": "s"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1194,
+    "function": "s"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1177,
+    "function": "s"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1160,
+    "function": "s"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1143,
+    "function": "s"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1126,
+    "function": "s"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1109,
+    "function": "s"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1079,
+    "function": "l"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1067,
+    "function": "l"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1050,
+    "function": "l"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1033,
+    "function": "l"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1016,
+    "function": "l"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 999,
+    "function": "l"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 982,
+    "function": "l"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 952,
+    "function": "c"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 940,
+    "function": "c"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 923,
+    "function": "c"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 906,
+    "function": "c"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 889,
+    "function": "c"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 872,
+    "function": "c"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 855,
+    "function": "c"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 825,
+    "function": "u"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 813,
+    "function": "u"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 796,
+    "function": "u"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 779,
+    "function": "u"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 762,
+    "function": "u"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 745,
+    "function": "u"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 728,
+    "function": "u"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 698,
+    "function": "t"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 686,
+    "function": "t"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 669,
+    "function": "t"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 652,
+    "function": "t"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 635,
+    "function": "t"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 618,
+    "function": "t"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 601,
+    "function": "t"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 571,
+    "function": "o"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 559,
+    "function": "o"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 542,
+    "function": "o"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 525,
+    "function": "o"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 508,
+    "function": "o"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 491,
+    "function": "o"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 474,
+    "function": "o"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 444,
+    "function": "e"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 432,
+    "function": "e"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 415,
+    "function": "e"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 398,
+    "function": "e"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 381,
+    "function": "e"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 364,
+    "function": "e"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 347,
+    "function": "e"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 317,
+    "function": "n"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 305,
+    "function": "n"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 288,
+    "function": "n"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 271,
+    "function": "n"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 254,
+    "function": "n"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 237,
+    "function": "n"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 220,
+    "function": "n"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 190,
+    "function": "f"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 178,
+    "function": "f"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 161,
+    "function": "f"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 144,
+    "function": "f"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 127,
+    "function": "f"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 110,
+    "function": "f"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 93,
+    "function": "f"
+  },
+  {
+    "abs_path": "http://example.com/test.min.js",
+    "filename": "test.min.js",
+    "lineno": 1,
+    "colno": 1987,
+    "function": "m"
+  },
+  {
+    "abs_path": "http://example.com/index.html",
+    "filename": "index.html",
+    "lineno": 7,
+    "colno": 13,
+    "function": "produceStack"
+  }
+]
