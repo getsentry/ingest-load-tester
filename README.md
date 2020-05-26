@@ -52,7 +52,7 @@ Under the `relay` key one configures the upstream which is either the url of the
 `relay` server
 
 Under the `kafka` key one configures the address of the broker and the names of the ingest and outcome topics (which
-normally should not be left to their default values)
+normally should be left to their default values).
 
 ### Running 
 
