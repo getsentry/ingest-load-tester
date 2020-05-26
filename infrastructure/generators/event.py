@@ -81,6 +81,7 @@ def base_event_generator(
             event = base_gen()
             event["platform"] = "javascript"
             event["exception"] = javascript_exception_generator(**kwargs)()
+            event["release"] = kwargs.get("release", "1")
             return event
 
     return event_generator
