@@ -4,5 +4,8 @@
     "puppeteer": "^0.9.0",
     "stacktrace-parser": "^0.1.4",
     "uglify": "^0.1.5"
+  },
+  "volta": {
+    "node": "12.16.3"
   }
 }
