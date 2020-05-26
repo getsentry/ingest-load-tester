@@ -7,7 +7,7 @@ from sentry_relay.processing import StoreNormalizer
 
 def full_path_from_module_relative_path(module_name, *args):
     dir_path = os.path.dirname(os.path.realpath(module_name))
-    return os.path.join(dir_path, *args)
+    return os.path.abspath(os.path.join(dir_path, *args))
 
 
 def send_message(client, project_id, project_key, msg_body, headers=None):

@@ -58,3 +58,17 @@ users:
           #
           #   sentry-cli upload-dif . --org sentry --project internal
           with_native_stacktrace: false
+          # Add a javascript stacktrace that can be symbolicated
+          # need to create release and upload the js-images/ folder
+          #   sentry-cli releases new <RELEASE_NAME>
+          #   sentry-cli releases files <RELEASE_NAME> upload-sourcemaps ./js-images
+          #   sentry-cli releases finalize <RELEASE_NAME>
+          #
+          # note if native stacktrace is enabled the javascript stacktrace will
+          # be ignored
+          with_javascript_stacktrace: false
+          min_frames: 5
+          max_frames: 30
+          # Need to specify a fixed release in order to match the source files
+          # The release should match the release specified when uploading the source files with sentry-cli
+          release: "1"

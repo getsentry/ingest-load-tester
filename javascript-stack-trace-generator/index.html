@@ -1,0 +1,14 @@
+<!doctype html>
+<script type=text/javascript src=test.min.js></script>
+<script>
+    function produceStack() {
+        try {
+            Error.stackTraceLimit = 200 // by default max stack trace is 10
+            makeAFailure(100) // max stack length
+        } catch (e) {
+            return e.stack
+        }
+    }
+
+    produceStack()
+</script>
