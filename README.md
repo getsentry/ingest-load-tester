@@ -62,6 +62,8 @@ Presuming that you are in the load-tests directory you can run:
     make TEST=simple load-test
     make TEST=kafka_consumers load-test
 
+These tests will run with the configuration files `config/simple.test.yml` and `config/kafka_consumers.test.yml` respectively.
+
 Which will ensure that the virtual environment is installed and set up and will call:
 `.venv/bin/locust -f simple_locustfile.py`
 or
