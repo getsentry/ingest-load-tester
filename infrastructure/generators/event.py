@@ -41,7 +41,11 @@ def base_event_generator(
         event_id=(lambda: uuid.uuid4().hex) if with_event_id else None,
         level=["error", "debug"] if with_level else None,
         fingerprint=lambda: [f"fingerprint{random.randrange(num_event_groups)}"],
-        release=lambda: f"release{random.randrange(num_releases)}" if release is None else release,
+        release=(
+            lambda: f"release{random.randrange(num_releases)}"
+            if release is None
+            else release
+        ),
         transaction=[None, lambda: f"mytransaction{random.randrange(100)}"],
         logentry={"formatted": sentence_generator()},
         logger=["foo.bar.baz", "bam.baz.bad", None],
