@@ -55,6 +55,7 @@ users:
           #
           #   sentry-cli upload-dif . --org sentry --project internal
           with_native_stacktrace: false
+
           # Add a javascript stacktrace that can be symbolicated
           # need to create release and upload the js-images/ folder
           #   sentry-cli releases new <RELEASE_NAME>
@@ -80,3 +81,5 @@ users:
 
           # Amount of random releases to generate.
           num_releases: 10
+          # Single specific hardcoded release.
+          release: ~

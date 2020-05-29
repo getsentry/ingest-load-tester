@@ -18,7 +18,7 @@ BASE_IMAGES_WITH_FRAMES = [
 ]
 
 
-def native_data_generator(num_frames=500):
+def native_data_generator(num_frames=20):
     """
     Generate an event with one native stacktrace + debug_images section. The
     debug images to successfully symbolicate the generated crash are in
