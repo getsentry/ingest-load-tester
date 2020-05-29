@@ -27,9 +27,7 @@ def file_event_task_factory(task_params=None):
         """
         project_info = get_project_info(task_set)
 
-        return send_message(
-            task_set.client, project_info.id, project_info.key, event
-        )
+        return send_message(task_set.client, project_info.id, project_info.key, event)
 
     return inner
 
