@@ -53,15 +53,13 @@ users:
           breadcrumb_types: ~
           breadcrumb_messages: ~
 
-          # Amount of random releases to generate.
-          num_releases: 10
-
           # Add a native stacktrace such that symbolicator is part of the
           # equation. The debug files necessary for processing the stacktrace
           # can be found in the native-images/ folder and can be uploaded with:
           #
           #   sentry-cli upload-dif . --org sentry --project internal
           with_native_stacktrace: false
+
           # Add a javascript stacktrace that can be symbolicated
           # need to create release and upload the js-images/ folder
           #   sentry-cli releases new <RELEASE_NAME>
@@ -71,8 +69,21 @@ users:
           # note if native stacktrace is enabled the javascript stacktrace will
           # be ignored
           with_javascript_stacktrace: false
+          # In case of javascript, need to specify a fixed release in order to
+          # match the source files
+          #
+          # The release should match the release specified when uploading the
+          # source files with sentry-cli
+          #
+          # release: "1"
+
+          # Amount of stacktraces and frames to generate, only in effect if js or native
+          # stacktraces are generated at all
+          num_stacktraces: 5
           min_frames: 5
           max_frames: 30
-          # Need to specify a fixed release in order to match the source files
-          # The release should match the release specified when uploading the source files with sentry-cli
-          release: "1"
+
+          # Amount of random releases to generate.
+          num_releases: 10
+          # Single specific hardcoded release.
+          release: ~

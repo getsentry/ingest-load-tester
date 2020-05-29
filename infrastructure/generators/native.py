@@ -18,7 +18,7 @@ BASE_IMAGES_WITH_FRAMES = [
 ]
 
 
-def native_data_generator(**event_kwargs):
+def native_data_generator(num_frames=20):
     """
     Generate an event with one native stacktrace + debug_images section. The
     debug images to successfully symbolicate the generated crash are in
@@ -29,19 +29,20 @@ def native_data_generator(**event_kwargs):
         frames = []
         images = []
 
-        for image, image_frames in BASE_IMAGES_WITH_FRAMES:
-            image = dict(image)
-            shift = int(random.random() * 2000) - 1000
+        for _ in num_frames:
+            for image, image_frames in BASE_IMAGES_WITH_FRAMES:
+                image = dict(image)
+                shift = int(random.random() * 2000) - 1000
 
-            image["image_addr"] = hex(int(image["image_addr"], 16) + shift)
-            images.append(image)
+                image["image_addr"] = hex(int(image["image_addr"], 16) + shift)
+                images.append(image)
 
-            for frame in image_frames:
-                frame = dict(frame)
-                frame["instruction_addr"] = hex(
-                    int(frame["instruction_addr"], 16) + shift
-                )
-                frames.append(frame)
+                for frame in image_frames:
+                    frame = dict(frame)
+                    frame["instruction_addr"] = hex(
+                        int(frame["instruction_addr"], 16) + shift
+                    )
+                    frames.append(frame)
 
         return frames, images
 
