@@ -10,9 +10,13 @@ users:
     weight: 0
     task_set:
       tasks:
-        - small_event_task
-        - medium_event_task
-        - large_event_task
+        file_event_task_factory:
+          weight: 0
+          filename: path/to/custom/file.json
+
+        file_envelope_event_task_factory:
+          weight: 0
+          filename: path/to/custom/file.json
 
   # A task that generates random events based on config parameters
   RandomEvents:
