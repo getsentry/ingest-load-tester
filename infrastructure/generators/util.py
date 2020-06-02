@@ -84,7 +84,7 @@ _subject = [
     "lion",
     "cat",
     "wombat",
-    "lamma",
+    "llama",
     "alpaca",
     "vicuna",
     "guanaco",
