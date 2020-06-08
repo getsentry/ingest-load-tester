@@ -12,7 +12,7 @@ users:
       tasks:
         file_event_task_factory:
           weight: 0
-          filename: path/to/custom/file.json
+          filename: test-events/small.json
 
         file_envelope_event_task_factory:
           weight: 0
