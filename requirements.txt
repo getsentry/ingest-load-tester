@@ -6,3 +6,5 @@ confluent-kafka==1.4.1
 msgpack>=0.6.1,<0.7.0
 sentry-relay==0.5.9
 black==19.10b0
+mywsgi==1.0.3
+uWSGI==2.0.18
