@@ -156,11 +156,12 @@ def run_blocking_fake_sentry(config):
     port = config.get("port")
 
     if config.get("use_uwsgi", True):
-        # Exec uwsgi with some default parameters
+        # Exec uwsgi with some default parameters.
+        # Parameters can be tweaked by setting certain environment variables.
+        # For example, to change the number of uwsgi workers, set UWSGI_PROCESSES=<N> (1 by default)
         mywsgi.run(
             "fake_sentry.fake_sentry:app",
             "{}:{}".format(host or "127.0.0.1", port or 8000),
-            processes=os.environ.get("UWSGI_PROCESSES") or 4,
         )
     else:
         app.run(host=host, port=port)
@@ -191,7 +192,6 @@ def configure_app(config):
     def check_challenge():
         relay_id = flask_request.json["relay_id"]
         assert relay_id == flask_request.headers["x-sentry-relay-id"]
-        assert relay_id in authenticated_relays
         return jsonify({"relay_id": relay_id})
 
     @app.route("/api/0/relays/projectconfigs/", methods=["POST"])
