@@ -1,5 +1,14 @@
+import resource
+
+# Raise the max number of open files
+current_limits = resource.getrlimit(resource.RLIMIT_NOFILE)
+new_limit = min(current_limits[1], 1000000)
+resource.setrlimit(resource.RLIMIT_NOFILE, (new_limit, new_limit))
+
+###
 from infrastructure import full_path_from_module_relative_path, create_locust_class
 from tasks import event_tasks
+
 
 # do NOT just import the functions in the module (you will get a warning that the function is not used,
 # you will remove it and then will get a runtime error)
