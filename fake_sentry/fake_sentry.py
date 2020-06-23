@@ -1,19 +1,19 @@
-from queue import Queue
-
-from flask import Flask, request as flask_request, jsonify, abort
-import logging
-import threading
 import datetime
-import time
+import logging
 import os
+import time
+import threading
 import uuid
-
+from queue import Queue
 from yaml import load
 
+import mywsgi
+from flask import Flask, request as flask_request, jsonify, abort
+
 try:
-    from yaml import CLoader as Loader, CDumper as Dumper, CFullLoader as FullLoader
+    from yaml import CFullLoader as FullLoader
 except ImportError:
-    from yaml import Loader, Dumper, FullLoader
+    from yaml import FullLoader
 
 from infrastructure.util import full_path_from_module_relative_path
 
@@ -141,7 +141,7 @@ def run_fake_sentry_async(config):
     :param config: the cli configuration
     :return: the thread in which the fake
     """
-    t = threading.Thread(target=_fake_sentry_thread, args=(config,))
+    t = threading.Thread(target=run_blocking_fake_sentry, args=(config,))
     t.daemon = True
     t.start()
     return t
@@ -152,17 +152,28 @@ def run_blocking_fake_sentry(config):
     Runs a fake sentry server on the current thread (this is a blocking call)
     :param config: the cli configuration
     """
-    _fake_sentry_thread(config)
+    host = config.get("host")
+    port = config.get("port")
+
+    if config.get("use_uwsgi", True):
+        # Exec uwsgi with some default parameters.
+        # Parameters can be tweaked by setting certain environment variables.
+        # For example, to change the number of uwsgi workers, set UWSGI_PROCESSES=<N> (1 by default)
+        mywsgi.run(
+            "fake_sentry.fake_sentry:app",
+            "{}:{}".format(host or "127.0.0.1", port or 8000),
+        )
+    else:
+        app.run(host=host, port=port)
 
 
-def _fake_sentry_thread(config):
+def configure_app(config):
     app = Flask(__name__)
 
     log_level = config.get("log_level", logging.INFO)
     logging.getLogger("werkzeug").setLevel(log_level)
     app.logger.setLevel(log_level)
 
-    # sentry = None
     host = config.get("host")
     port = config.get("port")
     dns_public_key = config.get("key")
@@ -183,7 +194,6 @@ def _fake_sentry_thread(config):
     def check_challenge():
         relay_id = flask_request.json["relay_id"]
         assert relay_id == flask_request.headers["x-sentry-relay-id"]
-        assert relay_id in authenticated_relays
         return jsonify({"relay_id": relay_id})
 
     @app.route("/api/0/relays/projectconfigs/", methods=["POST"])
@@ -229,7 +239,7 @@ def _fake_sentry_thread(config):
         app.logger.error("Fake sentry error generated error:\n{}".format(e))
         abort(400)
 
-    app.run(host=host, port=port)
+    return app
 
 
 def _get_config():
@@ -249,6 +259,8 @@ def _get_config():
         raise ValueError("Invalid configuration")
 
 
+config = _get_config()
+app = configure_app(config)
+
 if __name__ == "__main__":
-    config = _get_config()
     run_blocking_fake_sentry(config)
