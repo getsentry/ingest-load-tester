@@ -168,6 +168,8 @@ def run_blocking_fake_sentry(config):
 
 
 def configure_app(config):
+    app = Flask(__name__)
+
     log_level = config.get("log_level", logging.INFO)
     logging.getLogger("werkzeug").setLevel(log_level)
     app.logger.setLevel(log_level)
@@ -237,6 +239,8 @@ def configure_app(config):
         app.logger.error("Fake sentry error generated error:\n{}".format(e))
         abort(400)
 
+    return app
+
 
 def _get_config():
     """
@@ -255,9 +259,8 @@ def _get_config():
         raise ValueError("Invalid configuration")
 
 
-app = Flask(__name__)
 config = _get_config()
-configure_app(config)
+app = configure_app(config)
 
 if __name__ == "__main__":
     run_blocking_fake_sentry(config)
