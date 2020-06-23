@@ -35,7 +35,8 @@ endif
 .PHONY: check-test
 
 load-test: check-test setup-venv
-	.venv/bin/locust -f $(TEST)_locustfile.py
+	./bin/start_locust.sh $(TEST)_locustfile.py
+
 .PHONY: load-test
 
 setup-brew:

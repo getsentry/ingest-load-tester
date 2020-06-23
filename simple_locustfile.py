@@ -2,7 +2,7 @@ import resource
 
 # Raise the max number of open files
 current_limits = resource.getrlimit(resource.RLIMIT_NOFILE)
-new_limit = min(current_limits[1], 1000000)
+new_limit = min(current_limits[1], 12000)
 resource.setrlimit(resource.RLIMIT_NOFILE, (new_limit, new_limit))
 
 ###
