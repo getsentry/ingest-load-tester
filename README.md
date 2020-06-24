@@ -16,7 +16,7 @@ To start the Fake Sentry Server run:
 
     make fake-sentry
 
-`uwgsi` is used under the hood, and its parameters can be tweaked by providing environment variables.
+`uwsgi` is used under the hood, and its parameters can be tweaked by providing environment variables.
 For example, to achieve higher throughput, one can raise the number of workers and the size of listen queue:
 
     UWSGI_LISTEN=10000 UWSGI_PROCESSES=16 make fake-sentry
