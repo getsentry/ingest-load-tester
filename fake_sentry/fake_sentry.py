@@ -1,5 +1,7 @@
 import datetime
 import logging
+import os
+import resource
 import time
 import threading
 import uuid
@@ -161,12 +163,18 @@ def run_blocking_fake_sentry(config):
         mywsgi.run(
             "fake_sentry.fake_sentry:app",
             "{}:{}".format(host or "127.0.0.1", port or 8000),
+            listen=os.environ.get("UWSGI_LISTEN", 1024),
         )
     else:
         app.run(host=host, port=port)
 
 
 def configure_app(config):
+    # Raise the max number of open files
+    current_limits = resource.getrlimit(resource.RLIMIT_NOFILE)
+    new_limit = min(current_limits[1], 12000)
+    resource.setrlimit(resource.RLIMIT_NOFILE, (new_limit, new_limit))
+
     app = Flask(__name__)
 
     log_level = config.get("log_level", logging.INFO)
@@ -216,6 +224,8 @@ def configure_app(config):
     @app.route("/api/<project_id>/store/", methods=["POST", "GET"])
     @app.route("/api/<project_id>/envelope/", methods=["POST"])
     def store_all(project_id):
+        # Consume request body
+        _ = flask_request.data
         return jsonify({"event_id": str(uuid.uuid4().hex)})
 
     @app.route("/<path:u_path>", methods=["POST", "GET"])
