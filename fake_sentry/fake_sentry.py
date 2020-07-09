@@ -7,9 +7,10 @@ import threading
 import uuid
 from queue import Queue
 from yaml import load
+from logging.config import dictConfig
 
 import mywsgi
-from flask import Flask, request as flask_request, jsonify, abort
+from flask import Flask, request as flask_request, jsonify, abort, request
 
 try:
     from yaml import CFullLoader as FullLoader
@@ -17,6 +18,8 @@ except ImportError:
     from yaml import FullLoader
 
 from infrastructure.util import full_path_from_module_relative_path
+
+_log = logging.getLogger(__name__)
 
 
 class Sentry(object):
@@ -164,6 +167,7 @@ def run_blocking_fake_sentry(config):
             "fake_sentry.fake_sentry:app",
             "{}:{}".format(host or "127.0.0.1", port or 8000),
             listen=os.environ.get("UWSGI_LISTEN", 1024),
+            disable_logging=True,
         )
     else:
         app.run(host=host, port=port)
@@ -175,11 +179,9 @@ def configure_app(config):
     new_limit = min(current_limits[1], 12000)
     resource.setrlimit(resource.RLIMIT_NOFILE, (new_limit, new_limit))
 
+    log_config = config.get("log", {"version": 1})
+    dictConfig(log_config)
     app = Flask(__name__)
-
-    log_level = config.get("log_level", logging.INFO)
-    logging.getLogger("werkzeug").setLevel(log_level)
-    app.logger.setLevel(log_level)
 
     host = config.get("host")
     port = config.get("port")
@@ -226,6 +228,7 @@ def configure_app(config):
     def store_all(project_id):
         # Consume request body
         _ = flask_request.data
+        _log.debug(f"In store: '{request.full_path}'")
         return jsonify({"event_id": str(uuid.uuid4().hex)})
 
     @app.route("/<path:u_path>", methods=["POST", "GET"])
@@ -264,7 +267,7 @@ def _get_config():
         with open(file_name, "r") as file:
             return load(file, Loader=FullLoader)
     except Exception as err:
-        print("Error while getting the configuration file:\n {}".format(err))
+        _log.error("Error while getting the configuration file:\n {}".format(err))
         raise ValueError("Invalid configuration")
 
 
