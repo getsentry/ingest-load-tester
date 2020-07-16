@@ -190,6 +190,12 @@ def configure_app(config):
 
     authenticated_relays = {}
 
+    @app.before_request
+    def consume_body():
+        # Consume POST body even if we don't like this request
+        # to no clobber the socket and buffers
+        _ = flask_request.data
+
     @app.route("/api/0/relays/register/challenge/", methods=["POST"])
     def get_challenge():
         relay_id = flask_request.json["relay_id"]
@@ -207,18 +213,16 @@ def configure_app(config):
 
     @app.route("/api/0/relays/projectconfigs/", methods=["POST"])
     def get_project_config():
-        request_body = flask_request.json
         rv = {}
-        for project_id in request_body["projects"]:
+        for project_id in flask_request.json["projects"]:
             app.logger.debug("getting project config for: {}".format(project_id))
             rv[project_id] = sentry.full_project_config()
         return jsonify(configs=rv)
 
     @app.route("/api/0/relays/publickeys/", methods=["POST"])
     def public_keys():
-        ids = flask_request.json["relay_ids"]
         rv = {}
-        for id in ids:
+        for id in flask_request.json["relay_ids"]:
             rv[id] = authenticated_relays[id]
 
         return jsonify(public_keys=rv)
@@ -226,8 +230,6 @@ def configure_app(config):
     @app.route("/api/<project_id>/store/", methods=["POST", "GET"])
     @app.route("/api/<project_id>/envelope/", methods=["POST"])
     def store_all(project_id):
-        # Consume request body
-        _ = flask_request.data
         _log.debug(f"In store: '{request.full_path}'")
         return jsonify({"event_id": str(uuid.uuid4().hex)})
 
