@@ -39,8 +39,6 @@ users:
           # How many issues to create.
           num_event_groups: 10
 
-          max_message_length: 500
-
           # Amount of users to generate, if null (~), users will just be
           # entirely random IPv4 addresses.
           max_users: ~
