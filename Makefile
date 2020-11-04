@@ -21,7 +21,7 @@ about:
 	less readme.md
 .PHONY: about
 
-config: setup-venv setup-brew setup-config
+config: setup-venv setup-config
 .PHONY: config
 
 fake-sentry: setup-venv

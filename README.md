@@ -29,6 +29,13 @@ In order to create a virtual env and install all the necessary dependencies just
 
     make config
 
+On MacOS you will _probably_ need additional dependencies that can be installed with
+
+    make setup-brew
+
+WARNING: the command will run `brew` under the hood, that might have unforeseen consequences for your
+local enviroment.
+
 ### Configuration
 
 The load tester can be run both against the Fake Sentry Server and against a full Relay-Sentry chain.
@@ -72,8 +79,7 @@ Which will ensure that the virtual environment is installed and set up and will 
 or
 `.venv/bin/locust -f kafka_consumers_locustfile.py`
 
-You can run other locust files directly just by setting up the venv using `make
-setup-venv` and calling:
+You can run other locust files directly just by setting up the venv using `make setup-venv` and calling:
 
     .venv/bin/locust -f <MY-LOCUST-FILE>
 
