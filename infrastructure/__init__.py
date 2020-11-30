@@ -1,6 +1,7 @@
 from .util import (
     send_message,
     send_envelope,
+    send_session,
     memoize,
     full_path_from_module_relative_path,
 )

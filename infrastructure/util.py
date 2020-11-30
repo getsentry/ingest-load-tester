@@ -33,6 +33,17 @@ def send_envelope(client, project_id, project_key, envelope, headers=None):
     return client.post(url, headers=headers, data=data)
 
 
+def send_session(client, project_id, project_key, session_data, headers=None):
+    url = "/api/{}/envelope/".format(project_id)
+
+    headers = {
+        "X-Sentry-Auth": _auth_header(project_key),
+        "Content-Type": "text/plain; charset=UTF-8",
+        **(headers or {}),
+    }
+    return client.post(url, headers=headers, data=session_data)
+
+
 def _auth_header(project_key):
     return "Sentry sentry_key={},sentry_version=7".format(project_key)
 

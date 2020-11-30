@@ -8,3 +8,4 @@ sentry-relay==0.5.9
 black==19.10b0
 mywsgi==1.0.3
 uWSGI==2.0.18
+greenlet==0.4.16
