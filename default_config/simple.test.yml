@@ -18,6 +18,11 @@ users:
           weight: 0
           filename: path/to/custom/file.json
 
+        # Sessions will be generated in real time
+        session_event_task_factory:
+          weight: 0
+          release: 123
+
   # A task that generates random events based on config parameters
   RandomEvents:
     wait_time: constant(1)

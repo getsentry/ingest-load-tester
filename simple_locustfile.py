@@ -16,6 +16,7 @@ random_event_task_factory = event_tasks.random_event_task_factory
 random_envelope_event_task_factory = event_tasks.random_envelope_event_task_factory
 file_event_task_factory = event_tasks.file_event_task_factory
 file_envelope_event_task_factory = event_tasks.file_envelope_event_task_factory
+session_event_task_factory = event_tasks.session_event_task_factory
 
 _config_path = full_path_from_module_relative_path(__file__, "config/simple.test.yml")
 SimpleLoadTest = create_locust_class("SimpleLoadTest", _config_path, __name__)
