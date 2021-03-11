@@ -10,7 +10,7 @@ try:
 except ImportError:
     from yaml import Loader, Dumper, FullLoader
 
-from locust import TaskSet, HttpLocust, constant, between, constant_pacing, Locust
+from locust import TaskSet, HttpUser, constant, between, constant_pacing, Locust
 
 
 def create_task_set(user_name, config, module_name):
@@ -94,7 +94,7 @@ def create_locust_class(
     name, config_file_name, module_name, host=None, base_classes=None
 ):
     if base_classes is None:
-        base_classes = (HttpLocust,)
+        base_classes = (HttpUser,)
 
     config = _load_locust_config(config_file_name)
     locust_info = config.get(name)

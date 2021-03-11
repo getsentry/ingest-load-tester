@@ -17,22 +17,22 @@ tests via configuration files. Besides this it also contains utilities useful fo
 (things like sending messages to http endpoints or kafaka queues).
 
 At the center of this infrastructure is one function that can be used to create Locusts from yaml configuration
-files:  
+files:
 
     create_locust_class(name:str, config_file_name:str, host=None, base_classes=None)
 
 Will create a locust class from the file `config_file_name`. The configuration for the locust class will be
 found under the key passed in the parameter `name`.
 
-By default the base class of the class returned by `create_locust_class` is `HttpLocust`. If you need your class
-derived from something else (it must have at least one class ultimately derived from `Locust`) you can pass a 
-tuple with the desired base classes. 
+By default the base class of the class returned by `create_locust_class` is `HttpUser`. If you need your class
+derived from something else (it must have at least one class ultimately derived from `Locust`) you can pass a
+tuple with the desired base classes.
 
 The example below creates a configurable locust class derived from `Locust` and `KafkaProducerMixin`
 
 ```python
 First = create_locust_class("First", _config_path, base_classes=(Locust, KafkaProducerMixin))
-``` 
+```
 
 A config file can contain configurations for multiple locusts.
 
@@ -88,11 +88,11 @@ users:
 ```
 
 I the example above the first Locust configures the tasks by setting relative weights (in the example task 2 will
-be executed twice as much as task1 by Locust A). 
+be executed twice as much as task1 by Locust A).
 The second Locust executes `task1` and `task2` with the same frequency.
 
 The infrastructure also supports tasks that can be configured via the yaml configuration file.
-In order to crate a task that receives configuration from yaml one needs to implement a task factory that will 
+In order to crate a task that receives configuration from yaml one needs to implement a task factory that will
 receive the configuration information.
 The example below illustrates this scenario.
 
@@ -108,7 +108,7 @@ def task_factory1(task_params):
 In order for the infrastructure to recognize when it deals with a task and when it deals with a task factory the
 task configuration must be a dictionary configuration (like the one for `LocustA` in the example above) and the
 configuration dictionary must contain at least one field other than the `weight` field (which is used by normal
-tasks). The example below illustrates using both tasks and task factories in a locust cofiguration: 
+tasks). The example below illustrates using both tasks and task factories in a locust cofiguration:
 
 ```yaml
 users:
@@ -128,14 +128,14 @@ users:
           xx: some value
 ```
 
-In the example above, the infrastructure will assume that `my_load_test.task1` is a task function, because its 
+In the example above, the infrastructure will assume that `my_load_test.task1` is a task function, because its
 configuration only contains the `weight` field.
 
 The infrastructure will consider both `my_load_test.factory1` and `my_load_test.factory1` task factories because
 they both have parameters other than `weight`. When the infrastructure considers that it deals with a factory it
 will call the factory passing it the configuration dictionary (e.g. `{"weight":2, "some_param":"some_ value"` for
 `factory1` and `{"xx": "some value"}` for 'factory2'). The result from the factory should be a task function, i.e.
-a `Callable[[TaskSet], Any]` . 
+a `Callable[[TaskSet], Any]` .
 
 
 ## wait_time
@@ -143,8 +143,8 @@ a `Callable[[TaskSet], Any]` .
 A locust configuration can receive a `wait_time` function that specifies the time a locust waits between
 task invocations (see Locust documentation https://docs.locust.io/en/stable/api.html#module-locust.wait_time).
 
-The load-tests infrastructure permits configuring wait_times with the 3 build in locust functions: `between`, `constant` 
+The load-tests infrastructure permits configuring wait_times with the 3 build in locust functions: `between`, `constant`
 and `constant_pacing` (see Locust documentation for details). The string value of the `wait_time` field will be passed
-as is to a python `eval` with the local environment configured with the three functions mentioned above. So something 
+as is to a python `eval` with the local environment configured with the three functions mentioned above. So something
 like `wait_time: between(0.1, 04)`  would work and would result in the task being configured with the function returned
 by `locust.between(0.1, 0.4)`.

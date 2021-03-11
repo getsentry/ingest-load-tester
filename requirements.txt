@@ -1,11 +1,11 @@
-locustio==0.14.6
+locust==1.4.3
 flask==1.1.2
 pyyaml
 sentry-sdk==0.14.3
-confluent-kafka==1.4.1
+confluent-kafka==1.6.0
 msgpack>=0.6.1,<0.7.0
 sentry-relay==0.5.9
 black==19.10b0
 mywsgi==1.0.3
-uWSGI==2.0.18
-greenlet==0.4.16
+uWSGI==2.0.19.1
+greenlet==1.0.0
