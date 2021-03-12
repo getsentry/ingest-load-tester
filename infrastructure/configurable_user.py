@@ -76,7 +76,9 @@ def _get_wait_time(locust_info):
     return eval(wait_expr, globals(), env_locals)
 
 
-def create_user_class(name, config_file_name, module_name, host=None, base_classes=None):
+def create_user_class(
+    name, config_file_name, module_name, host=None, base_classes=None
+):
     if base_classes is None:
         base_classes = (HttpUser,)
 
@@ -103,6 +105,7 @@ def create_user_class(name, config_file_name, module_name, host=None, base_class
         """
         Root class for a configurable User.
         """
+
         tasks = _tasks
         wait_time = _wait_time
         weight = _weight

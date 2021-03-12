@@ -44,9 +44,7 @@ def file_envelope_event_task_factory(task_params=None):
 
         envelope = Envelope()
         envelope.add_event(event)
-        return send_envelope(
-            user.client, project_info.id, project_info.key, envelope
-        )
+        return send_envelope(user.client, project_info.id, project_info.key, envelope)
 
     return inner
 
@@ -99,8 +97,6 @@ def random_envelope_event_task_factory(task_params=None):
         project_info = get_project_info(user)
         envelope = Envelope()
         envelope.add_event(event)
-        return send_envelope(
-            user.client, project_info.id, project_info.key, envelope
-        )
+        return send_envelope(user.client, project_info.id, project_info.key, envelope)
 
     return inner
