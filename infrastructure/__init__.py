@@ -10,7 +10,7 @@ from .config import (
     locust_config,
     generate_project_info,
 )
-from .configurable_locust import (
-    create_task_set,
-    create_locust_class,
+from .configurable_user import (
+    create_tasks,
+    create_user_class,
 )

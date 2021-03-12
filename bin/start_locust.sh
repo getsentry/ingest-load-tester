@@ -15,7 +15,7 @@ cleanup
 
 echo 'Starting Locust Workers...'
 for i in $(seq 1 $LOCUST_WORKERS); do
-    .venv/bin/locust -f ${LOCUST_FILE} --slave &
+    .venv/bin/locust -f ${LOCUST_FILE} --worker &
 done
 sleep 0.5
 

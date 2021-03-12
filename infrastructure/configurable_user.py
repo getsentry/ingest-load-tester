@@ -10,19 +10,19 @@ try:
 except ImportError:
     from yaml import Loader, Dumper, FullLoader
 
-from locust import TaskSet, HttpUser, constant, between, constant_pacing, Locust
+from locust import TaskSet, HttpUser, constant, between, constant_pacing, Locust, User
 
 
-def create_task_set(user_name, config, module_name):
-    task_set_config = config.get("task_set", {})
+def create_tasks(user_name, config, module_name):
 
-    tasks_info = task_set_config.get("tasks")
+    tasks_info = config.get("tasks")
+
     if isinstance(tasks_info, abc.Sequence):
         # we have a list of tasks with no params just load them
-        _tasks = [load_object(task_name, module_name) for task_name in tasks_info]
+        tasks = [load_object(task_name, module_name) for task_name in tasks_info]
     elif isinstance(tasks_info, abc.Mapping):
         # we have tasks with attributes
-        _tasks = {}
+        tasks = {}
         for task_func_name, task_info in tasks_info.items():
             if "weight" in task_info:
                 weight = task_info["weight"]
@@ -36,33 +36,19 @@ def create_task_set(user_name, config, module_name):
                 # we have other attributes besides frequency, the tasks are actually task factory functions
                 task_factory = load_object(task_func_name, module_name)
                 task = task_factory(task_info)
-                _tasks[task] = weight
+                tasks[task] = weight
             else:
                 task = load_object(task_func_name, module_name)
-                _tasks[task] = weight
+                tasks[task] = weight
     else:
         raise ValueError(
             "Could not find a tasks dictionary attribute for user_name", user_name
         )
 
-    if len(_tasks) == 0:
+    if len(tasks) == 0:
         raise ("User with 0 tasks enabled", user_name)
 
-    class ConfigurableTaskSet(TaskSet):
-        tasks = _tasks
-        params = tasks_info
-
-        def get_params(self):
-            return self.params
-
-        def get_locust_params(self):
-            parent = self.parent
-            while parent is not None:
-                if isinstance(parent, Locust):
-                    return parent.get_params()
-                parent = parent.parent
-
-    return ConfigurableTaskSet
+    return tasks
 
 
 def _get_wait_time(locust_info):
@@ -90,9 +76,7 @@ def _get_wait_time(locust_info):
     return eval(wait_expr, globals(), env_locals)
 
 
-def create_locust_class(
-    name, config_file_name, module_name, host=None, base_classes=None
-):
+def create_user_class(name, config_file_name, module_name, host=None, base_classes=None):
     if base_classes is None:
         base_classes = (HttpUser,)
 
@@ -107,19 +91,19 @@ def create_locust_class(
     if _weight == 0:
         return None  # locust is disabled don't bother loading it
 
-    _task_set = create_task_set(name, locust_info, module_name)
+    _tasks = create_tasks(name, locust_info, module_name)
+
     _wait_time = _get_wait_time(locust_info)
     if host is None:
         _host = relay_address()
     else:
         _host = host
 
-    class ConfigurableLocust(*base_classes):
+    class ConfigurableUser(*base_classes):
         """
-        Root class for a configurable Locust.
+        Root class for a configurable User.
         """
-
-        task_set = _task_set
+        tasks = _tasks
         wait_time = _wait_time
         weight = _weight
         params = locust_info
@@ -128,9 +112,9 @@ def create_locust_class(
         def get_params(self):
             return self.params
 
-    ConfigurableLocust.__name__ = name
+    ConfigurableUser.__name__ = name
 
-    return ConfigurableLocust
+    return ConfigurableUser
 
 
 @memoize
@@ -145,9 +129,11 @@ def _load_locust_config(file_name):
     return users
 
 
-def get_project_info(task_set: TaskSet) -> ProjectInfo:
+def get_project_info(user) -> ProjectInfo:
     """
     Returns a randomly chosen project info for the locust.
+
+    It assumes that the user is a ConfigurableUser derived object
 
     It expects a locust configuration with an entry for num_projects
     Something Like:
@@ -156,6 +142,6 @@ def get_project_info(task_set: TaskSet) -> ProjectInfo:
       SimpleLoadTest:
         num_projects: 10
     """
-    locust_params = task_set.get_locust_params()
+    locust_params = user.get_params()
     num_projects = locust_params.get("num_projects", 1)
     return generate_project_info(num_projects)
