@@ -13,6 +13,8 @@ from infrastructure import (
 )
 from infrastructure.configurable_user import get_project_info
 from infrastructure.generators.event import base_event_generator
+from infrastructure.generators.transaction import base_transaction_generator
+from infrastructure.generators.util import envelope_header_generator
 
 
 def file_event_task_factory(task_params=None):
@@ -57,7 +59,8 @@ def session_event_task_factory(task_params=None):
     session_data_tmpl = (
         '{{"sent_at":"{started}"}}\n'
         + '{{"type":"session"}}\n'
-        + '{{"init":true,"started":"{started}","status":"exited","errors":0,"duration":0,"attrs":{{"release":"{release}"}}}}'
+        + '{{"init":true,"started":"{started}","status":"exited","errors":0,"duration":0,"attrs":{{"release":"{'
+          'release}"}}}}'
     ).strip()
 
     def inner(user):
@@ -94,9 +97,30 @@ def random_envelope_event_task_factory(task_params=None):
 
     def inner(user):
         event = event_generator()
+
         project_info = get_project_info(user)
-        envelope = Envelope()
+        # push the current public key in params (this can't be hard coded)
+        header_params = {**task_params, "public_key": project_info.key, "event_id": event.get("event_id")}
+        headers = envelope_header_generator(**header_params)()
+        envelope = Envelope(headers=headers)
         envelope.add_event(event)
+        return send_envelope(user.client, project_info.id, project_info.key, envelope)
+
+    return inner
+
+
+def random_envelope_transaction_task_factory(task_params=None):
+    if task_params is None:
+        task_params = {}
+    transaction_generator = base_transaction_generator(**task_params)
+
+    def inner(user):
+        transaction = transaction_generator()
+        project_info = get_project_info(user)
+        header_params = {**task_params, "public_key": project_info.key, "event_id": transaction.get("event_id")}
+        headers = envelope_header_generator(**header_params)()
+        envelope = Envelope(headers=headers)
+        envelope.add_transaction(transaction)
         return send_envelope(user.client, project_info.id, project_info.key, envelope)
 
     return inner

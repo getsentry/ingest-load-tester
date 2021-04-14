@@ -28,8 +28,23 @@ users:
     num_projects: 10
     weight: 1
     tasks:
+      random_envelope_transaction_task_factory:
+        weight: 1
+        min_spans: 1
+        max_spans: 15
+        release: [ "2.0.0", "2.1.1" ]
+        trace_user_id: "user"
+        trace_user_segment: [ "vip","paid","free" ]
+        trace_environment: [ "debug","prod" ]
+        trace_relase: [ "1.0.0","1.1.1" ]
+
       random_envelope_event_task_factory:
-        weight: 0
+        weight: 1
+        # trace parameters are envelope specific
+        trace_user_id: "user"
+        trace_user_segment: [ "vip","paid","free" ]
+        trace_environment: [ "debug","prod" ]
+        trace_relase: [ "1.0.0","1.1.1" ]
         # This task generally accepts the same arguments as `random_event_task_factory`.
         with_level: true
         num_event_groups: 1

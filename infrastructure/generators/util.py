@@ -1,4 +1,5 @@
 import random
+import uuid
 
 
 def schema_generator(**fields):
@@ -137,5 +138,102 @@ def sentence_generator():
         predicate = random.choice(_predicate)
 
         return f"{article1} {subject} {predicate} {article2} {direct_object}."
+
+    return inner
+
+
+op_parts = [
+    "celery",
+    "task",
+    "redis",
+    "feature",
+    "flagr",
+    "has",
+    "nodestore",
+    "set_subkeys",
+    "sentry",
+    "reprocessing2",
+    "save_unprocessed_event",
+    "get_unprocessed_event",
+    "relay",
+    "actors",
+    "connector",
+    "controller",
+    "events",
+    "healthcheck",
+    "mod",
+    "outcome",
+    "project",
+    "project_cache",
+    "project_local",
+    "project_redis",
+    "project_upstream",
+    "relay",
+    "server",
+    "store",
+    "upstream",
+]
+
+
+def op_generator():
+    def inner():
+        num_segments = random.randrange(1, 5)
+        segments = []
+        while len(segments) < num_segments:
+            segment = random.choice(op_parts)
+            if segment not in segments:
+                segments.append(segment)
+        return ".".join(segments)
+
+    return inner
+
+
+def trace_generator(
+    trace_release=None,
+    trace_user_id=None,
+    trace_user_segment=None,
+    trace_environment=None,
+    public_key=None,
+    **kwargs
+):
+    """
+    Generates the trace header to be placed in an envelope header
+
+    """
+    if trace_user_id is not None or trace_user_segment is not None:
+        user_generator = {}
+        if trace_user_segment is not None:
+            user_generator["segment"] = trace_user_segment
+        if trace_user_id is not None:
+            user_generator["id"] = trace_user_id
+    else:
+        user_generator = None
+    return schema_generator(
+        release=trace_release,
+        user=user_generator,
+        environment=trace_environment,
+        trace_id=lambda: uuid.uuid4().hex,
+        public_key=public_key
+    )
+
+
+def envelope_header_generator(**kwargs):
+    event_id = kwargs.get("event_id")
+    return schema_generator(
+        event_id=event_id if event_id is not None else uuid_generator(),
+        trace=trace_generator(**kwargs)
+    )
+
+
+def span_id_generator():
+    def inner():
+        return uuid.uuid4().hex[0:16]
+
+    return inner
+
+
+def uuid_generator():
+    def inner():
+        return uuid.uuid4().hex
 
     return inner
