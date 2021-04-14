@@ -3,54 +3,52 @@ users:
     wait_time: between(1.1, 1.2)
     num_projects: 10
     weight: 0
-    task_set:
-      tasks:
-        accepted_outcome:
-          weight: 0
-        rate_limited_outcome:
-          weight: 0
-        random_outcome:
-          weight: 0
-        kafka_configurable_outcome_factory:
-          weight: 1
-          accepted: 0
-          filtered: 1
-          rate_limited: 0
-          invalid: 1
-          abuse: 0
+    tasks:
+      accepted_outcome:
+        weight: 0
+      rate_limited_outcome:
+        weight: 0
+      random_outcome:
+        weight: 0
+      kafka_configurable_outcome_factory:
+        weight: 1
+        accepted: 0
+        filtered: 1
+        rate_limited: 0
+        invalid: 1
+        abuse: 0
   Events:
     wait_time: constant(1)
     num_projects: 10
     weight: 1
-    task_set:
-      tasks:
-        random_kafka_event_task_factory:
-          weight: 1
-          send_outcome: true
-          with_level: true
+    tasks:
+      random_kafka_event_task_factory:
+        weight: 1
+        send_outcome: true
+        with_level: true
 
-          # How many issues to create.
-          num_event_groups: 10
+        # How many issues to create.
+        num_event_groups: 10
 
-          # Amount of users to generate, if null (~), users will just be
-          # entirely random IPv4 addresses.
-          max_users: ~
+        # Amount of users to generate, if null (~), users will just be
+        # entirely random IPv4 addresses.
+        max_users: ~
 
-          # Breadcrumb options
-          min_breadcrumbs: 0
-          max_breadcrumbs: 50
-          breadcrumb_categories: ~
-          breadcrumb_levels: ~
-          breadcrumb_types: ~
-          breadcrumb_messages: ~
+        # Breadcrumb options
+        min_breadcrumbs: 0
+        max_breadcrumbs: 50
+        breadcrumb_categories: ~
+        breadcrumb_levels: ~
+        breadcrumb_types: ~
+        breadcrumb_messages: ~
 
-          # Amount of random releases to generate.
-          num_releases: 10
+        # Amount of random releases to generate.
+        num_releases: 10
 
-          # Add a native stacktrace such that symbolicator is part of the
-          # equation. The debug files necessary for processing the stacktrace
-          # can be found in the native-images/ folder and can be uploaded with:
-          #
-          #   sentry-cli upload-dif . --org sentry --project internal
-          with_native_stacktrace: false
+        # Add a native stacktrace such that symbolicator is part of the
+        # equation. The debug files necessary for processing the stacktrace
+        # can be found in the native-images/ folder and can be uploaded with:
+        #
+        #   sentry-cli upload-dif . --org sentry --project internal
+        with_native_stacktrace: false
 

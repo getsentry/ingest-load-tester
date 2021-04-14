@@ -36,6 +36,7 @@ def base_event_generator(
     release=None,
     min_frames=5,
     max_frames=30,
+    **kwargs,
 ):
     event_generator = schema_generator(
         event_id=(lambda: uuid.uuid4().hex) if with_event_id else None,

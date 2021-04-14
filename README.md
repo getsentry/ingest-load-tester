@@ -91,6 +91,4 @@ example below (that starts 4 users, with a spawn rate of 2 per second and runs f
 
     .venv/bin/locust -f kafka_consumers_locustfile.py --no-web -u 4 -r 2 --run-time 20s --stop-timeout 10
 
-Please consult the locust documentation for details: https://docs.locust.io/en/0.14.6/running-locust-without-web-ui.html
-
-**Note:** At the moment (18.05.2020) we are using locust 0.14.6, which is not the latest version and has slightly different Python API and CLI.
+Please consult the locust documentation for details: https://docs.locust.io/en/1.4.3/running-locust-without-web-ui.html

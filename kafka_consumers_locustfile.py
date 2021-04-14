@@ -1,11 +1,11 @@
 """
 Load test for kafka consumer
 """
-from locust import Locust
+from locust import User
 
 from infrastructure import (
     full_path_from_module_relative_path,
-    create_locust_class,
+    create_user_class,
 )
 from infrastructure.kafka import KafkaProducerMixin, Outcome
 from tasks.kafka_tasks import (
@@ -24,9 +24,9 @@ random_kafka_event_task_factory = random_kafka_event_task_factory
 _config_path = full_path_from_module_relative_path(
     __file__, "config/kafka_consumers.test.yml"
 )
-Outcomes = create_locust_class(
-    "Outcomes", _config_path, __name__, base_classes=(Locust, KafkaProducerMixin)
+Outcomes = create_user_class(
+    "Outcomes", _config_path, __name__, base_classes=(User, KafkaProducerMixin)
 )
-Events = create_locust_class(
-    "Events", _config_path, __name__, base_classes=(Locust, KafkaProducerMixin)
+Events = create_user_class(
+    "Events", _config_path, __name__, base_classes=(User, KafkaProducerMixin)
 )
