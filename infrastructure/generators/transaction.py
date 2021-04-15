@@ -1,18 +1,20 @@
 import random
 import time
 
-from infrastructure.generators.contexts import os_context_generator, device_context_generator, trace_context_generator
+from infrastructure.generators.contexts import (
+    os_context_generator,
+    device_context_generator,
+    trace_context_generator,
+)
 from infrastructure.generators.util import (
-    schema_generator, op_generator, span_id_generator, uuid_generator,
+    schema_generator,
+    op_generator,
+    span_id_generator,
+    uuid_generator,
 )
 
 
-def base_transaction_generator(
-    release=None,
-    min_spans=1,
-    max_spans=15,
-    **kwargs
-):
+def base_transaction_generator(release=None, min_spans=1, max_spans=15, **kwargs):
     return schema_generator(
         event_id=uuid_generator(),
         release=lambda: random.choice(release) if release is not None else None,
@@ -25,7 +27,7 @@ def base_transaction_generator(
         },
         culprit=op_generator(),
         environment=["prod", "debug"],
-        spans=spans_generator(min=min_spans, max=max_spans)
+        spans=spans_generator(min=min_spans, max=max_spans),
     )
 
 
@@ -49,5 +51,5 @@ def span_generator():
         op=op_generator(),
         span_id=span_id_generator(),
         parent_span_id=span_id_generator(),
-        same_process_as_parent=[True, False]
+        same_process_as_parent=[True, False],
     )

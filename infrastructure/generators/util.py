@@ -194,8 +194,8 @@ def trace_generator(
     trace_user_segment=None,
     trace_environment=None,
     public_key=None,
-    trace_id= None,
-    **kwargs
+    trace_id=None,
+    **kwargs,
 ):
     """
     Generates the trace header to be placed in an envelope header
@@ -217,15 +217,12 @@ def trace_generator(
         user=user_generator,
         environment=trace_environment,
         trace_id=trace_id,
-        public_key=public_key
+        public_key=public_key,
     )
 
 
 def envelope_header_generator(event_id=None, **kwargs):
-    return schema_generator(
-        event_id=event_id,
-        trace=trace_generator(**kwargs)
-    )
+    return schema_generator(event_id=event_id, trace=trace_generator(**kwargs))
 
 
 def span_id_generator():

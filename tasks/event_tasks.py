@@ -104,7 +104,7 @@ def random_envelope_event_task_factory(task_params=None):
             **task_params,
             "public_key": project_info.key,
             "event_id": event.get("event_id"),
-            "trace_id": get_at_path(event,"contexts.trace.trace_id"),
+            "trace_id": get_at_path(event, "contexts.trace.trace_id"),
         }
         headers = envelope_header_generator(**header_params)()
         envelope = Envelope(headers=headers)
@@ -126,7 +126,7 @@ def random_envelope_transaction_task_factory(task_params=None):
             **task_params,
             "public_key": project_info.key,
             "event_id": transaction.get("event_id"),
-            "trace_id": get_at_path(transaction,"contexts.trace.trace_id"),
+            "trace_id": get_at_path(transaction, "contexts.trace.trace_id"),
         }
         headers = envelope_header_generator(**header_params)()
         envelope = Envelope(headers=headers)

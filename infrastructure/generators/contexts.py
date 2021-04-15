@@ -2,7 +2,10 @@ import time
 import random
 
 from infrastructure.generators.util import (
-    schema_generator, version_generator, op_generator, uuid_generator,
+    schema_generator,
+    version_generator,
+    op_generator,
+    uuid_generator,
     span_id_generator,
 )
 
@@ -55,16 +58,14 @@ def os_context_generator():
         type="os",
         rooted=[True, False],
         kernel_version="Linux version 3.10.0+ (bjoernj@bjoernj.mtv.corp.google.com) (gcc version 4.9.x 20150123 ("
-                       "prerelease) (GCC) ) #256 SMP PREEMPT Fri May 19 11:58:12 PDT 2017",
+        "prerelease) (GCC) ) #256 SMP PREEMPT Fri May 19 11:58:12 PDT 2017",
         version=version_generator(3),
         build="sdk_google_phone_x86-userdebug 7.1.1 NYC 5464897 test-keys",
         name=["Android", "NookPhone"],
     )
 
 
-def trace_context_generator(
-    trace_id=None
-):
+def trace_context_generator(trace_id=None):
     if trace_id is None:
         trace_id = uuid_generator()
 

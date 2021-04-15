@@ -5,13 +5,15 @@ import random
 from infrastructure.generators.javascript_frames import javascript_exception_generator
 from infrastructure.generators.util import (
     schema_generator,
-    sentence_generator, uuid_generator,
+    sentence_generator,
+    uuid_generator,
 )
 from infrastructure.generators.user import user_interface_generator
 from infrastructure.generators.contexts import (
     os_context_generator,
     device_context_generator,
-    app_context_generator, trace_context_generator,
+    app_context_generator,
+    trace_context_generator,
 )
 from infrastructure.generators.breadcrumbs import breadcrumb_generator
 from infrastructure.generators.native import native_data_generator
@@ -58,7 +60,7 @@ def base_event_generator(
             "os": [None, os_context_generator()],
             "device": [None, device_context_generator()],
             "app": [None, app_context_generator()],
-            "trace":[None, trace_context_generator(trace_id=trace_id)],
+            "trace": [None, trace_context_generator(trace_id=trace_id)],
         },
         breadcrumbs=breadcrumb_generator(
             min=min_breadcrumbs,
