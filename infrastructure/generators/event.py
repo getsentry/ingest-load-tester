@@ -5,7 +5,7 @@ import random
 from infrastructure.generators.javascript_frames import javascript_exception_generator
 from infrastructure.generators.util import (
     schema_generator,
-    sentence_generator,
+    sentence_generator, uuid_generator,
 )
 from infrastructure.generators.user import user_interface_generator
 from infrastructure.generators.contexts import (
@@ -38,6 +38,7 @@ def base_event_generator(
     max_frames=30,
     **kwargs,
 ):
+    trace_id = uuid_generator()()
     event_generator = schema_generator(
         event_id=(lambda: uuid.uuid4().hex) if with_event_id else None,
         level=["error", "debug"] if with_level else None,
@@ -57,7 +58,7 @@ def base_event_generator(
             "os": [None, os_context_generator()],
             "device": [None, device_context_generator()],
             "app": [None, app_context_generator()],
-            "trace":[None, trace_context_generator()],
+            "trace":[None, trace_context_generator(trace_id=trace_id)],
         },
         breadcrumbs=breadcrumb_generator(
             min=min_breadcrumbs,

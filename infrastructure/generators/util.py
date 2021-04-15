@@ -194,6 +194,7 @@ def trace_generator(
     trace_user_segment=None,
     trace_environment=None,
     public_key=None,
+    trace_id= None,
     **kwargs
 ):
     """
@@ -208,19 +209,21 @@ def trace_generator(
             user_generator["id"] = trace_user_id
     else:
         user_generator = None
+    if trace_id is None:
+        trace_id = uuid_generator()
+
     return schema_generator(
         release=trace_release,
         user=user_generator,
         environment=trace_environment,
-        trace_id=lambda: uuid.uuid4().hex,
+        trace_id=trace_id,
         public_key=public_key
     )
 
 
-def envelope_header_generator(**kwargs):
-    event_id = kwargs.get("event_id")
+def envelope_header_generator(event_id=None, **kwargs):
     return schema_generator(
-        event_id=event_id if event_id is not None else uuid_generator(),
+        event_id=event_id,
         trace=trace_generator(**kwargs)
     )
 

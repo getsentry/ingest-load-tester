@@ -62,13 +62,17 @@ def os_context_generator():
     )
 
 
-def trace_context_generator():
+def trace_context_generator(
+    trace_id=None
+):
+    if trace_id is None:
+        trace_id = uuid_generator()
+
     return schema_generator(
-        trace_id=uuid_generator(),
+        trace_id=trace_id,
         span_id=span_id_generator(),
         parent_span_id=span_id_generator(),
         op=op_generator(),
         status="ok",
         type="trace",
     )
-

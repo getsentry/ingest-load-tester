@@ -15,7 +15,6 @@ def base_transaction_generator(
 ):
     return schema_generator(
         event_id=uuid_generator(),
-        trace_id=uuid_generator(),
         release=lambda: random.choice(release) if release is not None else None,
         timestamp=time.time,
         start_timestamp=time.time,
