@@ -14,12 +14,14 @@ from infrastructure.generators.util import (
 )
 
 
-def base_transaction_generator(release=None, min_spans=1, max_spans=15, **kwargs):
+def base_transaction_generator(release=None, min_spans=1, max_spans=15, max_duration_secs=30, **kwargs):
     return schema_generator(
         event_id=uuid_generator(),
-        release=lambda: random.choice(release) if release is not None else None,
+        type="transaction",
+        version="7",
+        release=release,
         timestamp=time.time,
-        start_timestamp=time.time,
+        start_timestamp=lambda: time.time() - 0.001 - random.randrange(0, max_duration_secs),
         contexts={
             "os": [None, os_context_generator()],
             "device": [None, device_context_generator()],
