@@ -72,7 +72,10 @@ def generate_project_info(num_projects) -> ProjectInfo:
 
     if use_fake_projects:
         project_id = project_idx + 1
-        project_key = config["fake_projects"]["key"]
+        project_key_base = config["fake_projects"]["key"]
+        project_key = hex(int(project_key_base, 16) + project_id)[2:].rjust(
+            len(project_key_base), "0"
+        )[: len(project_key_base)]
     else:
         project_cfg = config["projects"][project_idx]
         project_id = project_cfg["id"]
