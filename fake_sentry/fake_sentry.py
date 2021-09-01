@@ -213,10 +213,12 @@ def configure_app(config):
 
     @app.route("/api/0/relays/projectconfigs/", methods=["POST"])
     def get_project_config():
+        assert flask_request.args.get("version") == "2"
         rv = {}
-        for project_id in flask_request.json["projects"]:
-            app.logger.debug("getting project config for: {}".format(project_id))
-            rv[project_id] = sentry.full_project_config()
+        for public_key in flask_request.json["publicKeys"]:
+            app.logger.debug("getting project config for: {}".format(public_key))
+            rv[public_key] = sentry.full_project_config()
+            rv[public_key]["publicKeys"][0]["publicKey"] = public_key
         return jsonify(configs=rv)
 
     @app.route("/api/0/relays/publickeys/", methods=["POST"])
