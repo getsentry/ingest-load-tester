@@ -1,8 +1,10 @@
+import atexit
 import datetime
+import gzip
 from infrastructure.config import locust_config
+import json
 import logging
 import os
-import random
 import resource
 import time
 import threading
@@ -37,6 +39,7 @@ class Sentry(object):
         self.dsn_public_key = dns_public_key
 
         self._key_base = int(locust_config()["fake_projects"]["key"], base=16)
+        self._metrics = {}
 
     @property
     def url(self):
@@ -182,6 +185,11 @@ def run_blocking_fake_sentry(config):
         app.run(host=host, port=port)
 
 
+_metrics_stats = {
+    "buckets_collected": 0,
+}
+
+
 def configure_app(config):
     # Raise the max number of open files
     current_limits = resource.getrlimit(resource.RLIMIT_NOFILE)
@@ -247,7 +255,8 @@ def configure_app(config):
     @app.route("/api/<project_id>/envelope/", methods=["POST"])
     def store_envelope(project_id):
         _log.debug(
-            f"In envelope: '{request.full_path}', request size: {len(request.data)}")
+            f"In envelope: '{request.full_path}'")
+        _parse_metrics(request.data)
         return jsonify({"event_id": str(uuid.uuid4().hex)})
 
     @app.route("/<path:u_path>", methods=["POST", "GET"])
@@ -270,7 +279,29 @@ def configure_app(config):
         app.logger.error("Fake sentry error generated error:\n{}".format(e))
         abort(400)
 
+    atexit.register(_summarize_metrics)
+
     return app
+
+
+def _parse_metrics(data):
+    data = gzip.decompress(data)
+    expect_buckets = False
+    for line in data.splitlines():
+        try:
+            content = json.loads(line)
+        except ValueError:
+            pass
+        else:
+            if expect_buckets:
+                _metrics_stats["buckets_collected"] += len(content)
+                expect_buckets = False
+            elif content.get("type") == "metric_buckets":
+                expect_buckets = True
+
+
+def _summarize_metrics():
+    print(_metrics_stats)
 
 
 def _get_config():
