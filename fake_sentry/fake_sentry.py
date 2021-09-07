@@ -1,6 +1,8 @@
 import datetime
+from infrastructure.config import locust_config
 import logging
 import os
+import random
 import resource
 import time
 import threading
@@ -33,6 +35,8 @@ class Sentry(object):
         self.test_failures = []
         self.upstream = None
         self.dsn_public_key = dns_public_key
+
+        self._key_base = int(locust_config()["fake_projects"]["key"], base=16)
 
     @property
     def url(self):
@@ -107,11 +111,11 @@ class Sentry(object):
             "slug": "python",
         }
 
-    def full_project_config(self):
+    def full_project_config(self, project_key):
         basic = self.basic_project_config()
         full = {
             "organizationId": 1,
-            "projectId": 1,
+            "projectId": self._project_id(project_key),
             "config": {
                 "excludeFields": [],
                 "filterSettings": {},
@@ -134,6 +138,9 @@ class Sentry(object):
             **full,
             "config": {**basic["config"], **full["config"]},
         }
+
+    def _project_id(self, project_key):
+        return int(project_key, base=16) - self._key_base
 
     @property
     def internal_error_dsn(self):
@@ -218,8 +225,9 @@ def configure_app(config):
         assert flask_request.args.get("version") == "2"
         rv = {}
         for public_key in flask_request.json["publicKeys"]:
-            app.logger.debug("getting project config for: {}".format(public_key))
-            rv[public_key] = sentry.full_project_config()
+            app.logger.debug(
+                "getting project config for: {}".format(public_key))
+            rv[public_key] = sentry.full_project_config(public_key)
             rv[public_key]["publicKeys"][0]["publicKey"] = public_key
         return jsonify(configs=rv)
 
@@ -232,9 +240,14 @@ def configure_app(config):
         return jsonify(public_keys=rv)
 
     @app.route("/api/<project_id>/store/", methods=["POST", "GET"])
-    @app.route("/api/<project_id>/envelope/", methods=["POST"])
     def store_all(project_id):
         _log.debug(f"In store: '{request.full_path}'")
+        return jsonify({"event_id": str(uuid.uuid4().hex)})
+
+    @app.route("/api/<project_id>/envelope/", methods=["POST"])
+    def store_envelope(project_id):
+        _log.debug(
+            f"In envelope: '{request.full_path}', request size: {len(request.data)}")
         return jsonify({"event_id": str(uuid.uuid4().hex)})
 
     @app.route("/<path:u_path>", methods=["POST", "GET"])
