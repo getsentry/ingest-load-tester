@@ -111,6 +111,7 @@ class Sentry(object):
         basic = self.basic_project_config()
         full = {
             "organizationId": 1,
+            "projectId": 1,
             "config": {
                 "excludeFields": [],
                 "filterSettings": {},
@@ -124,6 +125,7 @@ class Sentry(object):
                 },
                 "blacklistedIps": ["127.43.33.22"],
                 "trustedRelays": [],
+                "features": ["organizations:metrics-extraction"],
             },
         }
 
