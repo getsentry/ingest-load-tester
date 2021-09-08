@@ -235,8 +235,7 @@ def configure_app(config):
         assert flask_request.args.get("version") == "2"
         rv = {}
         for public_key in flask_request.json["publicKeys"]:
-            app.logger.debug(
-                "getting project config for: {}".format(public_key))
+            app.logger.debug("getting project config for: {}".format(public_key))
             rv[public_key] = sentry.full_project_config(public_key)
             rv[public_key]["publicKeys"][0]["publicKey"] = public_key
         return jsonify(configs=rv)
@@ -256,8 +255,7 @@ def configure_app(config):
 
     @app.route("/api/<project_id>/envelope/", methods=["POST"])
     def store_envelope(project_id):
-        _log.debug(
-            f"In envelope: '{request.full_path}'")
+        _log.debug(f"In envelope: '{request.full_path}'")
         _parse_metrics(request.data)
         return jsonify({"event_id": str(uuid.uuid4().hex)})
 
