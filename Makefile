@@ -57,6 +57,7 @@ setup-venv: .venv/bin/python
 .venv/bin/python:
 	@rm -rf .venv
 	$$PYTHON_VERSION -m venv .venv
+	which .venv/bin/pip || .venv/bin/easy_install pip  # debian
 	.venv/bin/pip install -U -r requirements.txt
 
 format: setup-venv
