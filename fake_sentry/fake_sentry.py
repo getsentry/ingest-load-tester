@@ -1,4 +1,8 @@
+import atexit
 import datetime
+import gzip
+from infrastructure.config import locust_config
+import json
 import logging
 import os
 import resource
@@ -33,6 +37,9 @@ class Sentry(object):
         self.test_failures = []
         self.upstream = None
         self.dsn_public_key = dns_public_key
+
+        self._key_base = int(locust_config()["fake_projects"]["key"], base=16)
+        self._metrics = {}
 
     @property
     def url(self):
@@ -107,10 +114,11 @@ class Sentry(object):
             "slug": "python",
         }
 
-    def full_project_config(self):
+    def full_project_config(self, project_key):
         basic = self.basic_project_config()
         full = {
             "organizationId": 1,
+            "projectId": self._project_id(project_key),
             "config": {
                 "excludeFields": [],
                 "filterSettings": {},
@@ -127,11 +135,17 @@ class Sentry(object):
             },
         }
 
+        if locust_config()["fake_projects"].get("enable_metrics_extraction"):
+            full["config"]["features"] = ["organizations:metrics-extraction"]
+
         return {
             **basic,
             **full,
             "config": {**basic["config"], **full["config"]},
         }
+
+    def _project_id(self, project_key):
+        return int(project_key, base=16) - self._key_base
 
     @property
     def internal_error_dsn(self):
@@ -171,6 +185,11 @@ def run_blocking_fake_sentry(config):
         )
     else:
         app.run(host=host, port=port)
+
+
+_metrics_stats = {
+    "buckets_collected": 0,
+}
 
 
 def configure_app(config):
@@ -217,7 +236,7 @@ def configure_app(config):
         rv = {}
         for public_key in flask_request.json["publicKeys"]:
             app.logger.debug("getting project config for: {}".format(public_key))
-            rv[public_key] = sentry.full_project_config()
+            rv[public_key] = sentry.full_project_config(public_key)
             rv[public_key]["publicKeys"][0]["publicKey"] = public_key
         return jsonify(configs=rv)
 
@@ -230,9 +249,14 @@ def configure_app(config):
         return jsonify(public_keys=rv)
 
     @app.route("/api/<project_id>/store/", methods=["POST", "GET"])
-    @app.route("/api/<project_id>/envelope/", methods=["POST"])
     def store_all(project_id):
         _log.debug(f"In store: '{request.full_path}'")
+        return jsonify({"event_id": str(uuid.uuid4().hex)})
+
+    @app.route("/api/<project_id>/envelope/", methods=["POST"])
+    def store_envelope(project_id):
+        _log.debug(f"In envelope: '{request.full_path}'")
+        _parse_metrics(request.data)
         return jsonify({"event_id": str(uuid.uuid4().hex)})
 
     @app.route("/<path:u_path>", methods=["POST", "GET"])
@@ -255,7 +279,30 @@ def configure_app(config):
         app.logger.error("Fake sentry error generated error:\n{}".format(e))
         abort(400)
 
+    if locust_config()["fake_projects"].get("enable_metrics_extraction"):
+        atexit.register(_summarize_metrics)
+
     return app
+
+
+def _parse_metrics(data):
+    data = gzip.decompress(data)
+    expect_buckets = False
+    for line in data.splitlines():
+        try:
+            content = json.loads(line)
+        except ValueError:
+            pass
+        else:
+            if expect_buckets:
+                _metrics_stats["buckets_collected"] += len(content)
+                expect_buckets = False
+            elif content.get("type") == "metric_buckets":
+                expect_buckets = True
+
+
+def _summarize_metrics():
+    print(_metrics_stats)
 
 
 def _get_config():

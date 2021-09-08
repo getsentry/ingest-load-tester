@@ -3,6 +3,7 @@ Contains tasks that generate various types of events
 """
 import json
 from datetime import datetime
+import random
 
 from sentry_sdk.envelope import Envelope
 
@@ -57,13 +58,15 @@ def session_event_task_factory(task_params=None):
     session_data_tmpl = (
         '{{"sent_at":"{started}"}}\n'
         + '{{"type":"session"}}\n'
-        + '{{"init":true,"started":"{started}","status":"exited","errors":0,"duration":0,"attrs":{{"release":"{release}"}}}}'
+        + '{{"init":true,"started":"{started}","status":"exited","errors":0,"duration":{duration},"attrs":{{"release":"{release}"}}}}'
     ).strip()
 
     def inner(user):
         project_info = get_project_info(user)
         started = datetime.utcnow().isoformat()[:-3] + "Z"
-        session_data = session_data_tmpl.format(release=release, started=started)
+        session_data = session_data_tmpl.format(
+            release=release, started=started, duration=random.random()
+        )
 
         return send_session(
             user.client, project_info.id, project_info.key, session_data

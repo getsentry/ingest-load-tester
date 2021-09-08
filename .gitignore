@@ -2,3 +2,4 @@
 Brewfile.lock.json
 config/
 .idea
+__pycache__
