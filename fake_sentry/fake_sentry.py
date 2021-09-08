@@ -132,9 +132,11 @@ class Sentry(object):
                 },
                 "blacklistedIps": ["127.43.33.22"],
                 "trustedRelays": [],
-                "features": ["organizations:metrics-extraction"],
             },
         }
+
+        if locust_config()["fake_projects"].get("enable_metrics_extraction"):
+            full["config"]["features"] = ["organizations:metrics-extraction"]
 
         return {
             **basic,
@@ -279,7 +281,8 @@ def configure_app(config):
         app.logger.error("Fake sentry error generated error:\n{}".format(e))
         abort(400)
 
-    atexit.register(_summarize_metrics)
+    if locust_config()["fake_projects"].get("enable_metrics_extraction"):
+        atexit.register(_summarize_metrics)
 
     return app
 
