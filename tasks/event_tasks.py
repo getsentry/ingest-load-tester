@@ -51,7 +51,9 @@ def file_envelope_event_task_factory(task_params=None):
 
 
 def session_event_task_factory(task_params=None):
-    configured_release = task_params.pop("release")
+    release = task_params.pop("release")
+    if not release:
+        raise ValueError("'release' parameter is required")
 
     session_data_tmpl = (
         '{{"sent_at":"{started}"}}\n'
@@ -60,7 +62,6 @@ def session_event_task_factory(task_params=None):
     ).strip()
 
     def inner(user):
-        release = configured_release or random.randint(0, 999999)
         project_info = get_project_info(user)
         started = datetime.utcnow().isoformat()[:-3] + "Z"
         session_data = session_data_tmpl.format(
