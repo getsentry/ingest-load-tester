@@ -15,7 +15,6 @@ kafka:
     sessions: ingest-sessions
 
 fake_projects:
-  key: "31a5a894b4524f74a9a8d0e27e21ba91"
   enable_metrics_extraction: false
 projects:
   #list here all the valid projects with their public keys (not used in fake_sentry mode)

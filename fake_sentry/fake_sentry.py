@@ -12,9 +12,10 @@ import uuid
 from queue import Queue
 from yaml import load
 from logging.config import dictConfig
+from pprint import pformat
 
 import mywsgi
-from flask import Flask, request as flask_request, jsonify, abort, request
+from flask import Flask, request as flask_request, jsonify, abort
 
 try:
     from yaml import CFullLoader as FullLoader
@@ -37,8 +38,6 @@ class Sentry(object):
         self.test_failures = []
         self.upstream = None
         self.dsn_public_key = dns_public_key
-
-        self._key_base = int(locust_config()["fake_projects"]["key"], base=16)
         self._metrics = {}
 
     @property
@@ -86,13 +85,15 @@ class Sentry(object):
             else:
                 yield from self.upstream.iter_public_keys()
 
-    def basic_project_config(self):
-        return {
+    def full_project_config(self, project_key):
+        project_id = _project_id_form_project_key(project_key)
+
+        ret_val = {
             "publicKeys": [
                 {
-                    "publicKey": self.dsn_public_key,
+                    "publicKey": project_key,
                     "isEnabled": True,
-                    "numericId": 123,
+                    "numericId": project_id,
                     "quotas": [],
                 }
             ],
@@ -100,9 +101,11 @@ class Sentry(object):
             "disabled": False,
             "lastFetch": datetime.datetime.utcnow().isoformat() + "Z",
             "lastChange": datetime.datetime.utcnow().isoformat() + "Z",
+            "slug": "python",
+            "organizationId": 1,
+            "projectId": project_id,
             "config": {
                 "allowedDomains": ["*"],
-                "trustedRelays": list(self.iter_public_keys()),
                 "piiConfig": {
                     "rules": {},
                     "applications": {
@@ -110,16 +113,6 @@ class Sentry(object):
                         "$object": ["@password"],
                     },
                 },
-            },
-            "slug": "python",
-        }
-
-    def full_project_config(self, project_key):
-        basic = self.basic_project_config()
-        full = {
-            "organizationId": 1,
-            "projectId": self._project_id(project_key),
-            "config": {
                 "excludeFields": [],
                 "filterSettings": {},
                 "scrubIpAddresses": False,
@@ -136,16 +129,9 @@ class Sentry(object):
         }
 
         if locust_config()["fake_projects"].get("enable_metrics_extraction"):
-            full["config"]["features"] = ["organizations:metrics-extraction"]
+            ret_val["config"]["features"] = ["organizations:metrics-extraction"]
 
-        return {
-            **basic,
-            **full,
-            "config": {**basic["config"], **full["config"]},
-        }
-
-    def _project_id(self, project_key):
-        return int(project_key, base=16) - self._key_base
+        return ret_val
 
     @property
     def internal_error_dsn(self):
@@ -234,10 +220,12 @@ def configure_app(config):
     def get_project_config():
         assert flask_request.args.get("version") == "2"
         rv = {}
+        _log.debug(f"f project configs request:\n{pformat(flask_request.json)}")
         for public_key in flask_request.json["publicKeys"]:
             app.logger.debug("getting project config for: {}".format(public_key))
             rv[public_key] = sentry.full_project_config(public_key)
-            rv[public_key]["publicKeys"][0]["publicKey"] = public_key
+            rv[public_key]["publicKeys"][0]["publicKey"] = public_key  # RaduW NOT sure why this was here
+        _log.debug(f"f project configs returning:\n{pformat(rv,indent=4)}")
         return jsonify(configs=rv)
 
     @app.route("/api/0/relays/publickeys/", methods=["POST"])
@@ -250,13 +238,13 @@ def configure_app(config):
 
     @app.route("/api/<project_id>/store/", methods=["POST", "GET"])
     def store_all(project_id):
-        _log.debug(f"In store: '{request.full_path}'")
+        _log.debug(f"In store: '{flask_request.full_path}'")
         return jsonify({"event_id": str(uuid.uuid4().hex)})
 
     @app.route("/api/<project_id>/envelope/", methods=["POST"])
     def store_envelope(project_id):
-        _log.debug(f"In envelope: '{request.full_path}'")
-        _parse_metrics(request.data)
+        _log.debug(f"In envelope: '{flask_request.full_path}'")
+        _parse_metrics(flask_request.data)
         return jsonify({"event_id": str(uuid.uuid4().hex)})
 
     @app.route("/<path:u_path>", methods=["POST", "GET"])
@@ -303,6 +291,38 @@ def _parse_metrics(data):
 
 def _summarize_metrics():
     print(_metrics_stats)
+
+
+def _project_id_form_project_key(project_key: str) -> int:
+    """
+    Recover the project id from a fake project key.
+
+    The project id is at the end of the string and
+    is preceded by at least one non numeric char.
+
+    >>> _project_id_form_project_key("abc1234")
+    1234
+    >>> _project_id_form_project_key("234")
+    234
+    >>> _project_id_form_project_key("")
+    0
+    >>> _project_id_form_project_key("")
+    0
+    >>> _project_id_form_project_key("abc")
+    0
+    >>> _project_id_form_project_key("123abc332def444")
+    444
+    """
+    for idx, ch in enumerate(project_key[::-1]):
+        if ch not in {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}:
+            if idx == 0:
+                return 0
+            return int(project_key[-idx:])
+
+    if len(project_key) > 0:
+        return int(project_key)
+    else:
+        return 0
 
 
 def _get_config():

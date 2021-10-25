@@ -72,16 +72,31 @@ def generate_project_info(num_projects) -> ProjectInfo:
 
     if use_fake_projects:
         project_id = project_idx + 1
-        project_key_base = config["fake_projects"]["key"]
-        project_key = hex(int(project_key_base, 16) + project_id)[2:].rjust(
-            len(project_key_base), "0"
-        )[: len(project_key_base)]
+        project_key = project_id_to_fake_project_key(project_id)
     else:
         project_cfg = config["projects"][project_idx]
         project_id = project_cfg["id"]
         project_key = project_cfg["key"]
 
     return ProjectInfo(id=project_id, key=project_key)
+
+
+def project_id_to_fake_project_key(proj_id: int) -> str:
+    """
+    Creates a fake project key from a project id ( with a simple
+    convention that can be easily reversed by the fake sentry to obtain
+    the project id ( the project id is at the end of the string and
+    is preceded by at least one non numeric char).
+
+    >>> project_id_to_fake_project_key(123)
+    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaa123'
+    >>> project_id_to_fake_project_key(1)
+    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1'
+    """
+    proj_key_len = 32  # this is the length of our project keys
+    return str(proj_id)[:proj_key_len].rjust(proj_key_len, "a")
+
+
 
 
 def _config_file_path():
