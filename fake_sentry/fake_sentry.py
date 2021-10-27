@@ -13,6 +13,7 @@ from queue import Queue
 from yaml import load
 from logging.config import dictConfig
 from pprint import pformat
+from sentry_sdk.envelope import Envelope
 
 import mywsgi
 from flask import Flask, request as flask_request, jsonify, abort
@@ -244,7 +245,16 @@ def configure_app(config):
     @app.route("/api/<project_id>/envelope/", methods=["POST"])
     def store_envelope(project_id):
         _log.debug(f"In envelope: '{flask_request.full_path}'")
-        _parse_metrics(flask_request.data)
+        assert (
+            flask_request.headers.get("Content-Encoding", "") == "gzip"
+        ), "Relay should always compress store requests"
+        data = gzip.decompress(flask_request.data)
+        assert (
+            flask_request.headers.get("Content-Type") == "application/x-sentry-envelope"
+        ), "Relay sent us non-envelope data to store"
+
+        envelope = Envelope.deserialize(data)
+        _parse_metrics(envelope)
         return jsonify({"event_id": str(uuid.uuid4().hex)})
 
     @app.route("/<path:u_path>", methods=["POST", "GET"])
@@ -273,20 +283,12 @@ def configure_app(config):
     return app
 
 
-def _parse_metrics(data):
-    data = gzip.decompress(data)
-    expect_buckets = False
-    for line in data.splitlines():
-        try:
-            content = json.loads(line)
-        except ValueError:
-            pass
-        else:
-            if expect_buckets:
-                _metrics_stats["buckets_collected"] += len(content)
-                expect_buckets = False
-            elif content.get("type") == "metric_buckets":
-                expect_buckets = True
+def _parse_metrics(envelope):
+    for item in envelope:
+        if item.type == "metric_buckets":
+            content = item.payload.json
+            print( content)
+            _metrics_stats["buckets_collected"] += len(content)
 
 
 def _summarize_metrics():
