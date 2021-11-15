@@ -2,4 +2,5 @@
 Brewfile.lock.json
 config/
 .idea
+.vscode
 __pycache__
