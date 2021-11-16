@@ -6,7 +6,7 @@ if [[ -n "$(git status --porcelain)" ]]; then
   exit 1
 fi
 
-IMAGE="us.gcr.io/sentryio/fake-sentry"
+IMAGE="us.gcr.io/sentryio/ingest-load-tester"
 TAG=$(git rev-parse HEAD)
 
 docker build -t $IMAGE:$TAG .
