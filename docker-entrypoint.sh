@@ -16,7 +16,8 @@ elif [[ "$COMMAND" == "run-master" ]]; then
   exec locust -f "${LOCUST_FILE}" --master
 elif [[ "$COMMAND" == "run-worker" ]]; then
   echo "Starting locust-worker..."
-  exec locust -f "${LOCUST_FILE}" --worker
+  export MASTER_HOST=${MASTER_HOST:-127.0.0.1}
+  exec locust -f "${LOCUST_FILE}" --master-host "${MASTER_HOST}" --worker
 else
   echo "Invalid component. What do you want to run?"
   exit 1
