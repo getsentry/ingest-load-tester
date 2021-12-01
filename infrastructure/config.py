@@ -34,6 +34,16 @@ def kafka_config():
     config = locust_config()
     return config.get("kafka", {})
 
+@memoize
+def get_metrics_config():
+    config = locust_config()
+    return config.get("metrics", {})
+
+@memoize
+def metrics_enabled():
+    metrics = get_metrics_config()
+    return metrics.get("enabled", False)
+
 
 @memoize
 def locust_config():
@@ -95,8 +105,6 @@ def project_id_to_fake_project_key(proj_id: int) -> str:
     """
     proj_key_len = 32  # this is the length of our project keys
     return str(proj_id)[:proj_key_len].rjust(proj_key_len, "a")
-
-
 
 
 def _config_file_path():

@@ -8,7 +8,8 @@ from datetime import datetime
 from infrastructure.config import kafka_config
 from confluent_kafka import Producer
 
-from infrastructure.util import get_uuid, normalize_event
+from infrastructure.util import get_uuid
+from infrastructure.relay_util import normalize_event
 
 
 class Outcome(IntEnum):

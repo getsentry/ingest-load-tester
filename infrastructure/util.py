@@ -2,46 +2,11 @@ import functools
 import os
 from importlib import import_module
 from uuid import uuid4
-from sentry_relay.processing import StoreNormalizer
 
 
 def full_path_from_module_relative_path(module_name, *args):
     dir_path = os.path.dirname(os.path.realpath(module_name))
     return os.path.abspath(os.path.join(dir_path, *args))
-
-
-def send_message(client, project_id, project_key, msg_body, headers=None):
-    url = "/api/{}/store/".format(project_id)
-    headers = {
-        "X-Sentry-Auth": _auth_header(project_key),
-        "Content-Type": "application/json; charset=UTF-8",
-        **(headers or {}),
-    }
-    return client.post(url, headers=headers, json=msg_body)
-
-
-def send_envelope(client, project_id, project_key, envelope, headers=None):
-    url = "/api/{}/envelope/".format(project_id)
-
-    headers = {
-        "X-Sentry-Auth": _auth_header(project_key),
-        "Content-Type": "application/x-sentry-envelope",
-        **(headers or {}),
-    }
-
-    data = envelope.serialize()
-    return client.post(url, headers=headers, data=data)
-
-
-def send_session(client, project_id, project_key, session_data, headers=None):
-    url = "/api/{}/envelope/".format(project_id)
-
-    headers = {
-        "X-Sentry-Auth": _auth_header(project_key),
-        "Content-Type": "text/plain; charset=UTF-8",
-        **(headers or {}),
-    }
-    return client.post(url, headers=headers, data=session_data)
 
 
 def _auth_header(project_key):
@@ -126,6 +91,26 @@ def load_object(name: str, locust_module_name):
     return object
 
 
-def normalize_event(event, project_id):
-    normalizer = StoreNormalizer(project_id=project_id,)
-    return normalizer.normalize_event(event)
+def get_value_with_env_override(d, key, conversion_func=lambda x: x):
+    """
+    Gets a value from a dictionary
+    If the value is a string with the format ${SOME_VAR}
+    Then the environment variable SOME_VAL will be read and
+    conversion_func(SOME_VAR) will be returned
+
+    eg: get_value_with_env_override({"x":"${MY_VAR}"}, "x", int)
+    will fetch the MY_VAR env var and try to convert it to int
+
+    """
+    val = d.get(key)
+    if val is None:
+        return None
+
+    if isinstance(val, str):
+        if val.startswith("${") and val.endswith("}"):
+            var_name = val[2:-1]
+            val = os.getenv(var_name)
+            if val is not None:
+                return conversion_func(val)
+
+    return val
