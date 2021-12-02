@@ -1,4 +1,5 @@
 import socket
+import threading
 import time
 
 from contextlib import contextmanager
@@ -95,8 +96,7 @@ def _log_timed_metric(measurement: str, duration_ms, **tags: str):
             for k, v in tags.items():
                 p = p.tag(k, v)
             p = p.field("duration", duration_ms)
+            p.tag("thread_id", threading.get_ident())
             p.time(_time_ns(), write_precision="ns")
             org_name, bucket_name = _get_org_bucket()
             write_api.write(bucket_name, org_name, p)
-
-
