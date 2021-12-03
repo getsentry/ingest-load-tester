@@ -28,12 +28,41 @@ users:
     num_projects: 10
     weight: 1
     tasks:
-      random_envelope_event_task_factory:
+      random_envelope_transaction_task_factory:
         weight: 0
+        min_spans: 1
+        max_spans: 15
+        release: [ "sampling@1.0", "sampling@2.0" ]
+        trace_user_id: "user"
+        trace_user_segment: [ "vip","paid","free" ]
+        trace_environment: [ "debug","prod" ]
+        trace_relase: [ "1.0.0","1.1.1" ]
+
+      random_envelope_event_task_factory:
+        weight: 1
+        # trace parameters are envelope specific
+        trace_user_id: "user"
+        trace_user_segment: [ "vip","paid","free" ]
+        trace_environment: [ "debug","prod" ]
+        release: [ "sampling@1.0", "sampling@2.0" ]
         # This task generally accepts the same arguments as `random_event_task_factory`.
         with_level: true
         num_event_groups: 1
         num_releases: 10
+        with_javascript_stacktrace: false
+        # In case of javascript, need to specify a fixed release in order to
+        # match the source files
+        #
+        # The release should match the release specified when uploading the
+        # source files with sentry-cli
+        #
+        # release: "1"
+
+        # Amount of stacktraces and frames to generate, only in effect if js or native
+        # stacktraces are generated at all
+        num_stacktraces: 5
+        min_frames: 5
+        max_frames: 30
 
       random_event_task_factory:
         weight: 1
