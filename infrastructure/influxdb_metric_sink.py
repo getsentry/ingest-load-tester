@@ -1,13 +1,14 @@
 import socket
 import threading
 import time
+import os
 
 from contextlib import contextmanager
 from typing import Optional
 
 import influxdb_client
 
-from .util import memoize,  get_value_with_env_override
+from .util import memoize, get_value_with_env_override
 from influxdb_client.client.write_api import PointSettings
 
 from infrastructure.config import metrics_enabled, get_metrics_config
@@ -84,12 +85,17 @@ def _get_org_bucket() -> (str, str):
     return org, bucket
 
 
-def _time_ns()->int:
-    return int( time.time()*1_000_000_000)
+def _time_ns() -> int:
+    return int(time.time() * 1_000_000_000)
+
+
+@memoize
+def get_run_id():
+    return os.getenv("TEST_RUN_ID", default="UNKNOWN")
 
 
 def _log_timed_metric(measurement: str, duration_ms, **tags: str):
-    client =_get_influxdb_client()
+    client = _get_influxdb_client()
     if client:
         with client.write_api(point_settings=_get_point_settings()) as write_api:
             p = influxdb_client.Point(measurement)
@@ -97,6 +103,7 @@ def _log_timed_metric(measurement: str, duration_ms, **tags: str):
                 p = p.tag(k, v)
             p = p.field("duration", duration_ms)
             p.tag("thread_id", threading.get_ident())
+            p.tag("run", get_run_id())
             p.time(_time_ns(), write_precision="ns")
             org_name, bucket_name = _get_org_bucket()
             write_api.write(bucket_name, org_name, p)
