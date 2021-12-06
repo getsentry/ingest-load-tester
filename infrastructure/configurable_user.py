@@ -1,5 +1,6 @@
 from collections import abc
 
+from locust.contrib.fasthttp import FastHttpUser
 from yaml import load
 
 from .config import relay_address, generate_project_info, ProjectInfo
@@ -80,7 +81,7 @@ def create_user_class(
     name, config_file_name, module_name, host=None, base_classes=None
 ):
     if base_classes is None:
-        base_classes = (HttpUser,)
+        base_classes = (FastHttpUser,)
 
     config = _load_locust_config(config_file_name)
     locust_info = config.get(name)
