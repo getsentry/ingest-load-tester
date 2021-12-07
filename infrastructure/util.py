@@ -1,6 +1,10 @@
 import functools
 import os
+import re
+
+from datetime import timedelta
 from importlib import import_module
+from typing import Optional
 from uuid import uuid4
 
 
@@ -82,7 +86,7 @@ def load_object(name: str, locust_module_name):
         module_name = name[:last_dot_offset]
 
     module = import_module(module_name)
-    object = getattr(module, name[last_dot_offset + 1 :])
+    object = getattr(module, name[last_dot_offset + 1:])
 
     if object is None:
         raise ValueError("Could not find object", name)
@@ -114,3 +118,44 @@ def get_value_with_env_override(d, key, conversion_func=lambda x: x):
                 return conversion_func(val)
 
     return val
+
+
+TIMEDELTA_REGEX = (
+    r'(?P<minus>-)?'
+    r'((?P<weeks>\d+)w)?'
+    r'((?P<days>\d+)d)?'
+    r'((?P<hours>\d+)h)?'
+    r'((?P<minutes>\d+)m)?'
+    r'((?P<seconds>\d+)s)?'
+)
+TIMEDELTA_PATTERN = re.compile(TIMEDELTA_REGEX, re.IGNORECASE)
+
+
+def parse_timedelta(delta: str) -> Optional[timedelta]:
+    """ Parses a human readable timedelta (3d5h19m2s) into a datetime.timedelta.
+    Delta includes:
+    * - (for negative deltas)
+    * Xw weeks
+    * Xd days
+    * Xh hours
+    * Xm minutes
+    * Xs seconds
+
+    >>> parse_timedelta("2s")
+    datetime.timedelta(0, 2)
+    >>> parse_timedelta("1h1s")
+    datetime.timedelta(0, 3601)
+    >>> parse_timedelta("1d1s")
+    datetime.timedelta(1, 1)
+    >>> parse_timedelta("2w17s")
+    datetime.timedelta(14, 17)
+    >>> parse_timedelta("-1s") + parse_timedelta("2s")
+    datetime.timedelta(0, 1)
+    """
+    match = TIMEDELTA_PATTERN.match(delta)
+    if match:
+        groups = match.groupdict()
+        sign = -1 if groups.pop("minus", None) else 1
+        parts = {k: int(v) for k, v in groups.items() if v}
+        return timedelta(**parts) * sign
+    return None

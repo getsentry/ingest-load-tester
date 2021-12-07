@@ -20,7 +20,18 @@ users:
       # Sessions will be generated in real time
       session_event_task_factory:
         weight: 0
-        release: 123
+        # use w d h m s for weeks days hours minutes seconds e.g. 3w2d4h3s = 3 weeks 2 days 4 hours 3 seconds
+        # the higher the range the more buckets will be created (Relay accepts ranges of up to 5 days from now)
+        started_range: 2m
+        num_releases: 1 # number of releases that will appear in the session messages
+        num_environments: 1 # number of environments that will appear in session
+        num_users: 1000 # number of different users generated
+        # relative weights of various outcomes (set it to 0 to disable a certain outcome)
+        ok_weight: 2
+        exited_weight: 10
+        errored_weight: 1
+        crashed_weight: 1
+        abnormal_weight: 1
 
   # A task that generates random events based on config parameters
   RandomEvents:
