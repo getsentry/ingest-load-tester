@@ -85,7 +85,7 @@ def session_event_task_factory(task_params=None):
     session_data_tmpl = (
         '{{"sent_at":"{started}"}}\n'
         + '{{"type":"session"}}\n'
-        + '{{"init":{init},"started":"{started}","status":{status},"errors":{errors},"duration":{duration},'
+        + '{{"init":{init},"started":"{started}","status":"{status}","errors":{errors},"duration":{duration},'
         + '"sid":"{session}","did":"{user}","seq":{seq},"timestamp":"{timestamp}",'
         + '"attrs":{{"release":"{release}","environment":"{environment}"}}}}'
     ).strip()
@@ -97,7 +97,7 @@ def session_event_task_factory(task_params=None):
         started_time = datetime.utcnow() - timedelta(random.randint(0, max_start_deviation))
         started = started_time.isoformat()[:23] + "Z"  # date with milliseconds
         timestamp = datetime.utcnow().isoformat()[:23]+"Z"
-        init = random.randint(0, 9) == 0  # 1 in 10 are init messages
+        init = "true" if random.randint(0, 9) == 0 else "false" # 1 in 10 are init messages
         rel = random.randint(1, params["num_releases"])
         release = f"r-1.0.{rel}"
         env = random.randint(1, params["num_environments"])
