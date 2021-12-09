@@ -86,7 +86,7 @@ def session_event_task_factory(task_params=None):
         '{{"sent_at":"{started}"}}\n'
         + '{{"type":"session"}}\n'
         + '{{"init":{init},"started":"{started}","status":{status},"errors":{errors},"duration":{duration},'
-        + '"sid":"{session}","did":"{user}","seq":{seq},"timestamp":"{timestamp}"'
+        + '"sid":"{session}","did":"{user}","seq":{seq},"timestamp":"{timestamp}",'
         + '"attrs":{{"release":"{release}","environment":"{environment}"}}}}'
     ).strip()
 
