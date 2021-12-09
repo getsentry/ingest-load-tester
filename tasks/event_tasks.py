@@ -94,7 +94,7 @@ def session_event_task_factory(task_params=None):
         project_info = get_project_info(user)
         # get maximum deviation in seconds of start time
         max_start_deviation = int(params["started_range"].total_seconds())
-        started_time = datetime.utcnow() - timedelta(random.randint(0, max_start_deviation))
+        started_time = datetime.utcnow() - timedelta(seconds=random.randint(0, max_start_deviation))
         started = started_time.isoformat()[:23] + "Z"  # date with milliseconds
         timestamp = datetime.utcnow().isoformat()[:23]+"Z"
         init = "true" if random.randint(0, 9) == 0 else "false" # 1 in 10 are init messages
