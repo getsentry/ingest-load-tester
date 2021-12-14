@@ -14,8 +14,8 @@ kafka:
     attachments: ingest-attachments
     sessions: ingest-sessions
 
-fake_projects:
-  enable_metrics_extraction: false
+#fake_projects:
+#  enable_metrics_extraction: false
 projects:
   #list here all the valid projects with their public keys (not used in fake_sentry mode)
   - id: 1

@@ -89,48 +89,19 @@ class Sentry(object):
     def full_project_config(self, project_key):
         project_id = _project_id_form_project_key(project_key)
 
-        ret_val = {
+        base_project_config = load_proj_config(project_key)
+
+        ret_val = {**base_project_config,
             "publicKeys": [
                 {
+                    **base_project_config["publicKeys"][0],
                     "publicKey": project_key,
-                    "isEnabled": True,
                     "numericId": project_id,
-                    "quotas": [],
                 }
             ],
-            "rev": "5ceaea8c919811e8ae7daae9fe877901",
-            "disabled": False,
             "lastFetch": datetime.datetime.utcnow().isoformat() + "Z",
             "lastChange": datetime.datetime.utcnow().isoformat() + "Z",
-            "slug": "python",
-            "organizationId": 1,
-            "projectId": project_id,
-            "config": {
-                "allowedDomains": ["*"],
-                "piiConfig": {
-                    "rules": {},
-                    "applications": {
-                        "$string": ["@email", "@mac", "@creditcard", "@userpath"],
-                        "$object": ["@password"],
-                    },
-                },
-                "excludeFields": [],
-                "filterSettings": {},
-                "scrubIpAddresses": False,
-                "sensitiveFields": [],
-                "scrubDefaults": True,
-                "scrubData": True,
-                "groupingConfig": {
-                    "id": "legacy:2019-03-12",
-                    "enhancements": "eJybzDhxY05qemJypZWRgaGlroGxrqHRBABbEwcC",
-                },
-                "blacklistedIps": ["127.43.33.22"],
-                "trustedRelays": [],
-            },
         }
-
-        if locust_config()["fake_projects"].get("enable_metrics_extraction"):
-            ret_val["config"]["features"] = ["organizations:metrics-extraction"]
 
         return ret_val
 
@@ -277,9 +248,6 @@ def configure_app(config):
         app.logger.error("Fake sentry error generated error:\n{}".format(e))
         abort(400)
 
-    if locust_config()["fake_projects"].get("enable_metrics_extraction"):
-        atexit.register(_summarize_metrics)
-
     return app
 
 
@@ -325,6 +293,28 @@ def _project_id_form_project_key(project_key: str) -> int:
         return int(project_key)
     else:
         return 0
+
+
+def load_proj_config(project_key):
+    print(os.path.dirname(os.path.realpath(__file__)))
+    print(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
+    print(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "config"))
+    print(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "config", "../config/projects"))
+    dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "config", "../config/projects")
+
+    file_name = os.path.join(dir_path, f"{project_key}.json")
+
+    if os.path.exists(file_name):
+        try:
+            with open(file_name, "rt") as f:
+                return json.load(f)
+        except:
+            pass
+
+    default_config_name = os.path.join(dir_path, "default.json")
+
+    with open(default_config_name, "rt") as f:
+        return json.load(f)
 
 
 def _get_config():

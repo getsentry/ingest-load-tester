@@ -1,0 +1,49 @@
+{
+  "publicKeys": [
+    {
+      "isEnabled": true,
+      "quotas": []
+    }
+  ],
+  "rev": "5ceaea8c919811e8ae7daae9fe877901",
+  "disabled": false,
+  "slug": "python",
+  "organizationId": 1,
+  "projectId": 1,
+  "config": {
+    "allowedDomains": [
+      "*"
+    ],
+    "piiConfig": {
+      "rules": {},
+      "applications": {
+        "$string": [
+          "@email",
+          "@mac",
+          "@creditcard",
+          "@userpath"
+        ],
+        "$object": [
+          "@password"
+        ]
+      }
+    },
+    "excludeFields": [],
+    "filterSettings": {},
+    "scrubIpAddresses": false,
+    "sensitiveFields": [],
+    "scrubDefaults": true,
+    "scrubData": true,
+    "groupingConfig": {
+      "id": "legacy:2019-03-12",
+      "enhancements": "eJybzDhxY05qemJypZWRgaGlroGxrqHRBABbEwcC"
+    },
+    "blacklistedIps": [
+      "127.43.33.22"
+    ],
+    "trustedRelays": [],
+    "features": [
+      "organizations:metrics-extraction"
+    ]
+  }
+}
