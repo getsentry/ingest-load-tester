@@ -296,10 +296,6 @@ def _project_id_form_project_key(project_key: str) -> int:
 
 
 def load_proj_config(project_key):
-    print(os.path.dirname(os.path.realpath(__file__)))
-    print(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
-    print(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "config"))
-    print(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "config", "../config/projects"))
     dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "config", "../config/projects")
 
     file_name = os.path.join(dir_path, f"{project_key}.json")
