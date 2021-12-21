@@ -99,6 +99,7 @@ class Sentry(object):
                     "numericId": project_id,
                 }
             ],
+            "projectId": project_id,
             "lastFetch": datetime.datetime.utcnow().isoformat() + "Z",
             "lastChange": datetime.datetime.utcnow().isoformat() + "Z",
         }
