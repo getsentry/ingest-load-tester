@@ -98,27 +98,30 @@ def session_event_task_factory(task_params=None):
         started_time = now - timedelta(seconds=random.randint(0, max_start_deviation))
         started = started_time.isoformat()[:23] + "Z"  # date with milliseconds
         timestamp = now.isoformat()[:23]+"Z"
-        init = "true" if random.randint(0, 9) == 0 else "false" # 1 in 10 are init messages
         rel = random.randint(1, params["num_releases"])
         release = f"r-1.0.{rel}"
         env = random.randint(1, params["num_environments"])
         environment = f"environment-{env}"
-        if init:
-            status = "ok"
+
+        ok = params["ok_weight"]
+        exited = params["exited_weight"]
+        errored = params["errored_weight"]
+        crashed = params["crashed_weight"]
+        abnormal = params["abnormal_weight"]
+        status = random.choices(["ok", "exited", "errored", "crashed", "abnormal"], weights=[ok, exited, errored, crashed, abnormal])[0]
+
+        if status == "ok":
+            init = "true"
             seq = 0
-            errors = 0
         else:
-            ok = params["ok_weight"]
-            exited = params["exited_weight"]
-            errored = params["errored_weight"]
-            crashed = params["crashed_weight"]
-            abnormal = params["abnormal_weight"]
-            status = random.choices(["ok", "exited", "errored", "crashed", "abnormal"], weights=[ok, exited, errored, crashed, abnormal])[0]
-            if status == "errored":
-                errors = random.randint(1, 20)
-            else:
-                errors = 0
+            init = "false"
             seq = random.randint(1, 5)
+
+        if status == "errored":
+            errors = random.randint(1, 20)
+        else:
+            errors = 0
+
         usr = random.randint(1, params["num_users"])
         user_id = f"u-{usr}"
 
