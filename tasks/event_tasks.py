@@ -99,7 +99,7 @@ def session_event_task_factory(task_params=None):
         max_start_deviation = int(params["started_range"].total_seconds())
         now = datetime.utcnow()
         # set the base in the past enough for max_start_spread + max_duration_spread to end up before now
-        base_start = now - timedelta(seconds=max_duration_deviation+max_duration_deviation)
+        base_start = now - timedelta(seconds=max_start_deviation+max_duration_deviation)
         started_time = base_start + timedelta(seconds=random.randint(0, max_start_deviation))
         duration = random.randint(0, max_duration_deviation)
         started = started_time.isoformat()[:23] + "Z"  # date with milliseconds
