@@ -57,6 +57,7 @@ def get_session_event_params(task_params):
         "num_releases": (1, lambda x: int(x)),
         "num_environments": (1, lambda x: int(x)),
         "started_range": (timedelta(minutes=1), lambda x: parse_timedelta(x)),
+        "duration_range": (timedelta(minutes=1), lambda x: parse_timedelta(x)),
         "num_users": (1, lambda x: int(x)),
         "ok_weight": (1.0, lambda x: float(x)),
         "exited_weight": (1.0, lambda x: float(x)),
@@ -92,10 +93,15 @@ def session_event_task_factory(task_params=None):
 
     def inner(user):
         project_info = get_project_info(user)
+        # get maximum deviation in seconds of duration
+        max_duration_deviation = int(params["duration_range"].total_seconds())
         # get maximum deviation in seconds of start time
         max_start_deviation = int(params["started_range"].total_seconds())
         now = datetime.utcnow()
-        started_time = now - timedelta(seconds=random.randint(0, max_start_deviation))
+        # set the base in the past enough for max_start_spread + max_duration_spread to end up before now
+        base_start = now - timedelta(seconds=max_duration_deviation+max_duration_deviation)
+        started_time = base_start + timedelta(seconds=random.randint(0, max_start_deviation))
+        duration = random.randint(0, max_duration_deviation)
         started = started_time.isoformat()[:23] + "Z"  # date with milliseconds
         timestamp = now.isoformat()[:23]+"Z"
         rel = random.randint(1, params["num_releases"])
@@ -132,7 +138,7 @@ def session_event_task_factory(task_params=None):
             init=init,
             status=status,
             errors=errors,
-            duration=random.random() * 1000,
+            duration=duration,
             session=session,
             user=user_id,
             seq=seq,
