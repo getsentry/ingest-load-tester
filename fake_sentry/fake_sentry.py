@@ -91,7 +91,8 @@ class Sentry(object):
 
         base_project_config = load_proj_config(project_key)
 
-        ret_val = {**base_project_config,
+        ret_val = {
+            **base_project_config,
             "publicKeys": [
                 {
                     **base_project_config["publicKeys"][0],
@@ -197,7 +198,9 @@ def configure_app(config):
         for public_key in flask_request.json["publicKeys"]:
             app.logger.debug("getting project config for: {}".format(public_key))
             rv[public_key] = sentry.full_project_config(public_key)
-            rv[public_key]["publicKeys"][0]["publicKey"] = public_key  # RaduW NOT sure why this was here
+            rv[public_key]["publicKeys"][0][
+                "publicKey"
+            ] = public_key  # RaduW NOT sure why this was here
         _log.debug(f"f project configs returning:\n{pformat(rv,indent=4)}")
         return jsonify(configs=rv)
 
@@ -256,7 +259,7 @@ def _parse_metrics(envelope):
     for item in envelope:
         if item.type == "metric_buckets":
             content = item.payload.json
-            print( content)
+            print(content)
             _metrics_stats["buckets_collected"] += len(content)
 
 
@@ -297,7 +300,12 @@ def _project_id_form_project_key(project_key: str) -> int:
 
 
 def load_proj_config(project_key):
-    dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "config", "../config/projects")
+    dir_path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        "..",
+        "config",
+        "../config/projects",
+    )
 
     file_name = os.path.join(dir_path, f"{project_key}.json")
 

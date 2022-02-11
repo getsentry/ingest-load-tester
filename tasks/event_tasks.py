@@ -17,9 +17,18 @@ from infrastructure import (
 )
 from infrastructure.configurable_user import get_project_info
 from infrastructure.generators.breadcrumbs import breadcrumb_generator
-from infrastructure.generators.contexts import os_context_generator, device_context_generator, app_context_generator, trace_context_generator
+from infrastructure.generators.contexts import (
+    os_context_generator,
+    device_context_generator,
+    app_context_generator,
+    trace_context_generator,
+)
 from infrastructure.generators.event import base_event_generator
-from infrastructure.generators.transaction import create_spans, measurements_generator, span_op_generator
+from infrastructure.generators.transaction import (
+    create_spans,
+    measurements_generator,
+    span_op_generator,
+)
 from infrastructure.generators.user import user_interface_generator
 from infrastructure.generators.util import schema_generator
 from infrastructure.util import parse_timedelta
@@ -75,7 +84,9 @@ def get_session_event_params(task_params):
     return _convert_params(params_converter, task_params)
 
 
-def _convert_params(params_converter: Mapping[str, Tuple[Any, Callable[[Any], Any]]], task_params):
+def _convert_params(
+    params_converter: Mapping[str, Tuple[Any, Callable[[Any], Any]]], task_params
+):
     """
     Converts parameters received from the configuration in the required parameters needed by the task
     The params_converter has the following structure
@@ -146,8 +157,12 @@ def session_event_task_factory(task_params=None):
         max_start_deviation = int(params["started_range"].total_seconds())
         now = datetime.utcnow()
         # set the base in the past enough for max_start_spread + max_duration_spread to end up before now
-        base_start = now - timedelta(seconds=max_start_deviation + max_duration_deviation)
-        started_time = base_start + timedelta(seconds=random.randint(0, max_start_deviation))
+        base_start = now - timedelta(
+            seconds=max_start_deviation + max_duration_deviation
+        )
+        started_time = base_start + timedelta(
+            seconds=random.randint(0, max_start_deviation)
+        )
         duration = random.randint(0, max_duration_deviation)
         started = started_time.isoformat()[:23] + "Z"  # date with milliseconds
         timestamp = now.isoformat()[:23] + "Z"
@@ -161,7 +176,10 @@ def session_event_task_factory(task_params=None):
         errored = params["errored_weight"]
         crashed = params["crashed_weight"]
         abnormal = params["abnormal_weight"]
-        status = random.choices(["ok", "exited", "errored", "crashed", "abnormal"], weights=[ok, exited, errored, crashed, abnormal])[0]
+        status = random.choices(
+            ["ok", "exited", "errored", "crashed", "abnormal"],
+            weights=[ok, exited, errored, crashed, abnormal],
+        )[0]
 
         if status == "ok":
             init = "true"
@@ -262,12 +280,14 @@ def transaction_generator(
     breadcrumb_messages,
     measurements: Sequence[str],
     operations: Sequence[str],
-    **kwargs  # additional ignored params
+    **kwargs,  # additional ignored params
 ):
     basic_generator = schema_generator(
         event_id=lambda: uuid.uuid4().hex,
         release=(
-            lambda: f"release{random.randrange(num_releases)}" if num_releases is not None else None
+            lambda: f"release{random.randrange(num_releases)}"
+            if num_releases is not None
+            else None
         ),
         transaction=[None, lambda: f"mytransaction{random.randrange(100)}"],
         logger=["foo.bar.baz", "bam.baz.bad", None],
@@ -287,7 +307,7 @@ def transaction_generator(
             types=breadcrumb_types,
             messages=breadcrumb_messages,
         ),
-        measurements=measurements_generator(measurements=measurements)
+        measurements=measurements_generator(measurements=measurements),
     )
 
     def inner():
@@ -301,8 +321,12 @@ def transaction_generator(
         duration_min_sec = transaction_duration_min.total_seconds()
         duration_max_sec = transaction_duration_max.total_seconds()
         range_seconds = duration_max_sec - duration_min_sec
-        transaction_duration = timedelta(seconds=range_seconds * random.random() + duration_min_sec)
-        transaction_delta = timedelta(seconds=transaction_timestamp_spread.total_seconds() * random.random())
+        transaction_duration = timedelta(
+            seconds=range_seconds * random.random() + duration_min_sec
+        )
+        transaction_delta = timedelta(
+            seconds=transaction_timestamp_spread.total_seconds() * random.random()
+        )
 
         timestamp = now - transaction_delta.total_seconds()
         transaction_start = timestamp - transaction_duration.total_seconds()

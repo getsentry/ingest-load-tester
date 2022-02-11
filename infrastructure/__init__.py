@@ -14,6 +14,4 @@ from .configurable_user import (
     create_user_class,
 )
 
-from .influxdb_metric_sink import (
-    timed_operation
-)
+from .influxdb_metric_sink import timed_operation

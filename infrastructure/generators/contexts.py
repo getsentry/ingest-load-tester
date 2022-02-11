@@ -4,7 +4,11 @@ from typing import Sequence
 
 import uuid
 
-from infrastructure.generators.transaction import span_status_generator, span_op_generator, span_id_generator
+from infrastructure.generators.transaction import (
+    span_status_generator,
+    span_op_generator,
+    span_id_generator,
+)
 from infrastructure.generators.util import schema_generator, version_generator
 
 
@@ -72,5 +76,5 @@ def trace_context_generator(operations=Sequence[str]):
         parent_span_id=parent_span_id_generator,
         op=span_op_generator(operations=operations),
         status=span_status_generator(),
-        type="trace"
+        type="trace",
     )

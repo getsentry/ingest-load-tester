@@ -41,9 +41,7 @@ def measurements_generator(measurements: Sequence[str]):
     pass
 
     def inner():
-        return {
-            measurement: random.random() * 10000
-            for measurement in measurements}
+        return {measurement: random.random() * 10000 for measurement in measurements}
 
     return inner
 
@@ -83,7 +81,15 @@ def create_spans(
             start_timestamp = parent_start + (num_children_left - 1) * time_slice
             timestamp = parent_start + num_children_left * time_slice
             operation = operations_generator()
-            ret_val.append(_create_span(parent_id=parent_id, trace_id=trace_id, timestamp=timestamp, start_timestamp=start_timestamp, operation=operation))
+            ret_val.append(
+                _create_span(
+                    parent_id=parent_id,
+                    trace_id=trace_id,
+                    timestamp=timestamp,
+                    start_timestamp=start_timestamp,
+                    operation=operation,
+                )
+            )
             num_children_left -= 1
         else:
             # decide how many sub spans
@@ -98,7 +104,13 @@ def create_spans(
     return ret_val
 
 
-def _create_span(parent_id: str, trace_id: str, start_timestamp: float, timestamp: float, operation:str):
+def _create_span(
+    parent_id: str,
+    trace_id: str,
+    start_timestamp: float,
+    timestamp: float,
+    operation: str,
+):
     return {
         "timestamp": timestamp,
         "start_timestamp": start_timestamp,

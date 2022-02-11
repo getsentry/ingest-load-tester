@@ -34,10 +34,12 @@ def kafka_config():
     config = locust_config()
     return config.get("kafka", {})
 
+
 @memoize
 def get_metrics_config():
     config = locust_config()
     return config.get("metrics", {})
+
 
 @memoize
 def metrics_enabled():
