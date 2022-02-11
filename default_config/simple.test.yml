@@ -36,11 +36,71 @@ users:
         crashed_weight: 1
         abnormal_weight: 1
 
+  TransactionEvents:
+    wait_time: constant(0.5)
+    num_projects: 10
+    weight: 1
+    tasks:
+      transaction_event_task_factory:
+        weight: 1
+        num_releases: 10
+        max_users: 10
+        min_spans: 2
+        max_spans: 20
+        transaction_duration_max: 10m
+        transaction_duration_min: 10ms
+        transaction_timestamp_spread: 4h
+        min_breadcrumbs: 0
+        max_breadcrumbs: 50
+        breadcrumb_categories: ~
+        breadcrumb_levels: ~
+        breadcrumb_types: ~
+        breadcrumb_messages: ~
+        measurements:
+          - fp
+          - fcp
+          - lcp
+          - fid
+          - cls
+          - ttfb
+          - ttfb.requesttime
+          - app_start_cold
+          - app_start_warm
+          - frames_total
+          - frames_slow
+          - frames_frozen
+          - frames_slow_rate
+          - frames_frozen_rate
+          - stall_count
+          - stall_total_time
+          - stall_longest_time
+          - stall_percentage
+        operations:
+          - browser
+          - http
+          - db
+          - resource.script
+          - resource.link
+          - resource.css
+          - resource.img
+          - resource.other
+  #          - react.mount
+  #          - react.update
+  #          - react.update
+  #          - products received
+  #          - mark
+  #          - paint
+  #          - http.server
+  #          - connect to db
+  #          - run query
+  #          - format results
+
+
   # A task that generates random events based on config parameters
   RandomEvents:
     wait_time: constant(1)
     num_projects: 10
-    weight: 1
+    weight: 0
     tasks:
 #      NOT IMPLEMENTED YET
 #      random_envelope_transaction_task_factory:

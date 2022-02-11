@@ -62,11 +62,7 @@ def _get_influxdb_client() -> Optional[influxdb_client.InfluxDBClient]:
     if url is None or token is None or org is None:
         return None
 
-    return influxdb_client.InfluxDBClient(
-        url=url,
-        token=token,
-        org=org
-    )
+    return influxdb_client.InfluxDBClient(url=url, token=token, org=org)
 
 
 @memoize

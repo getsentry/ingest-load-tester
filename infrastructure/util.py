@@ -86,7 +86,7 @@ def load_object(name: str, locust_module_name):
         module_name = name[:last_dot_offset]
 
     module = import_module(module_name)
-    object = getattr(module, name[last_dot_offset + 1:])
+    object = getattr(module, name[last_dot_offset + 1 :])
 
     if object is None:
         raise ValueError("Could not find object", name)
@@ -121,18 +121,19 @@ def get_value_with_env_override(d, key, conversion_func=lambda x: x):
 
 
 TIMEDELTA_REGEX = (
-    r'(?P<minus>-)?'
-    r'((?P<weeks>\d+)w)?'
-    r'((?P<days>\d+)d)?'
-    r'((?P<hours>\d+)h)?'
-    r'((?P<minutes>\d+)m)?'
-    r'((?P<seconds>\d+)s)?'
+    r"(?P<minus>-)?"
+    r"((?P<weeks>\d+)w)?"
+    r"((?P<days>\d+)d)?"
+    r"((?P<hours>\d+)h)?"
+    r"((?P<minutes>\d+)m)?"
+    r"((?P<seconds>\d+)s)?"
+    r"((?P<milliseconds>\d+)ms)?"
 )
 TIMEDELTA_PATTERN = re.compile(TIMEDELTA_REGEX, re.IGNORECASE)
 
 
 def parse_timedelta(delta: str) -> Optional[timedelta]:
-    """ Parses a human readable timedelta (3d5h19m2s) into a datetime.timedelta.
+    """ Parses a human readable timedelta (3d5h19m2s57ms) into a datetime.timedelta.
     Delta includes:
     * - (for negative deltas)
     * Xw weeks
@@ -140,6 +141,7 @@ def parse_timedelta(delta: str) -> Optional[timedelta]:
     * Xh hours
     * Xm minutes
     * Xs seconds
+    * Xms milliseconds
 
     >>> parse_timedelta("2s")
     datetime.timedelta(0, 2)
