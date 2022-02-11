@@ -1,6 +1,10 @@
 import time
 import random
+from typing import Sequence
 
+import uuid
+
+from infrastructure.generators.transaction import span_status_generator, span_op_generator, span_id_generator
 from infrastructure.generators.util import schema_generator, version_generator
 
 
@@ -55,4 +59,18 @@ def os_context_generator():
         version=version_generator(3),
         build="sdk_google_phone_x86-userdebug 7.1.1 NYC 5464897 test-keys",
         name=["Android", "NookPhone"],
+    )
+
+
+def trace_context_generator(operations=Sequence[str]):
+    def parent_span_id_generator():
+        random.choice([None, span_id_generator()()])
+
+    return schema_generator(
+        trace_id=lambda: uuid.uuid4().hex,
+        span_id=span_id_generator(),
+        parent_span_id=parent_span_id_generator,
+        op=span_op_generator(operations=operations),
+        status=span_status_generator(),
+        type="trace"
     )

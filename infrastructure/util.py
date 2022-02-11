@@ -127,12 +127,13 @@ TIMEDELTA_REGEX = (
     r'((?P<hours>\d+)h)?'
     r'((?P<minutes>\d+)m)?'
     r'((?P<seconds>\d+)s)?'
+    r'((?P<milliseconds>\d+)ms)?'
 )
 TIMEDELTA_PATTERN = re.compile(TIMEDELTA_REGEX, re.IGNORECASE)
 
 
 def parse_timedelta(delta: str) -> Optional[timedelta]:
-    """ Parses a human readable timedelta (3d5h19m2s) into a datetime.timedelta.
+    """ Parses a human readable timedelta (3d5h19m2s57ms) into a datetime.timedelta.
     Delta includes:
     * - (for negative deltas)
     * Xw weeks
@@ -140,6 +141,7 @@ def parse_timedelta(delta: str) -> Optional[timedelta]:
     * Xh hours
     * Xm minutes
     * Xs seconds
+    * Xms milliseconds
 
     >>> parse_timedelta("2s")
     datetime.timedelta(0, 2)
