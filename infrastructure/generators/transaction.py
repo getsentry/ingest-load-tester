@@ -41,7 +41,7 @@ def measurements_generator(measurements: Sequence[str]):
     pass
 
     def inner():
-        return {measurement: random.random() * 10000 for measurement in measurements}
+        return {measurement: { "value": random.random() * 10000} for measurement in measurements}
 
     return inner
 
