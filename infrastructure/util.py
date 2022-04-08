@@ -133,7 +133,7 @@ TIMEDELTA_PATTERN = re.compile(TIMEDELTA_REGEX, re.IGNORECASE)
 
 
 def parse_timedelta(delta: str) -> Optional[timedelta]:
-    """ Parses a human readable timedelta (3d5h19m2s57ms) into a datetime.timedelta.
+    """Parses a human readable timedelta (3d5h19m2s57ms) into a datetime.timedelta.
     Delta includes:
     * - (for negative deltas)
     * Xw weeks

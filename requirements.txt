@@ -4,7 +4,7 @@ pyyaml
 confluent-kafka==1.6.0
 msgpack>=0.6.1,<0.7.0
 sentry-relay==0.8.9
-black==19.10b0
+black==22.3.0
 mywsgi==1.0.3
 pyuwsgi==2.0.20
 sentry-sdk==1.5.8
