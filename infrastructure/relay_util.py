@@ -40,5 +40,7 @@ def send_session(client, project_id, project_key, session_data, headers=None):
 
 
 def normalize_event(event, project_id):
-    normalizer = StoreNormalizer(project_id=project_id,)
+    normalizer = StoreNormalizer(
+        project_id=project_id,
+    )
     return normalizer.normalize_event(event)
