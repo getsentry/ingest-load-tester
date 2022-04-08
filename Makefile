@@ -56,8 +56,8 @@ setup-venv: .venv/bin/python
 
 .venv/bin/python:
 	@rm -rf .venv
-	@which virtualenv || sudo easy_install virtualenv
-	virtualenv -p $$PYTHON_VERSION .venv
+	python3 -m venv --copies .venv
+	.venv/bin/pip install -U pip wheel
 	.venv/bin/pip install -U -r requirements.txt
 
 format: setup-venv
