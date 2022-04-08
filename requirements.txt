@@ -1,14 +1,11 @@
-locust==1.4.3
-flask==1.1.2
+locust==2.8.6
+flask==2.1.1
 pyyaml
 confluent-kafka==1.6.0
 msgpack>=0.6.1,<0.7.0
-sentry-relay==0.5.9
+sentry-relay==0.8.9
 black==19.10b0
 mywsgi==1.0.3
-uWSGI==2.0.19.1
-greenlet==1.1.0
-#TODO (RaduW) 27.10.2021 use stable release after https://github.com/getsentry/sentry-python/pull/1229 is merged in master
-sentry-sdk @ git+git://github.com/getsentry/sentry-python.git@39e9091e954bc8042727d8c1b2fd12451f1a1cbb
-#29.11.2021 send metrics to influxdb
-influxdb-client==1.24.0
+pyuwsgi==2.0.20
+sentry-sdk==1.5.8
+influxdb-client==1.24.0  #29.11.2021 send metrics to influxdb
