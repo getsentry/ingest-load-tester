@@ -4,3 +4,4 @@ config/
 .idea
 .vscode
 __pycache__
+.python-version
