@@ -29,7 +29,7 @@ from infrastructure.generators.transaction import (
     measurements_generator,
     span_op_generator,
 )
-from infrastructure.generators.user import user_interface_generator
+from infrastructure.generators.user import user_generator
 from infrastructure.generators.util import schema_generator
 from infrastructure.util import parse_timedelta
 
@@ -292,7 +292,7 @@ def transaction_generator(
         transaction=[None, lambda: f"mytransaction{random.randrange(100)}"],
         logger=["foo.bar.baz", "bam.baz.bad", None],
         environment=["production", "development", "staging"],
-        user=user_interface_generator(max_users=max_users),
+        user=user_generator(max_users=max_users),
         contexts={
             "os": [None, os_context_generator()],
             "device": [None, device_context_generator()],

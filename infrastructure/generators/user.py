@@ -3,7 +3,7 @@ import random
 from infrastructure.generators.util import schema_generator, version_generator
 
 
-def user_interface_generator(max_users=None):
+def user_generator(max_users=None):
     if not max_users:
         return schema_generator(ip_address=version_generator(4, 255))
 
