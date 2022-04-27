@@ -7,7 +7,7 @@ from infrastructure.generators.util import (
     schema_generator,
     sentence_generator,
 )
-from infrastructure.generators.user import user_interface_generator
+from infrastructure.generators.user import user_generator
 from infrastructure.generators.contexts import (
     os_context_generator,
     device_context_generator,
@@ -52,7 +52,7 @@ def base_event_generator(
         logger=["foo.bar.baz", "bam.baz.bad", None],
         timestamp=time.time,
         environment=["production", "development", "staging"],
-        user=user_interface_generator(max_users=max_users),
+        user=user_generator(max_users=max_users),
         contexts={
             "os": [None, os_context_generator()],
             "device": [None, device_context_generator()],
