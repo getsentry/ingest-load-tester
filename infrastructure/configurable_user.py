@@ -47,7 +47,7 @@ def create_tasks(user_name, config, module_name):
         )
 
     if len(tasks) == 0:
-        raise ("User with 0 tasks enabled", user_name)
+        raise Exception(f"User with 0 tasks enabled name={user_name}")
 
     return tasks
 
