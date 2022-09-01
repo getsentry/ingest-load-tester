@@ -92,3 +92,119 @@ example below (that starts 4 users, with a spawn rate of 2 per second and runs f
     .venv/bin/locust -f kafka_consumers_locustfile.py --no-web -u 4 -r 2 --run-time 20s --stop-timeout 10
 
 Please consult the locust documentation for details: https://docs.locust.io/en/1.4.3/running-locust-without-web-ui.html
+
+
+### Test Configuration
+
+Locust uses a top level file, a python file to configure the tests.
+
+`ingest-load-tester` which uses locust has adds the facility to configure tests by using yaml files. Under the hood `ingest-load-tester` 
+creates locust tests classes that are derived from `ConfigurableUser` class which in turn is derived from the locust `UserClass`.
+
+The `ConfigurableUser` class adds functionality that allows the tests to be configured from a yaml file.
+
+Two locust files are provided, and others can be easily added. The files have the following structure:
+* import all the task factories that you intend ot use in your user classes in the file
+* define the user classes 
+* in the user class configuration use one or more of the imported task factories to define tests.
+
+The tests are structured on two levels, at the top level there are the ConfigurableUser derived classes 
+and each class contains one or more task factories. A task factory is used to generate requests.
+
+At both levels there is a configurable weight parameter. The weights are relative to the other weights at the 
+same level. An example would illustrate what happens.
+
+Presume that in your Locust file you have defined 2 test classes: `Purchase` and `Browse`. In
+`Purchase` you have two tasks `Buy` and `CancelOrder` and in `Browse` you have another
+two tasks `SearchItem` , `ItemDetail`.
+If your configuration file looks like this:
+
+```yaml
+
+Purchase:
+  weight: 1
+  tasks:
+    Buy:
+      weight: 5
+    CancelRequest:
+      weight: 1
+
+Browse:
+  weight: 4
+  tasks:
+    SearchItem:
+      weight: 1
+    ItemDetail:
+      weight: 9
+```
+
+Then locust will use the Browse user class four times out of five and the Purchase class one time out of five to create requests.
+
+For each time locust will use the `Purchase` class it will use the `Buy` task 5 times more often then the `CancelRequest` task.
+
+For the `Browse` class it will use the `ItemDetail` task 9 times more often than the `SearchItem` task.
+
+Each time a task is called it will produce one request.
+
+# Available Tasks
+
+The following describes the available tasks, it doesn't try to comprehensively describe all
+configurable attributes, it just gives an idea of what can be configured.
+
+## Kafka
+
+### kafka outcome
+There are a few way to generate outcomes ( fixed outcomes, random outcomes, outcomes generated with
+relative frequencies).
+
+### kafka events
+Uses the same event generator as the envelope event generators but sends it to kafka
+
+
+## Envelope
+
+### session generator
+
+Envelope based generator for sessions. 
+
+The following parameters can be configured:
+* number of releases
+* number of environments
+* started time delta range
+* duration time delta range
+* number of users
+* relative weights between the following session outcomes:
+  * ok
+  * existed
+  * errored
+  * crashed
+  * abnormal termination
+
+## event generator
+
+Events can be generated either by using a file (obsolete) or using the `RandomEventTask`
+Generates events with a highly configurable set of parameters.
+
+It supports configurations for:
+* event groups
+* number of users
+* number of breadcrumbs
+* javascript stack traces
+* releases
+* loggers
+* transaction
+* contexts
+    
+## transaction generator
+
+Envelope based generator for Transactions.
+
+The following parameters can be configured:
+* number releases
+* number users
+* number spans
+* transaction duration range
+* number of breadcrumbs
+* various breadcrumb attributes
+* measurements
+* operations
