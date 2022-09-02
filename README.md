@@ -108,7 +108,7 @@ creates locust tests classes that are derived from `ConfigurableUser` class whic
 
 The `ConfigurableUser` class adds functionality that allows the tests to be configured from a yaml file.
 
-Two locust files are provided, and others can be easily added. The files have the following structure:
+Two locust files are provided ([simple_locustfile.py](https://github.com/getsentry/ingest-load-tester/blob/master/simple_locustfile.py) and [kafka_consumers_locustfile.py](https://github.com/getsentry/ingest-load-tester/blob/master/kafka_consumers_locustfile.py)) and , and others can be easily added. The files have the following structure:
 * import all the task factories that you intend ot use in your user classes in the file
 * define the user classes 
 * in the user class configuration use one or more of the imported task factories to define tests.
