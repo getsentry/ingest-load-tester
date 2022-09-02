@@ -185,7 +185,7 @@ The following parameters can be configured:
   * crashed
   * abnormal termination
 
-## event generator
+### event generator
 
 Events can be generated either by using a file (obsolete) or using the `RandomEventTask`
 Generates events with a highly configurable set of parameters.
@@ -200,7 +200,7 @@ It supports configurations for:
 * transaction
 * contexts
     
-## transaction generator
+### transaction generator
 
 Envelope based generator for Transactions.
 
