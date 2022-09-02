@@ -1,4 +1,9 @@
-# Relay load test tools
+# ingest-load-tester
+
+Legacy load testing tool for Relay.
+
+### IMPORTANT NOTE
+This is our legacy load tester, new tests should preferably be devloped in  [go-load-tester](https://github.com/getsentry/go-load-tester). 
 
 ## Load test contains tools for load testing relay.
 
