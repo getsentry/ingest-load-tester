@@ -101,9 +101,9 @@ Please consult the locust documentation for details: https://docs.locust.io/en/1
 
 ### Test Configuration
 
-Locust uses a top level file, a python file to configure the tests.
+Locust uses a Python file as a load testing entrypoint.
 
-`ingest-load-tester` which uses locust adds the facility to configure tests by using yaml files. Under the hood `ingest-load-tester` 
+`ingest-load-tester` uses Locust internally and adds the facility to configure tests by using yaml files. Under the hood `ingest-load-tester` 
 creates locust tests classes that are derived from `ConfigurableUser` class which in turn is derived from the locust `UserClass`.
 
 The `ConfigurableUser` class adds functionality that allows the tests to be configured from a yaml file.
