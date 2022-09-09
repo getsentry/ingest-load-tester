@@ -1,22 +1,21 @@
-import atexit
 import datetime
 import gzip
-from infrastructure.config import locust_config
 import json
 import logging
 import os
 import resource
-import time
 import threading
+import time
 import uuid
-from queue import Queue
-from yaml import load
 from logging.config import dictConfig
 from pprint import pformat
-from sentry_sdk.envelope import Envelope
+from queue import Queue
 
 import mywsgi
-from flask import Flask, request as flask_request, jsonify, abort
+from flask import Flask, abort, jsonify
+from flask import request as flask_request
+from sentry_sdk.envelope import Envelope
+from yaml import load
 
 try:
     from yaml import CFullLoader as FullLoader
@@ -192,7 +191,7 @@ def configure_app(config):
 
     @app.route("/api/0/relays/projectconfigs/", methods=["POST"])
     def get_project_config():
-        assert flask_request.args.get("version") == "2"
+        assert flask_request.args.get("version") in {"2", "3"}
         rv = {}
         _log.debug(f"f project configs request:\n{pformat(flask_request.json)}")
         for public_key in flask_request.json["publicKeys"]:
@@ -313,7 +312,7 @@ def load_proj_config(project_key):
         try:
             with open(file_name, "rt") as f:
                 return json.load(f)
-        except:
+        except Exception:
             pass
 
     default_config_name = os.path.join(dir_path, "default.json")

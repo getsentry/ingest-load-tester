@@ -1,16 +1,12 @@
 # ingest-load-tester
 
-Legacy load testing tool for Relay.
+> ### IMPORTANT NOTE: This is our legacy load tester, new tests should preferably be developed in [go-load-tester](https://github.com/getsentry/go-load-tester).
 
-### IMPORTANT NOTE
-This is our legacy load tester, new tests should preferably be devloped in  [go-load-tester](https://github.com/getsentry/go-load-tester). 
-
-## Load test contains tools for load testing relay.
 
 The project contains two tools: a load tester based on Locust (see https://locust.io/) and a
 fake Sentry server that contains just enough functionality to get relay working with an upstream.
 
-## Fake Sentry Server
+## Component: Fake Sentry Server
 
 The FakeSentryServer runs a Flask server that responds to the security challenge messages from Relay and
 is able to provide project configurations for any project (it responds with a canned project configuration)
@@ -26,7 +22,7 @@ For example, to achieve higher throughput, one can raise the number of workers a
 
     UWSGI_LISTEN=10000 UWSGI_PROCESSES=16 make fake-sentry
 
-## Load tester
+## Component: Load tester
 
 ### Installation
 
@@ -103,20 +99,20 @@ Please consult the locust documentation for details: https://docs.locust.io/en/1
 
 Locust uses a Python file as a load testing entrypoint.
 
-`ingest-load-tester` uses Locust internally and adds the facility to configure tests by using yaml files. Under the hood `ingest-load-tester` 
+`ingest-load-tester` uses Locust internally and adds the facility to configure tests by using yaml files. Under the hood `ingest-load-tester`
 creates locust tests classes that are derived from `ConfigurableUser` class which in turn is derived from the locust `UserClass`.
 
 The `ConfigurableUser` class adds functionality that allows the tests to be configured from a yaml file.
 
 Two locust files are provided ([simple_locustfile.py](https://github.com/getsentry/ingest-load-tester/blob/master/simple_locustfile.py) and [kafka_consumers_locustfile.py](https://github.com/getsentry/ingest-load-tester/blob/master/kafka_consumers_locustfile.py)) and , and others can be easily added. The files have the following structure:
 * import all the task factories that you intend ot use in your user classes in the file
-* define the user classes 
+* define the user classes
 * in the user class configuration use one or more of the imported task factories to define tests.
 
-The tests are structured on two levels, at the top level there are the ConfigurableUser derived classes 
+The tests are structured on two levels, at the top level there are the ConfigurableUser derived classes
 and each class contains one or more task factories. A task factory is used to generate requests.
 
-At both levels there is a configurable weight parameter. The weights are relative to the other weights at the 
+At both levels there is a configurable weight parameter. The weights are relative to the other weights at the
 same level. An example would illustrate what happens.
 
 Presume that in your Locust file you have defined 2 test classes: `Purchase` and `Browse`. In
@@ -170,7 +166,7 @@ Uses the same event generator as the envelope event generators but sends it to k
 
 ### session generator
 
-Envelope based generator for sessions. 
+Envelope based generator for sessions.
 
 The following parameters can be configured:
 * number of releases
@@ -199,7 +195,7 @@ It supports configurations for:
 * loggers
 * transaction
 * contexts
-    
+
 ### transaction generator
 
 Envelope based generator for Transactions.
