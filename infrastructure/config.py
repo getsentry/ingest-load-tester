@@ -16,18 +16,13 @@ def relay_address():
     config = locust_config()
     relay_settings = config.get("relay", {})
     host = relay_settings.get("host")
-    port = relay_settings.get("port")
 
     if host is None:
         raise "Missing relay.host settings from config file:{}".format(
             _config_file_path()
         )
-    if port is None:
-        raise "Missing relay.port settings from config file:{}".format(
-            _config_file_path()
-        )
 
-    return "{}:{}".format(host, port)
+    return host
 
 
 def kafka_config():
