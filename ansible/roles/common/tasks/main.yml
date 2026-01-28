@@ -1,0 +1,34 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+  tags:
+    - packages
+    - python
+
+- name: Install Python 3
+  package:
+    name: python3
+    state: present
+  tags:
+    - packages
+    - python
+
+- name: Install pip for Python 3
+  package:
+    name: python3-pip
+    state: present
+  tags:
+    - packages
+    - python
+
+- name: Upgrade pip
+  pip:
+    name: pip
+    state: latest
+    executable: pip3
+  tags:
+    - packages
+    - python

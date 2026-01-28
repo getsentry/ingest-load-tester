@@ -1,0 +1,12 @@
+---
+- name: Configure load test master
+  hosts: master
+  roles:
+    - common
+    - master
+
+- name: Configure load test workers
+  hosts: workers
+  roles:
+    - common
+    - worker

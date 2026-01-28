@@ -1,0 +1,5 @@
+---
+- name: Restart locust master
+  systemd:
+    name: locust-master
+    state: restarted

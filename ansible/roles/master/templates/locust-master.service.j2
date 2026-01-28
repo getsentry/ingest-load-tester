@@ -1,0 +1,19 @@
+[Unit]
+Description=Locust Load Test Master
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/ingest-load-tester
+Environment="PATH=/opt/ingest-load-tester/.venv/bin"
+ExecStart=/opt/ingest-load-tester/.venv/bin/locust \
+    -f simple_locustfile.py \
+    --master \
+    --web-host=0.0.0.0 \
+    --web-port=8089
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
