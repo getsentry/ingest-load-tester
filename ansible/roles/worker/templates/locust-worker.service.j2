@@ -10,7 +10,7 @@ Environment="PATH=/opt/ingest-load-tester/.venv/bin"
 ExecStart=/opt/ingest-load-tester/.venv/bin/locust \
     -f simple_locustfile.py \
     --worker \
-    --master-host={{ hostvars[groups['master'][0]]['ansible_host'] }}
+    --master-host={{ hostvars[groups['master'][0]]['host_ip'] }}
 Restart=on-failure
 RestartSec=5s
 
