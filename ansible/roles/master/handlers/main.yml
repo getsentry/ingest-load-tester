@@ -3,3 +3,8 @@
   systemd:
     name: locust-master
     state: restarted
+
+- name: Reload nginx
+  systemd:
+    name: nginx
+    state: reloaded

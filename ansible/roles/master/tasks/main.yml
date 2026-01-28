@@ -55,3 +55,54 @@
   tags:
     - service
     - master
+
+- name: Install nginx
+  apt:
+    name: nginx
+    state: present
+    update_cache: yes
+  tags:
+    - nginx
+    - master
+
+- name: Configure nginx for Locust
+  template:
+    src: nginx-locust.conf.j2
+    dest: /etc/nginx/sites-available/locust
+    mode: '0644'
+  notify: Reload nginx
+  tags:
+    - nginx
+    - config
+    - master
+
+- name: Enable nginx site
+  file:
+    src: /etc/nginx/sites-available/locust
+    dest: /etc/nginx/sites-enabled/locust
+    state: link
+  notify: Reload nginx
+  tags:
+    - nginx
+    - config
+    - master
+
+- name: Remove default nginx site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload nginx
+  tags:
+    - nginx
+    - config
+    - master
+
+- name: Enable and start nginx service
+  systemd:
+    name: nginx
+    enabled: yes
+    state: started
+  tags:
+    - nginx
+    - service
+    - master
