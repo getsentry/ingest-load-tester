@@ -8,7 +8,7 @@ User=root
 WorkingDirectory=/opt/ingest-load-tester
 Environment="PATH=/opt/ingest-load-tester/.venv/bin"
 ExecStart=/opt/ingest-load-tester/.venv/bin/locust \
-    -f simple_locustfile.py \
+    -f s4s2_locustfile.py \
     --worker \
     --master-host={{ hostvars[groups['master'][0]]['host_ip'] }}
 Restart=on-failure
