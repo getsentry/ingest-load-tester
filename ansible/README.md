@@ -1,6 +1,7 @@
 # Ansible Configuration for Load Test Infrastructure
 
-This directory contains Ansible playbooks and roles for managing a distributed load testing infrastructure.
+This directory contains Ansible playbooks and roles for managing a locust across
+a cluster of VMs
 
 ## Structure
 
@@ -36,17 +37,25 @@ This directory contains Ansible playbooks and roles for managing a distributed l
 
 ## Prerequisites
 
-1. Install Ansible on your local machine:
+1. Provision several VMs to run locust on. You'll need one master, and several workers.
+
+3. Open port 5557 on the master so that workers can connect to the master.
+
+4. ```bash
+   gcloud compute firewall-rules create locust-master-port --action=ALLOW --direction=INGRESS --rules=tcp:5557 --network sbx--stream-1-network --source-ranges=0.0.0.0/0
+   ```
+
+4. Install Ansible on your local machine:
    ```bash
    pip install ansible
    ```
 
-2. Ensure SSH access to all hosts:
+5. Ensure SSH access to all hosts:
    ```bash
-   ssh-copy-id user@34.11.148.114
+   ssh-copy-id user@host
    ```
 
-3. Update `inventory/hosts.yml` with the correct `ansible_user` if different from your local username
+6. Update `inventory/hosts.yml` with the correct `ansible_user` if different from your local username
 
 ## Usage
 
