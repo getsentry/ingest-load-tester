@@ -19,6 +19,8 @@
       - "--exclude=*.pyc"
       - "--exclude=ansible"
       - "--exclude=inventory"
+    use_ssh_args: true
+    # ssh_args: '-o ProxyCommand="gcloud compute start-iap-tunnel %h %p --listen-on-stdin --zone=us-west1-a --project=eng-dev-sbx--stream-1"'
   tags:
     - deploy
     - master
