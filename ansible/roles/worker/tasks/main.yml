@@ -19,6 +19,7 @@
       - "--exclude=*.pyc"
       - "--exclude=ansible"
       - "--exclude=inventory"
+    use_ssh_args: true
   tags:
     - deploy
     - worker
