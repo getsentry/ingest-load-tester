@@ -1,0 +1,23 @@
+[project]
+name = "ingest-load-tester"
+version = "0.1.0"
+description = "Locust based load generation tool for sentry ingestion."
+readme = "README.md"
+dependencies =[
+    "locust==2.8.6",
+    "flask==2.2.0",
+    "werkzeug==2.2.2",
+    "pyyaml",
+    #confluent-kafka==1.6.0
+    "msgpack>=0.6.1,<0.7.0",
+    "sentry-relay==0.9.0",
+    "black==22.3.0",
+    "mywsgi==1.0.3",
+    "pyuwsgi==2.0.23",
+    "sentry-sdk==1.5.8",
+    "influxdb-client==1.24.0"  #29.11.2021 send metrics to influxdb
+]
+
+[tool.uv]
+environments = ["sys_platform == 'darwin' or sys_platform == 'linux'"]
+
