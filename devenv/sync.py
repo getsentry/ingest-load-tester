@@ -7,10 +7,13 @@ from shutil import which
 from devenv.constants import SYSTEM_MACHINE, homebrew_bin, home, root
 from devenv.lib import brew, config, gcloud, proc, uv, venv
 
+
 def install_gcloud_kubectl(gcloud: str) -> None:
     if which("kubectl") is None:
         print("installing kubectl...")
-        proc.run((gcloud, "components", "install", "-q", "--verbosity=error", "kubectl"))
+        proc.run(
+            (gcloud, "components", "install", "-q", "--verbosity=error", "kubectl")
+        )
     else:
         print("kubectl already installed, skipping install step...")
 
