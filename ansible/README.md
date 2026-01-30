@@ -38,7 +38,7 @@ a cluster of VMs
 ## Prerequisites
 
 1. Provision several VMs to run locust on. You'll need one master, and several workers.
-
+2. Add each host to your `/etc/hosts` file as ansible uses hostnames.
 3. Open port 5557 on the master so that workers can connect to the master.
 
 4. ```bash
@@ -146,9 +146,9 @@ Edit `inventory/hosts.yml` and add new hosts under the `workers` group:
 workers:
   hosts:
     worker-01:
-      ansible_host: 34.11.148.115
+      ansible_host: 10.0.148.115
     worker-02:
-      ansible_host: 34.11.148.116
+      ansible_host: 10.0.148.116
 ```
 
 Then run the playbook to configure the new workers:

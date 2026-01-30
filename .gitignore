@@ -5,3 +5,4 @@ config/
 .vscode
 __pycache__
 .python-version
+ansible/inventory/hosts.yml
