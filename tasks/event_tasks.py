@@ -406,7 +406,7 @@ def _log_task_params(task_params):
 
     conv = {
         "min_items": (1, None),
-        "max_items": (10, None),
+        "max_items": (100, None),
         "release": (None, None),
     }
     return _convert_params(params_converter=conv, task_params=task_params)
