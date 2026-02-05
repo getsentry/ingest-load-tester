@@ -131,8 +131,8 @@ def _convert_params(
             param = task_params.get(key)
             if param is None:
                 ret_val[key] = default
-
-            ret_val[key] = converter(param)
+            else:
+                ret_val[key] = converter(param)
         except:
             ret_val[key] = default
 
@@ -406,7 +406,7 @@ def _log_task_params(task_params):
 
     conv = {
         "min_message_bytes": (500, None),
-        "max_message_bytes": (1024 * 1024, None),
+        "max_message_bytes": (1024 * 500, None),
         "min_items": (1, None),
         "max_items": (100, None),
         "release": (None, None),
