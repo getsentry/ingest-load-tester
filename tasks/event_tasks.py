@@ -405,8 +405,12 @@ def _log_task_params(task_params):
         task_params = {}
 
     conv = {
+        "min_message_bytes": (500, None),
+        "max_message_bytes": (1024 * 1024, None),
         "min_items": (1, None),
         "max_items": (100, None),
         "release": (None, None),
+        "min_attributes": (5, None),
+        "max_attributes": (100, None),
     }
     return _convert_params(params_converter=conv, task_params=task_params)
