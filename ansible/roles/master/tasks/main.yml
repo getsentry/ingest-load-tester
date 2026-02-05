@@ -1,0 +1,107 @@
+---
+- name: Create application directory
+  file:
+    path: /opt/ingest-load-tester
+    state: directory
+    mode: '0755'
+  tags:
+    - deploy
+    - master
+
+- name: Copy application files to master
+  synchronize:
+    src: "{{ playbook_dir }}/../"
+    dest: /opt/ingest-load-tester/
+    rsync_opts:
+      - "--exclude=.git"
+      - "--exclude=.venv"
+      - "--exclude=__pycache__"
+      - "--exclude=*.pyc"
+      - "--exclude=ansible"
+      - "--exclude=inventory"
+    use_ssh_args: true
+  tags:
+    - deploy
+    - master
+
+- name: Install application dependencies
+  pip:
+    requirements: /opt/ingest-load-tester/requirements.txt
+    virtualenv: /opt/ingest-load-tester/.venv
+    virtualenv_command: python3 -m venv
+  tags:
+    - deploy
+    - python
+    - master
+
+- name: Configure Locust master mode
+  template:
+    src: locust-master.service.j2
+    dest: /etc/systemd/system/locust-master.service
+    mode: '0644'
+  notify: Restart locust master
+  tags:
+    - config
+    - service
+    - master
+
+- name: Enable and start Locust master service
+  systemd:
+    name: locust-master
+    enabled: yes
+    state: started
+    daemon_reload: yes
+  tags:
+    - service
+    - master
+
+- name: Install nginx
+  apt:
+    name: nginx
+    state: present
+    update_cache: yes
+  tags:
+    - nginx
+    - master
+
+- name: Configure nginx for Locust
+  template:
+    src: nginx-locust.conf.j2
+    dest: /etc/nginx/sites-available/locust
+    mode: '0644'
+  notify: Reload nginx
+  tags:
+    - nginx
+    - config
+    - master
+
+- name: Enable nginx site
+  file:
+    src: /etc/nginx/sites-available/locust
+    dest: /etc/nginx/sites-enabled/locust
+    state: link
+  notify: Reload nginx
+  tags:
+    - nginx
+    - config
+    - master
+
+- name: Remove default nginx site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload nginx
+  tags:
+    - nginx
+    - config
+    - master
+
+- name: Enable and start nginx service
+  systemd:
+    name: nginx
+    enabled: yes
+    state: started
+  tags:
+    - nginx
+    - service
+    - master

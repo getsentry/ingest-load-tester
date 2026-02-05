@@ -90,7 +90,7 @@ you can start various load test sessions. Just go with a browser to http://local
 You can also start a session without a web server by passing the `--no-web` flag, like in the
 example below (that starts 4 users, with a spawn rate of 2 per second and runs for 20 seconds).
 
-    .venv/bin/locust -f kafka_consumers_locustfile.py --no-web -u 4 -r 2 --run-time 20s --stop-timeout 10
+    .venv/bin/locust -f kafka_consumers_locustfile.py --headless -u 4 -r 2 --run-time 20s --stop-timeout 10
 
 Please consult the locust documentation for details: https://docs.locust.io/en/1.4.3/running-locust-without-web-ui.html
 

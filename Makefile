@@ -68,3 +68,47 @@ style: setup-venv
 
 generate-javascript-stack-traces:
 	cd javascript-stack-trace-generator && make all
+
+# Ansible targets
+ANSIBLE_DIR := ansible
+ANSIBLE_PLAYBOOK := ansible-playbook -i $(ANSIBLE_DIR)/inventory/hosts.yml
+TAGS ?=
+
+# Run ansible against all hosts
+ansible-all:
+	cd $(ANSIBLE_DIR) && ansible-playbook site.yml $(if $(TAGS),--tags $(TAGS),)
+.PHONY: ansible-all
+
+# Run ansible against master only
+ansible-master:
+	cd $(ANSIBLE_DIR) && ansible-playbook site.yml --limit master $(if $(TAGS),--tags $(TAGS),)
+.PHONY: ansible-master
+
+# Run ansible against workers only
+ansible-workers:
+	cd $(ANSIBLE_DIR) && ansible-playbook site.yml --limit workers $(if $(TAGS),--tags $(TAGS),)
+.PHONY: ansible-workers
+
+# Test ansible connectivity
+ansible-ping:
+	cd $(ANSIBLE_DIR) && ansible all -m ping
+.PHONY: ansible-ping
+
+# List ansible hosts
+ansible-list:
+	cd $(ANSIBLE_DIR) && ansible all --list-hosts
+.PHONY: ansible-list
+
+# Show available ansible tags
+ansible-tags:
+	@echo "Available tags:"
+	@echo "  packages  - Install system packages"
+	@echo "  python    - Python and pip setup"
+	@echo "  deploy    - Deploy application files"
+	@echo "  config    - Configure services"
+	@echo "  service   - Manage systemd services"
+	@echo "  master    - Master-specific tasks"
+	@echo "  worker    - Worker-specific tasks"
+	@echo ""
+	@echo "Usage: make ansible-all TAGS=deploy,config"
+.PHONY: ansible-tags

@@ -1,0 +1,56 @@
+---
+- name: Create application directory
+  file:
+    path: /opt/ingest-load-tester
+    state: directory
+    mode: '0755'
+  tags:
+    - deploy
+    - worker
+
+- name: Copy application files to worker
+  synchronize:
+    src: "{{ playbook_dir }}/../"
+    dest: /opt/ingest-load-tester/
+    rsync_opts:
+      - "--exclude=.git"
+      - "--exclude=.venv"
+      - "--exclude=__pycache__"
+      - "--exclude=*.pyc"
+      - "--exclude=ansible"
+      - "--exclude=inventory"
+    use_ssh_args: true
+  tags:
+    - deploy
+    - worker
+
+- name: Install application dependencies
+  pip:
+    requirements: /opt/ingest-load-tester/requirements.txt
+    virtualenv: /opt/ingest-load-tester/.venv
+    virtualenv_command: python3 -m venv
+  tags:
+    - deploy
+    - python
+    - worker
+
+- name: Configure Locust worker mode
+  template:
+    src: locust-worker.service.j2
+    dest: /etc/systemd/system/locust-worker.service
+    mode: '0644'
+  notify: Restart locust worker
+  tags:
+    - config
+    - service
+    - worker
+
+- name: Enable and start Locust worker service
+  systemd:
+    name: locust-worker
+    enabled: yes
+    state: started
+    daemon_reload: yes
+  tags:
+    - service
+    - worker

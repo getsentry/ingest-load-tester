@@ -1,0 +1,18 @@
+---
+- name: Configure load test master
+  hosts: master
+  gather_facts: yes
+  roles:
+    - common
+    - master
+  tags:
+    - master
+
+- name: Configure load test workers
+  hosts: workers
+  gather_facts: yes
+  roles:
+    - common
+    - worker
+  tags:
+    - worker

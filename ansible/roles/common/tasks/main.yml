@@ -1,0 +1,36 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+  tags:
+    - packages
+    - python
+
+- name: Install Python 3
+  package:
+    name: python3
+    state: present
+  tags:
+    - packages
+    - python
+
+- name: Install python packages
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - python3-pip
+    - python3-venv
+  tags:
+    - packages
+    - python
+
+- name: Install rsync
+  package:
+    name: rsync
+    state: present
+  tags:
+    - packages
+    - rsync
