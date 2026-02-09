@@ -25,5 +25,5 @@ _config_path = full_path_from_module_relative_path(__file__, "config/s4s2.test.y
 
 # TransactionEvents = create_user_class("TransactionEvents", _config_path, __name__)
 # SimpleLoadTest = create_user_class("SimpleLoadTest", _config_path, __name__)
-# RandomEvents = create_user_class("RandomEvents", _config_path, __name__)
+RandomEvents = create_user_class("RandomEvents", _config_path, __name__)
 LogEvents = create_user_class("LogEvents", _config_path, __name__)
