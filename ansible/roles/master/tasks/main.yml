@@ -49,7 +49,7 @@
   systemd:
     name: locust-master
     enabled: yes
-    state: started
+    state: restarted
     daemon_reload: yes
   tags:
     - service
@@ -100,7 +100,7 @@
   systemd:
     name: nginx
     enabled: yes
-    state: started
+    state: restarted
   tags:
     - nginx
     - service
