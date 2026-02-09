@@ -38,7 +38,7 @@ def log_envelope_item_generator(
 
 
 def create_log_item(
-    trace_id: str |None,
+    trace_id: str | None,
     release: str | None,
     min_message_bytes: int,
     max_message_bytes: int,
@@ -51,8 +51,7 @@ def create_log_item(
         level=["info", "warn", "error"],
         timestamp=time.time,
         body=log_body_generator(
-            min_message_bytes=min_message_bytes,
-            max_message_bytes=max_message_bytes
+            min_message_bytes=min_message_bytes, max_message_bytes=max_message_bytes
         ),
         attributes=attribute_generator(
             release=release,
@@ -61,6 +60,7 @@ def create_log_item(
         ),
     )
     return generator()
+
 
 def log_body_generator(min_message_bytes: int, max_message_bytes: int):
     word_generator = sentence_generator()
@@ -98,7 +98,6 @@ def attribute_generator(
                 "value": value,
                 "type": "string",
             }
-
 
         return attrs
 
