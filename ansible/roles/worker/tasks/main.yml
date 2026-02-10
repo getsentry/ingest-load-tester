@@ -49,7 +49,7 @@
   systemd:
     name: locust-worker
     enabled: yes
-    state: started
+    state: restarted
     daemon_reload: yes
   tags:
     - service

@@ -8,7 +8,7 @@ import time
 import random
 from typing import Tuple, Callable, Any, Mapping, Optional, Sequence
 
-from sentry_sdk.envelope import Envelope
+from sentry_sdk.envelope import Envelope, Item, PayloadRef
 
 from infrastructure import (
     send_message,
@@ -24,6 +24,7 @@ from infrastructure.generators.contexts import (
     trace_context_generator,
 )
 from infrastructure.generators.event import base_event_generator
+from infrastructure.generators.log import log_envelope_item_generator
 from infrastructure.generators.transaction import (
     create_spans,
     measurements_generator,
@@ -130,8 +131,8 @@ def _convert_params(
             param = task_params.get(key)
             if param is None:
                 ret_val[key] = default
-
-            ret_val[key] = converter(param)
+            else:
+                ret_val[key] = converter(param)
         except:
             ret_val[key] = default
 
@@ -370,5 +371,46 @@ def _get_transaction_event_params(task_params):
         "breadcrumb_messages": (None, None),
         "measurements": ([], None),
         "operations": (["pageload"], None),
+    }
+    return _convert_params(params_converter=conv, task_params=task_params)
+
+
+def log_envelope_task_factory(task_params=None):
+    """
+    Create a generator for log type envelopes
+    """
+    task_params = _log_task_params(task_params)
+
+    generator = log_envelope_item_generator(**task_params)
+
+    def inner(user):
+        log_items = generator()
+        project_info = get_project_info(user)
+        item = Item(
+            type="log",
+            payload=PayloadRef(json=log_items),
+            content_type="application/vnd.sentry.items.log+json",
+            headers={"item_count": len(log_items["items"])},
+        )
+        envelope = Envelope()
+        envelope.add_item(item)
+
+        return send_envelope(user.client, project_info.id, project_info.key, envelope)
+
+    return inner
+
+
+def _log_task_params(task_params):
+    if task_params is None:
+        task_params = {}
+
+    conv = {
+        "min_message_bytes": (500, None),
+        "max_message_bytes": (1024 * 500, None),
+        "min_items": (1, None),
+        "max_items": (100, None),
+        "release": (None, None),
+        "min_attributes": (5, None),
+        "max_attributes": (100, None),
     }
     return _convert_params(params_converter=conv, task_params=task_params)
