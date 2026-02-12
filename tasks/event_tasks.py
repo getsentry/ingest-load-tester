@@ -25,7 +25,7 @@ from infrastructure.generators.contexts import (
 )
 from infrastructure.generators.event import base_event_generator
 from infrastructure.generators.log import log_envelope_item_generator
-from infrastructure.generators.profile import profile_chunk_item_generator, profile_item_generator
+from infrastructure.generators.profile import profile_chunk_item_generator
 from infrastructure.generators.transaction import (
     create_spans,
     measurements_generator,
@@ -427,7 +427,7 @@ def profile_chunk_envelope_task_factory(task_params = None):
         item = Item(
             type="profile_chunk",
             payload=PayloadRef(json=profile_item),
-            headers={"platform": "python"},
+            # headers={"platform": "python"},
         )
         envelope = Envelope()
         envelope.add_item(item)

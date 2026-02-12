@@ -95,11 +95,12 @@ def profile_chunk_item_generator(**kwargs):
         profile = {
             "profiler_id": uuid.uuid4().hex,
             "chunk_id": uuid.uuid4().hex,
-            "version": 2,
+            "version": "2",
             "release": "todo",
             "environment": "dev",
             "profile": create_profile_data(),
             "platform": "python",
+            "client_sdk": {"name": "sentry.python.django", "version":"2.4.5"},
         }
         return profile
 

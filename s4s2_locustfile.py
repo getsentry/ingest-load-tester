@@ -20,7 +20,6 @@ session_event_task_factory = event_tasks.session_event_task_factory
 transaction_event_task_factory = event_tasks.transaction_event_task_factory
 log_envelope_task_factory = event_tasks.log_envelope_task_factory
 profile_chunk_envelope_task_factory = event_tasks.profile_chunk_envelope_task_factory
-profile_envelope_task_factory = event_tasks.profile_envelope_task_factory
 
 # Load config and add config to factories.
 _config_path = full_path_from_module_relative_path(__file__, "config/s4s2.test.yml")
@@ -30,4 +29,3 @@ _config_path = full_path_from_module_relative_path(__file__, "config/s4s2.test.y
 RandomEvents = create_user_class("RandomEvents", _config_path, __name__)
 LogEvents = create_user_class("LogEvents", _config_path, __name__)
 ProfileChunkEvents = create_user_class("ProfileChunkEvents", _config_path, __name__)
-ProfileEvents = create_user_class("ProfileEvents", _config_path, __name__)
