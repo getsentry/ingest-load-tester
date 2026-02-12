@@ -42,7 +42,12 @@ functions = [
 ]
 
 
-def create_profile_data(min_sample_count: int, max_sample_count: int, min_frame_count: int, max_frame_count: int):
+def create_profile_data(
+    min_sample_count: int,
+    max_sample_count: int,
+    min_frame_count: int,
+    max_frame_count: int,
+):
     thread_id = random.randint(10000, 1000000)
     event_time = time.time()
 
@@ -57,11 +62,13 @@ def create_profile_data(min_sample_count: int, max_sample_count: int, min_frame_
         lineno = random.randint(1, 100)
         function = random.choice(functions)
         filename = random.choice(filenames)
-        frames.append({
-            "filename": filename,
-            "function": function,
-            "lineno": lineno,
-        })
+        frames.append(
+            {
+                "filename": filename,
+                "function": function,
+                "lineno": lineno,
+            }
+        )
 
     time_start = event_time - (0.01 * sample_count)
     for i in range(sample_count):
@@ -69,11 +76,13 @@ def create_profile_data(min_sample_count: int, max_sample_count: int, min_frame_
         stack_values = list(range(max(frame_count - i, 1)))
         stacks.append(stack_values)
 
-        samples.append({
-            "timestamp": time_start + (0.01 * i),
-            "thread_id": str(thread_id),
-            "stack_id": i,
-        })
+        samples.append(
+            {
+                "timestamp": time_start + (0.01 * i),
+                "thread_id": str(thread_id),
+                "stack_id": i,
+            }
+        )
 
     profile_data = {
         "samples": samples,

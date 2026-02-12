@@ -417,7 +417,7 @@ def _log_task_params(task_params):
     return _convert_params(params_converter=conv, task_params=task_params)
 
 
-def profile_chunk_envelope_task_factory(task_params = None):
+def profile_chunk_envelope_task_factory(task_params=None):
     task_params = _profile_chunk_task_params(task_params)
     generator = profile_chunk_item_generator(**task_params)
 
