@@ -420,6 +420,7 @@ def _log_task_params(task_params):
 def profile_chunk_envelope_task_factory(task_params = None):
     task_params = _profile_chunk_task_params(task_params)
     generator = profile_chunk_item_generator(**task_params)
+
     def inner(user):
         project_info = get_project_info(user)
         profile_item = generator()
@@ -427,7 +428,6 @@ def profile_chunk_envelope_task_factory(task_params = None):
         item = Item(
             type="profile_chunk",
             payload=PayloadRef(json=profile_item),
-            # headers={"platform": "python"},
         )
         envelope = Envelope()
         envelope.add_item(item)
@@ -440,5 +440,12 @@ def profile_chunk_envelope_task_factory(task_params = None):
 def _profile_chunk_task_params(task_params):
     if task_params is None:
         task_params = {}
-    conv = {}
+    conv = {
+        "min_sample_count": (5, None),
+        "max_sample_count": (10, None),
+        "min_frame_count": (10, None),
+        "max_frame_count": (30, None),
+        "release": ("1.0.1", None),
+        "environment": ("dev", None),
+    }
     return _convert_params(params_converter=conv, task_params=task_params)

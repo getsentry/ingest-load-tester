@@ -42,12 +42,12 @@ functions = [
 ]
 
 
-def create_profile_data():
+def create_profile_data(min_sample_count: int, max_sample_count: int, min_frame_count: int, max_frame_count: int):
     thread_id = random.randint(10000, 1000000)
     event_time = time.time()
 
-    sample_count = random.randint(5, 15)
-    frame_count = random.randint(5, 30)
+    sample_count = random.randint(min_sample_count, max_sample_count)
+    frame_count = random.randint(min_frame_count, max_frame_count)
 
     samples = []
     stacks = []
@@ -189,39 +189,29 @@ def create_profile_data():
     return profile_data
 
 
-def profile_chunk_item_generator(**kwargs):
-    """
-    v2 profiling chunks. Can't get these to ingest currently
-    """
+def profile_chunk_item_generator(
+    min_sample_count: int,
+    max_sample_count: int,
+    min_frame_count: int,
+    max_frame_count: int,
+    release: str,
+    environment: str,
+    **kwargs
+):
     def inner():
-        """
-        profile.samples -> list of sample
-            sample is when a stack was capture
-                timestamp - time of sample
-                thread_id - id of thread
-                stack_id - index of stack list.
-        profile.stacks -> list of stack indexes
-            lists of frames in a sample. Each sample has a stack list
-        profile.frames -> list of frames
-            frames are files captured in a sample.
-            - abs_path
-              module
-              filename
-              function
-              lineno
-              in_app
-        profile.thread_metadata:
-            names of threads.
-            - id -> {name: str}
-        """
         profile = {
             "version": "2",
             "chunk_id": uuid.uuid4().hex,
             "profiler_id": uuid.uuid4().hex,
             "timestamp": time.time(),
-            "release": "1.0.1",
-            "environment": "dev",
-            "profile": create_profile_data(),
+            "release": release,
+            "environment": environment,
+            "profile": create_profile_data(
+                min_sample_count=min_sample_count,
+                max_sample_count=max_sample_count,
+                min_frame_count=min_frame_count,
+                max_frame_count=max_frame_count,
+            ),
             # "platform": "python",
             # "client_sdk": {"name": "sentry.python.django", "version": "2.47.0"},
             "platform": "cocoa",
