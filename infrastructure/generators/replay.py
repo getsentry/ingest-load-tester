@@ -212,10 +212,8 @@ def generate_recording_events_from_file(num_segments: int) -> bytes:
         path = FIXTURE_PATH / "replay-recording-xsmall.json"
     elif num_segments < 5:
         path = FIXTURE_PATH / "replay-recording-small.json"
-    elif num_segments < 7:
-        path = FIXTURE_PATH / "replay-recording-medium.json"
     else:
-        path = FIXTURE_PATH / "replay-recording-large.json"
+        path = FIXTURE_PATH / "replay-recording-medium.json"
 
     with open(path, "rb") as f:
         events = json.load(f)
