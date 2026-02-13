@@ -1,8 +1,12 @@
+import pathlib
 import gzip
 import json
 import random
 import time
 import uuid
+
+
+FIXTURE_PATH = pathlib.Path(__file__).parent.parent.parent / "test-events"
 
 
 def replay_envelope_generator(
@@ -33,6 +37,26 @@ def replay_envelope_generator(
     def inner():
         num_segments = random.randint(min_segments, max_segments)
         items = []
+        # Create the replay_event item
+        replay_event = create_replay_event_item(
+            replay_id=replay_id,
+            replay_type=replay_type,
+            segment_id=0,
+            replay_start_timestamp=replay_start_timestamp,
+            release=release,
+            environment=environment,
+        )
+        items.append(replay_event)
+
+        replay_recording = create_replay_recording_item(
+            segment_id=0,
+            num_segments=num_segments,
+            compress=compress_recordings,
+        )
+        items.append(replay_recording)
+
+        """
+        items = []
 
         for segment_id in range(num_segments):
             # Create the replay_event item
@@ -52,6 +76,7 @@ def replay_envelope_generator(
                 compress=compress_recordings,
             )
             items.append(replay_recording)
+        """
 
         return items
 
@@ -97,8 +122,8 @@ def create_replay_event_item(
     replay_event["urls"] = generate_urls(segment_id)
 
     # Add trace IDs if any transactions occurred
-    if random.random() > 0.5:
-        replay_event["trace_ids"] = [uuid.uuid4().hex for _ in range(random.randint(1, 3))]
+    # if random.random() > 0.5:
+    replay_event["trace_ids"] = [uuid.uuid4().hex for _ in range(random.randint(1, 3))]
 
     # Add SDK information
     replay_event["sdk"] = {
@@ -107,12 +132,12 @@ def create_replay_event_item(
     }
 
     # Add user information
-    if random.random() > 0.3:
-        replay_event["user"] = {
-            "id": str(random.randint(1, 10000)),
-            "email": f"user{random.randint(1, 1000)}@example.com",
-            "ip_address": f"{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}",
-        }
+    # if random.random() > 0.3:
+    replay_event["user"] = {
+        "id": str(random.randint(1, 10000)),
+        "email": f"user{random.randint(1, 1000)}@example.com",
+        "ip_address": f"{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}",
+    }
 
     # Add request information
     replay_event["request"] = {
@@ -147,7 +172,7 @@ def generate_urls(segment_id: int):
     return random.sample(base_urls, min(num_urls, len(base_urls)))
 
 
-def create_replay_recording_item(segment_id: int, compress: bool = True):
+def create_replay_recording_item(segment_id: int, num_segments: int, compress: bool = True):
     """
     Create a replay_recording item with synthetic recording data.
 
@@ -160,21 +185,53 @@ def create_replay_recording_item(segment_id: int, compress: bool = True):
     metadata = {"segment_id": segment_id}
 
     # Generate synthetic recording events
-    recording_events = generate_recording_events(segment_id)
-
-    # Combine metadata and recording data
-    recording_data = json.dumps(metadata) + "\n" + json.dumps(recording_events)
+    # recording_events = generate_recording_events(segment_id)
+    recording_event_bytes = generate_recording_events_from_file(num_segments)
 
     # Optionally compress the recording data
     if compress:
-        recording_bytes = gzip.compress(recording_data.encode("utf-8"))
+        recording_bytes = gzip.compress(recording_event_bytes)
     else:
-        recording_bytes = recording_data.encode("utf-8")
+        recording_bytes = recording_event_bytes
+
+    # Combine metadata and recording data
+    recording_data = (json.dumps(metadata) + "\n").encode("utf8") + recording_bytes
 
     return {
         "type": "replay_recording",
-        "data": recording_bytes,
+        "data": recording_data,
     }
+
+
+
+def generate_recording_events_from_file(num_segments: int) -> bytes:
+    """
+    generate a replay recording segment from a fixture file.
+    """
+    if num_segments < 2:
+        path = FIXTURE_PATH / "replay-recording-xsmall.json"
+    elif num_segments < 5:
+        path = FIXTURE_PATH / "replay-recording-small.json"
+    elif num_segments < 7:
+        path = FIXTURE_PATH / "replay-recording-medium.json"
+    else:
+        path = FIXTURE_PATH / "replay-recording-large.json"
+
+    with open(path, "rb") as f:
+        events = json.load(f)
+
+    # Mutate each event and align the timestamp with the present.
+    # Use the offsets in the fixture data so the order of operations
+    # is preserved
+    current_time = time.time()
+    start_time: float | None = None
+    for item in events:
+        if start_time is None:
+            start_time = item["timestamp"]
+        event_time_delta = item["timestamp"] - start_time
+        item["timestamp"] = current_time + event_time_delta
+    return json.dumps(events).encode("utf8")
+
 
 
 def generate_recording_events(segment_id: int):
