@@ -25,6 +25,7 @@ from infrastructure.generators.contexts import (
 )
 from infrastructure.generators.event import base_event_generator
 from infrastructure.generators.log import log_envelope_item_generator
+from infrastructure.generators.profile import profile_chunk_item_generator
 from infrastructure.generators.transaction import (
     create_spans,
     measurements_generator,
@@ -412,5 +413,39 @@ def _log_task_params(task_params):
         "release": (None, None),
         "min_attributes": (5, None),
         "max_attributes": (100, None),
+    }
+    return _convert_params(params_converter=conv, task_params=task_params)
+
+
+def profile_chunk_envelope_task_factory(task_params=None):
+    task_params = _profile_chunk_task_params(task_params)
+    generator = profile_chunk_item_generator(**task_params)
+
+    def inner(user):
+        project_info = get_project_info(user)
+        profile_item = generator()
+
+        item = Item(
+            type="profile_chunk",
+            payload=PayloadRef(json=profile_item),
+        )
+        envelope = Envelope()
+        envelope.add_item(item)
+
+        return send_envelope(user.client, project_info.id, project_info.key, envelope)
+
+    return inner
+
+
+def _profile_chunk_task_params(task_params):
+    if task_params is None:
+        task_params = {}
+    conv = {
+        "min_sample_count": (5, None),
+        "max_sample_count": (10, None),
+        "min_frame_count": (10, None),
+        "max_frame_count": (30, None),
+        "release": ("1.0.1", None),
+        "environment": ("dev", None),
     }
     return _convert_params(params_converter=conv, task_params=task_params)
