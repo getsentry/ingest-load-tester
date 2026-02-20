@@ -484,7 +484,7 @@ def span_envelope_task_factory(task_params=None):
                 "sample_rand": str(random.random()),
                 "sample_rate": "1",
                 "org_id": project_info.org_id,
-            }
+            },
         }
         if task_params["environment"]:
             headers["trace"]["environment"] = task_params["environment"]
