@@ -26,6 +26,7 @@ from infrastructure.generators.contexts import (
 from infrastructure.generators.event import base_event_generator
 from infrastructure.generators.log import log_envelope_item_generator
 from infrastructure.generators.profile import profile_chunk_item_generator
+from infrastructure.generators.spans import span_envelope_item_generator
 from infrastructure.generators.transaction import (
     create_spans,
     measurements_generator,
@@ -447,5 +448,47 @@ def _profile_chunk_task_params(task_params):
         "max_frame_count": (30, None),
         "release": ("1.0.1", None),
         "environment": ("dev", None),
+    }
+    return _convert_params(params_converter=conv, task_params=task_params)
+
+
+def span_envelope_task_factory(task_params=None):
+    """
+    Create a generator for span type envelopes using the span v2 protocol.
+    Each envelope contains between min_items and max_items spans sharing a
+    single trace. The first span is the segment span; the rest are children.
+    """
+    task_params = _span_task_params(task_params)
+    generator = span_envelope_item_generator(**task_params)
+
+    def inner(user):
+        span_items = generator()
+        project_info = get_project_info(user)
+        item = Item(
+            type="span",
+            payload=PayloadRef(json=span_items),
+            content_type="application/vnd.sentry.items.span.v2+json",
+            headers={"item_count": len(span_items["items"])},
+        )
+        envelope = Envelope()
+        envelope.add_item(item)
+        return send_envelope(user.client, project_info.id, project_info.key, envelope)
+
+    return inner
+
+
+def _span_task_params(task_params):
+    if task_params is None:
+        task_params = {}
+    conv = {
+        "min_items": (1, None),
+        "max_items": (100, None),
+        "min_duration_ms": (1, None),
+        "max_duration_ms": (30_000, None),
+        "min_attributes": (1, None),
+        "max_attributes": (20, None),
+        "release": (None, None),
+        "environment": (None, None),
+        "operations": (["http", "db", "browser", "resource"], None),
     }
     return _convert_params(params_converter=conv, task_params=task_params)
