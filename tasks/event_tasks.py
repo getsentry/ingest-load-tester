@@ -3,7 +3,7 @@ Contains tasks that generate various types of events
 """
 import json
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import time
 import random
 from typing import Tuple, Callable, Any, Mapping, Optional, Sequence
@@ -470,7 +470,28 @@ def span_envelope_task_factory(task_params=None):
             content_type="application/vnd.sentry.items.span.v2+json",
             headers={"item_count": len(span_items["items"])},
         )
-        envelope = Envelope()
+        headers = {
+            "sent_at": datetime.now(timezone.utc).isoformat(),
+            "sdk": {
+                "name": "sentry.python",
+                "version": "2.52.0",
+            },
+            "dsn": project_info.dsn,
+            "trace": {
+                "public_key": project_info.key,
+                "trace_id": span_items["items"][0]["trace_id"],
+                "sampled": "true",
+                "sample_rand": str(random.random()),
+                "sample_rate": "1",
+                "org_id": project_info.org_id,
+            }
+        }
+        if task_params["environment"]:
+            headers["trace"]["environment"] = task_params["environment"]
+        if task_params["release"]:
+            headers["trace"]["release"] = task_params["release"]
+
+        envelope = Envelope(headers=headers)
         envelope.add_item(item)
         return send_envelope(user.client, project_info.id, project_info.key, envelope)
 

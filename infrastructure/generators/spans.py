@@ -66,7 +66,7 @@ def span_envelope_item_generator(
         trace_id = uuid.uuid4().hex
         now = time.time()
 
-        segment_duration = random.randint(min_duration_ms, max_duration_ms) / 1000.0
+        segment_duration = random.randint(min_duration_ms, max_duration_ms) / 1000
         segment_start = now - segment_duration
         segment_span_id = uuid.uuid4().hex[:16]
         segment_op = random.choice(operations)
@@ -90,7 +90,7 @@ def span_envelope_item_generator(
         for _ in range(num_spans - 1):
             child_duration_s = random.uniform(0, segment_duration)
             child_end = random.uniform(segment_start + child_duration_s, now)
-            child_start = child_end - child_duration_s
+            child_start = max(segment_start, child_end - child_duration_s)
             child_op = random.choice(operations)
 
             spans.append(
@@ -135,12 +135,14 @@ def _create_span(
         "status": random.choices(["ok", "error"], weights=[19, 1])[0],
         "start_timestamp": start_timestamp,
         "end_timestamp": end_timestamp,
+        "links": [],
         "attributes": _attribute_generator(
             op=op,
             release=release,
             environment=environment,
             min_attributes=min_attributes,
             max_attributes=max_attributes,
+            is_segment=is_segment,
         ),
     }
     if parent_span_id is not None:
@@ -154,10 +156,13 @@ def _attribute_generator(
     environment: str | None,
     min_attributes: int,
     max_attributes: int,
+    is_segment: bool,
 ) -> dict:
     attrs = {
         "sentry.op": {"value": op, "type": "string"},
     }
+    if is_segment:
+        attrs["sentry.span.source"] = {"value": "url", "type": "string"}
     if release:
         attrs["sentry.release"] = {"value": release, "type": "string"}
     if environment:
