@@ -55,29 +55,6 @@ def replay_envelope_generator(
         )
         items.append(replay_recording)
 
-        """
-        items = []
-
-        for segment_id in range(num_segments):
-            # Create the replay_event item
-            replay_event = create_replay_event_item(
-                replay_id=replay_id,
-                replay_type=replay_type,
-                segment_id=segment_id,
-                replay_start_timestamp=replay_start_timestamp if segment_id == 0 else None,
-                release=release,
-                environment=environment,
-            )
-            items.append(replay_event)
-
-            # Create the corresponding replay_recording item
-            replay_recording = create_replay_recording_item(
-                segment_id=segment_id,
-                compress=compress_recordings,
-            )
-            items.append(replay_recording)
-        """
-
         return items
 
     return inner
@@ -141,15 +118,17 @@ def create_replay_event_item(
 
     # Add request information
     replay_event["request"] = {
-        "url": random.choice([
-            "https://example.com/",
-            "https://example.com/dashboard",
-            "https://example.com/profile",
-            "https://example.com/settings",
-        ]),
+        "url": random.choice(
+            [
+                "https://example.com/",
+                "https://example.com/dashboard",
+                "https://example.com/profile",
+                "https://example.com/settings",
+            ]
+        ),
         "headers": {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
-        }
+        },
     }
 
     return replay_event
@@ -172,7 +151,9 @@ def generate_urls(segment_id: int):
     return random.sample(base_urls, min(num_urls, len(base_urls)))
 
 
-def create_replay_recording_item(segment_id: int, num_segments: int, compress: bool = True):
+def create_replay_recording_item(
+    segment_id: int, num_segments: int, compress: bool = True
+):
     """
     Create a replay_recording item with synthetic recording data.
 
@@ -185,7 +166,6 @@ def create_replay_recording_item(segment_id: int, num_segments: int, compress: b
     metadata = {"segment_id": segment_id}
 
     # Generate synthetic recording events
-    # recording_events = generate_recording_events(segment_id)
     recording_event_bytes = generate_recording_events_from_file(num_segments)
 
     # Optionally compress the recording data
@@ -201,7 +181,6 @@ def create_replay_recording_item(segment_id: int, num_segments: int, compress: b
         "type": "replay_recording",
         "data": recording_data,
     }
-
 
 
 def generate_recording_events_from_file(num_segments: int) -> bytes:
@@ -229,102 +208,3 @@ def generate_recording_events_from_file(num_segments: int) -> bytes:
         event_time_delta = item["timestamp"] - start_time
         item["timestamp"] = current_time + event_time_delta
     return json.dumps(events).encode("utf8")
-
-
-
-def generate_recording_events(segment_id: int):
-    """
-    Generate synthetic RRWeb recording events.
-
-    These are simplified versions of actual RRWeb events.
-    """
-    base_timestamp = int(time.time() * 1000)  # milliseconds
-    events = []
-
-    # Start with a meta event (type 4)
-    events.append({
-        "type": 4,  # Meta
-        "timestamp": base_timestamp,
-        "data": {
-            "href": "https://example.com/",
-            "width": 1920,
-            "height": 1080,
-        }
-    })
-
-    # Add a full snapshot event (type 2) for the first segment
-    if segment_id == 0:
-        events.append({
-            "type": 2,  # FullSnapshot
-            "timestamp": base_timestamp + 100,
-            "data": {
-                "node": {
-                    "type": 0,
-                    "childNodes": [
-                        {
-                            "type": 1,
-                            "name": "html",
-                            "attributes": {},
-                            "childNodes": []
-                        }
-                    ]
-                },
-                "initialOffset": {
-                    "left": 0,
-                    "top": 0
-                }
-            }
-        })
-
-    # Add some incremental snapshots (type 3) - mouse movements, clicks, etc.
-    num_events = random.randint(5, 20)
-    for i in range(num_events):
-        event_timestamp = base_timestamp + (i + 1) * 100
-
-        # Random event type
-        event_type = random.choice([
-            "MouseMove",
-            "MouseInteraction",
-            "Scroll",
-            "ViewportResize",
-            "Input",
-        ])
-
-        if event_type == "MouseMove":
-            events.append({
-                "type": 3,  # IncrementalSnapshot
-                "timestamp": event_timestamp,
-                "data": {
-                    "source": 1,  # MouseMove
-                    "positions": [
-                        {
-                            "x": random.randint(0, 1920),
-                            "y": random.randint(0, 1080),
-                            "timeOffset": random.randint(0, 100)
-                        }
-                    ]
-                }
-            })
-        elif event_type == "MouseInteraction":
-            events.append({
-                "type": 3,
-                "timestamp": event_timestamp,
-                "data": {
-                    "source": 2,  # MouseInteraction
-                    "type": random.choice([0, 1, 2]),  # MouseUp, MouseDown, Click
-                    "x": random.randint(0, 1920),
-                    "y": random.randint(0, 1080),
-                }
-            })
-        elif event_type == "Scroll":
-            events.append({
-                "type": 3,
-                "timestamp": event_timestamp,
-                "data": {
-                    "source": 3,  # Scroll
-                    "x": random.randint(0, 100),
-                    "y": random.randint(0, 1000),
-                }
-            })
-
-    return events
