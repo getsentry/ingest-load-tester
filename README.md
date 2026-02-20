@@ -209,3 +209,16 @@ The following parameters can be configured:
 * various breadcrumb attributes
 * measurements
 * operations
+
+### span generator
+
+Envelope based generator for spans using the [span v2 protocol](https://develop.sentry.dev/sdk/telemetry/spans/span-protocol/).
+Each envelope contains one segment span and zero or more child spans, all sharing a single `trace_id`.
+
+The following parameters can be configured:
+* `min_items` / `max_items` — number of spans per envelope (1–1000)
+* `min_duration_ms` / `max_duration_ms` — duration range for the segment span in milliseconds
+* `min_attributes` / `max_attributes` — number of extra attributes per span
+* `release` — optional release string added as `sentry.release` attribute
+* `environment` — optional environment string added as `sentry.environment` attribute
+* `operations` — list of operation names used for `sentry.op` (e.g. `http`, `db`, `browser`, `resource`)
