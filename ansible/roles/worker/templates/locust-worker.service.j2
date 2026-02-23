@@ -10,7 +10,7 @@ Environment="PATH=/opt/ingest-load-tester/.venv/bin"
 ExecStart=/opt/ingest-load-tester/.venv/bin/locust \
     -f s4s2_locustfile.py \
     --worker \
-    --processes 2 \
+    --processes {{ worker_processes | default(1) }} \
     --master-host={{ hostvars[groups['master'][0]]['host_ip'] }}
 Restart=on-failure
 RestartSec=5s
