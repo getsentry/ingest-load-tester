@@ -26,6 +26,7 @@ from infrastructure.generators.contexts import (
 from infrastructure.generators.event import base_event_generator
 from infrastructure.generators.log import log_envelope_item_generator
 from infrastructure.generators.profile import profile_chunk_item_generator
+from infrastructure.generators.replay import replay_envelope_generator
 from infrastructure.generators.transaction import (
     create_spans,
     measurements_generator,
@@ -447,5 +448,60 @@ def _profile_chunk_task_params(task_params):
         "max_frame_count": (30, None),
         "release": ("1.0.1", None),
         "environment": ("dev", None),
+    }
+    return _convert_params(params_converter=conv, task_params=task_params)
+
+
+def replay_envelope_task_factory(task_params=None):
+    """
+    Create a generator for replay_event and replay_recording envelopes.
+
+    Parameters:
+        min_segments: Minimum number of replay_recording segments per replay_event (default: 1)
+        max_segments: Maximum number of replay_recording segments per replay_event (default: 5)
+        replay_type: Either "session" or "buffer" (default: "session")
+        release: Release version string (default: None)
+        environment: Environment name (default: None)
+        compress_recordings: Whether to gzip-compress recording data (default: True)
+    """
+    task_params = _replay_task_params(task_params)
+    generator = replay_envelope_generator(**task_params)
+
+    def inner(user):
+        project_info = get_project_info(user)
+        replay_items = generator()
+
+        envelope = Envelope()
+        for item_data in replay_items:
+            if item_data["type"] == "replay_event":
+                # Add replay_event as a regular item
+                item = Item(
+                    type="replay_event",
+                    payload=PayloadRef(json=item_data),
+                )
+                envelope.add_item(item)
+            elif item_data["type"] == "replay_recording":
+                # Add replay_recording with binary data
+                item = Item(
+                    type="replay_recording",
+                    payload=PayloadRef(bytes=item_data["data"]),
+                )
+                envelope.add_item(item)
+
+        return send_envelope(user.client, project_info.id, project_info.key, envelope)
+
+    return inner
+
+
+def _replay_task_params(task_params):
+    if task_params is None:
+        task_params = {}
+    conv = {
+        "min_segments": (1, None),
+        "max_segments": (5, None),
+        "replay_type": ("session", None),
+        "release": (None, None),
+        "environment": (None, None),
+        "compress_recordings": (True, None),
     }
     return _convert_params(params_converter=conv, task_params=task_params)
