@@ -164,7 +164,7 @@ Uses the same event generator as the envelope event generators but sends it to k
 
 ## Envelope
 
-### session generator
+### Session generator
 
 Envelope based generator for sessions.
 
@@ -181,12 +181,13 @@ The following parameters can be configured:
   * crashed
   * abnormal termination
 
-### event generator
+### Event generator
 
 Events can be generated either by using a file (obsolete) or using the `RandomEventTask`
 Generates events with a highly configurable set of parameters.
 
 It supports configurations for:
+
 * event groups
 * number of users
 * number of breadcrumbs
@@ -196,7 +197,7 @@ It supports configurations for:
 * transaction
 * contexts
 
-### transaction generator
+### Transaction generator
 
 Envelope based generator for Transactions.
 
@@ -210,7 +211,7 @@ The following parameters can be configured:
 * measurements
 * operations
 
-### span generator
+### Span generator
 
 Envelope based generator for spans using the [span v2 protocol](https://develop.sentry.dev/sdk/telemetry/spans/span-protocol/).
 Each envelope contains one segment span and zero or more child spans, all sharing a single `trace_id`.
@@ -222,3 +223,49 @@ The following parameters can be configured:
 * `release` — optional release string added as `sentry.release` attribute
 * `environment` — optional environment string added as `sentry.environment` attribute
 * `operations` — list of operation names used for `sentry.op` (e.g. `http`, `db`, `browser`, `resource`)
+
+### Log generator
+
+Envelope based generator for Log events
+
+The following parameters can be configured:
+
+* min_items: Minimum number of log items per envelope (default: 1)
+* max_items: Maximum number of log items per envelope (default: 100)
+* min_message_bytes: Minimum size of log message body in bytes (default: 500)
+* max_message_bytes: Maximum size of log message body in bytes (default: 512000)
+* min_attributes: Minimum number of custom attributes per log item (default: 5)
+* max_attributes: Maximum number of custom attributes per log item (default: 100)
+* release: Release version string (optional)
+
+Each log item includes a trace_id, span_id, level (info/warn/error), timestamp, body, and custom attributes.
+
+### Profile chunk generator
+
+Envelope based generator for Profiling data (Continuous Profiling chunks).
+
+The following parameters can be configured:
+
+* min_sample_count: Minimum number of samples per profile chunk (default: 5)
+* max_sample_count: Maximum number of samples per profile chunk (default: 10)
+* min_frame_count: Minimum number of stack frames (default: 10)
+* max_frame_count: Maximum number of stack frames (default: 30)
+* release: Release version string (default: "1.0.1")
+* environment: Environment name (default: "dev")
+
+Each profile chunk contains samples, stacks, and frames representing profiling data captured during execution.
+
+### Replay generator
+
+Envelope based generator for Replay events (Session Replay).
+
+The following parameters can be configured:
+* min_segments: Minimum number of replay_recording segments per replay_event (default: 1)
+* max_segments: Maximum number of replay_recording segments per replay_event (default: 5)
+* replay_type: Either "session" for full session recording or "buffer" for error replays (default: "session")
+* release: Release version string (optional)
+* environment: Environment name (optional)
+* compress_recordings: Whether to gzip-compress the recording data (default: true)
+
+Each replay_event is accompanied by the configured number of replay_recording segments, which contain
+synthetic RRWeb recording data (mouse movements, clicks, scrolls, etc.).
