@@ -1,6 +1,7 @@
 from collections import namedtuple
 from math import floor
 from random import random
+import urllib.parse
 
 from yaml import load
 
@@ -59,7 +60,7 @@ def locust_config():
         raise ValueError("Invalid configuration")
 
 
-ProjectInfo = namedtuple("ProjectInfo", "id, key")
+ProjectInfo = namedtuple("ProjectInfo", "id, key, org_id, dsn")
 
 
 def generate_project_info(num_projects) -> ProjectInfo:
@@ -85,7 +86,16 @@ def generate_project_info(num_projects) -> ProjectInfo:
         project_id = project_cfg["id"]
         project_key = project_cfg["key"]
 
-    return ProjectInfo(id=project_id, key=project_key)
+    host = config["relay"]["host"]
+    parsed = urllib.parse.urlsplit(host)
+
+    dsn = f"{parsed.scheme}://{project_key}:@{parsed.netloc}/{project_id}"
+    org_id = None
+    if parsed.netloc.startswith("o"):
+        org_domain = parsed.netloc.split(".")[0]
+        org_id = org_domain[1:]
+
+    return ProjectInfo(id=project_id, key=project_key, org_id=org_id, dsn=dsn)
 
 
 def project_id_to_fake_project_key(proj_id: int) -> str:
