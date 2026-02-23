@@ -550,6 +550,8 @@ def _span_task_params(task_params):
         "release": (None, None),
         "environment": (None, None),
         "operations": (["http", "db", "browser", "resource"], None),
+    }
+    return _convert_params(params_converter=conv, task_params=task_params)
 
 
 def _replay_task_params(task_params):
