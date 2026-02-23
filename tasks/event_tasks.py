@@ -495,6 +495,10 @@ def span_envelope_task_factory(task_params=None):
         envelope = Envelope(headers=headers)
         envelope.add_item(item)
 
+        return send_envelope(user.client, project_info.id, project_info.key, envelope)
+
+    return inner
+
 
 def replay_envelope_task_factory(task_params=None):
     """
