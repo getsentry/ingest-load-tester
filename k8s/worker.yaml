@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: locust-worker
+  labels:
+    app: locust-worker
+spec:
+  replicas: 8
+  selector:
+    matchLabels:
+      app: locust-worker
+  template:
+    metadata:
+      labels:
+        app: locust-worker
+    spec:
+      containers:
+        - name: locust-worker
+          image: ghcr.io/getsentry/ingest-load-tester:latest
+          args: ["run-worker"]
+          env:
+            - name: LOCUST_FILE
+              value: simple_locustfile.py
+            - name: MASTER_HOST
+              value: locust-master
+            - name: WORKER_PROCESSES
+              value: "6"
+          volumeMounts:
+            - name: config
+              mountPath: /root/config
+          resources:
+            requests:
+              cpu: "8"
+              memory: "4Gi"
+            limits:
+              memory: "4Gi"
+      volumes:
+        - name: config
+          configMap:
+            name: locust-config

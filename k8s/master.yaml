@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: locust-master
+  labels:
+    app: locust-master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: locust-master
+  template:
+    metadata:
+      labels:
+        app: locust-master
+    spec:
+      containers:
+        - name: locust-master
+          image: ghcr.io/getsentry/ingest-load-tester:latest
+          args: ["run-master"]
+          env:
+            - name: LOCUST_FILE
+              value: simple_locustfile.py
+          ports:
+            - name: web-ui
+              containerPort: 8089
+            - name: worker-comm
+              containerPort: 5557
+          volumeMounts:
+            - name: config
+              mountPath: /root/config
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8089
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "4"
+              memory: "4Gi"
+            limits:
+              memory: "4Gi"
+      volumes:
+        - name: config
+          configMap:
+            name: locust-config
+---
+# ClusterIP service for worker-to-master communication on port 5557
+apiVersion: v1
+kind: Service
+metadata:
+  name: locust-master
+spec:
+  selector:
+    app: locust-master
+  ports:
+    - name: worker-comm
+      port: 5557
+      targetPort: 5557
+  type: ClusterIP
+---
+# LoadBalancer service for external access to the Locust web UI
+apiVersion: v1
+kind: Service
+metadata:
+  name: locust-master-web
+spec:
+  selector:
+    app: locust-master
+  ports:
+    - name: web-ui
+      port: 8089
+      targetPort: 8089
+  type: LoadBalancer
