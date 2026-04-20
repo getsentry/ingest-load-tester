@@ -28,7 +28,7 @@ spec:
               containerPort: 5557
           volumeMounts:
             - name: config
-              mountPath: /root/config
+              mountPath: /app/config
           readinessProbe:
             httpGet:
               path: /
