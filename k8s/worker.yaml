@@ -22,7 +22,7 @@ spec:
             - name: LOCUST_FILE
               value: ingest_locustfile.py
             - name: LOCUST_CONFIG
-              value: "/app/config/ingest.yaml"
+              value: "/app/config/ingest.yml"
             - name: MASTER_HOST
               value: locust-master
             - name: WORKER_PROCESSES
