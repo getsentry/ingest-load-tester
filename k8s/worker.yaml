@@ -32,7 +32,7 @@ spec:
               mountPath: /app/config
           resources:
             requests:
-              cpu: "8"
+              cpu: "6"
               memory: "4Gi"
             limits:
               memory: "4Gi"
