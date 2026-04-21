@@ -27,7 +27,9 @@ transaction_event_task_factory = event_tasks.transaction_event_task_factory
 if config := os.getenv("LOCUST_CONFIG"):
     _config_path = config
 else:
-    _config_path = full_path_from_module_relative_path(__file__, "config/simple.test.yml")
+    _config_path = full_path_from_module_relative_path(
+        __file__, "config/simple.test.yml"
+    )
 
 # SimpleLoadTest = create_user_class("SimpleLoadTest", _config_path, __name__)
 RandomEvents = create_user_class("RandomEvents", _config_path, __name__)
