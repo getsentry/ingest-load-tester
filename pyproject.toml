@@ -12,9 +12,8 @@ dependencies =[
     "msgpack>=1.0.0",
     "sentry-relay==0.9.0",
     "black==22.3.0",
-    "mywsgi==1.0.3",
-    # "pyuwsgi==2.0.23",
-    "sentry-sdk==1.5.8",
+    "pyuwsgi==2.0.30",
+    "sentry-sdk==2.58.0",
     "influxdb-client==1.24.0"  #29.11.2021 send metrics to influxdb
 ]
 
