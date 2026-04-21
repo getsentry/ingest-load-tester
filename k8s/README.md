@@ -12,3 +12,8 @@ to generate the desired load.
 2. Deploy the configmap, worker + master resources.
 3. Iterate on the configuration and re-apply the config map
 4. `rollout restart` the worker and master deployments to reload configuration.
+
+# Building images
+
+Images are built on each pull request and each change on `master`.
+You don't need to build images to reconfigure a load test.
