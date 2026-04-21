@@ -20,7 +20,9 @@ spec:
           args: ["run-master"]
           env:
             - name: LOCUST_FILE
-              value: simple_locustfile.py
+              value: ingest_locustfile.py
+            - name: LOCUST_CONFIG
+              value: "/app/config/ingest.yaml"
           ports:
             - name: web-ui
               containerPort: 8089

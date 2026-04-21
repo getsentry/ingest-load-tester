@@ -33,7 +33,7 @@ data:
 
       default_tags: {}
 
-  simple.test.yml: |
+  ingest.yml: |
     users:
       SimpleLoadTest:
         wait_time: constant(1)

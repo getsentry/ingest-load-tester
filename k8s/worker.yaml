@@ -20,14 +20,16 @@ spec:
           args: ["run-worker"]
           env:
             - name: LOCUST_FILE
-              value: simple_locustfile.py
+              value: ingest_locustfile.py
+            - name: LOCUST_CONFIG
+              value: "/app/config/ingest.yaml"
             - name: MASTER_HOST
               value: locust-master
             - name: WORKER_PROCESSES
               value: "6"
           volumeMounts:
             - name: config
-              mountPath: /root/config
+              mountPath: /app/config
           resources:
             requests:
               cpu: "8"
