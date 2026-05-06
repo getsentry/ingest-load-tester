@@ -47,7 +47,7 @@ users:
         organization_slug: sentry
         # project_ids: [1234, 5678]
         stats_periods: ["24h", "12h", "1h"]
-        limits: [10, 25, 50]
+        per_page_values: [10, 25, 50]
         field_sets:
           - ["title", "event.type", "project", "user.display", "timestamp"]
           - ["title", "count()", "project"]

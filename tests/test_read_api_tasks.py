@@ -170,7 +170,7 @@ class TestOrganizationEvents:
                 "organization_slug": "myorg",
                 "field_sets": [["title", "count()", "project"]],
                 "stats_periods": ["24h"],
-                "limits": [10],
+                "per_page_values": [10],
                 "datasets": [""],
                 "queries": [""],
                 "sort_by": [""],
@@ -191,7 +191,7 @@ class TestOrganizationEvents:
                 "datasets": ["discover"],
                 "field_sets": [["title"]],
                 "stats_periods": ["1h"],
-                "limits": [10],
+                "per_page_values": [10],
                 "queries": [""],
                 "sort_by": [""],
             }

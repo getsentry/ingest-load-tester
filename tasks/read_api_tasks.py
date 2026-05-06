@@ -108,7 +108,7 @@ def organization_events_task_factory(task_params=None):
     org_slug = task_params.get("organization_slug", "sentry")
     project_ids = task_params.get("project_ids", [])
     stats_periods = task_params.get("stats_periods", ["24h", "12h", "1h"])
-    limits = task_params.get("limits", [10, 25, 50])
+    per_page_values = task_params.get("per_page_values", [10, 25, 50])
     field_sets = task_params.get(
         "field_sets",
         [
@@ -130,7 +130,7 @@ def organization_events_task_factory(task_params=None):
         params = [("field", f) for f in fields]
 
         params.append(("statsPeriod", _choice(stats_periods, "24h")))
-        params.append(("limit", _choice(limits, 10)))
+        params.append(("per_page", _choice(per_page_values, 10)))
 
         dataset = _choice(datasets, "")
         if dataset:
