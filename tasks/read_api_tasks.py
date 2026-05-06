@@ -68,7 +68,7 @@ def organization_group_index_task_factory(task_params=None):
     project_ids = task_params.get("project_ids", [])
     stats_periods = task_params.get("stats_periods", ["24h", "12h", "1h"])
     limits = task_params.get("limits", [25, 50, 100])
-    sort_options = task_params.get("sort_options", ["date", "priority", "freq", "new"])
+    sort_options = task_params.get("sort_options", ["date", "freq", "new", "trends"])
     queries = task_params.get("queries", ["is:unresolved", ""])
 
     base_path = f"/api/0/organizations/{org_slug}/issues/"

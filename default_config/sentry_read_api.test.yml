@@ -31,7 +31,7 @@ users:
         # project_ids: [1234, 5678]
         stats_periods: ["24h", "12h", "1h"]
         limits: [25, 50, 100]
-        sort_options: ["date", "priority", "freq", "new"]
+        sort_options: ["date", "freq", "new", "trends"]
         queries: ["is:unresolved", ""]
 
   # Priority 2: Discover events - core query endpoint, heavy Snuba fan-out

@@ -6,7 +6,7 @@ new_limit = min(current_limits[1], 12000)
 resource.setrlimit(resource.RLIMIT_NOFILE, (new_limit, new_limit))
 
 from infrastructure import full_path_from_module_relative_path, create_user_class
-from tasks import event_tasks
+from tasks import read_api_tasks
 
 # Expose task factories so the YAML config can reference them by name.
 # Do NOT just import the functions in the module (you will get a warning that
