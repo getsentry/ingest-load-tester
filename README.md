@@ -52,8 +52,9 @@ Presuming that you are in the load-tests directory you can run:
 
     make TEST=simple load-test
     make TEST=kafka_consumers load-test
+    make TEST=read_api load-test
 
-These tests will run with the configuration files `config/simple.test.yml` and `config/kafka_consumers.test.yml` respectively.
+These tests will run with the configuration files `config/simple.test.yml`, `config/kafka_consumers.test.yml`, and `config/sentry_read_api.test.yml` respectively.
 
 Which will ensure that the virtual environment is installed and set up and will call:
 `.venv/bin/locust -f simple_locustfile.py`
@@ -249,3 +250,20 @@ The following parameters can be configured:
 
 Each replay_event is accompanied by the configured number of replay_recording segments, which contain
 synthetic RRWeb recording data (mouse movements, clicks, scrolls, etc.).
+
+## Read API
+
+Load tests for Sentry's highest-traffic read API endpoints. Unlike the envelope/kafka tasks above which
+test the ingest (write) path, these tasks issue authenticated GET requests against Sentry's REST API.
+
+Requires a `SENTRY_AUTH_TOKEN` environment variable (or `auth_token` in the task config) with org-level
+read access.
+
+| Task | Endpoint | Description | Key Config |
+|---|---|---|---|
+| Organization Group Index | `GET /api/0/organizations/{org}/issues/` | Issues list — highest-volume read endpoint | stats_periods, limits, sort_options, queries |
+| Organization Events | `GET /api/0/organizations/{org}/events/` | Discover events query with heavy Snuba fan-out | field_sets, datasets, per_page_values, sort_by |
+| Group Details | `GET /api/0/organizations/{org}/issues/{id}/` | Issue detail with optional latest-event sub-path; pre-fetches real issue IDs at startup | host (required), fetch_limit, detail_weight, latest_event_weight |
+| Organization Events Stats | `GET /api/0/organizations/{org}/events-stats/` | Time-series charting with expensive Snuba aggregations | y_axes, intervals, datasets |
+
+All tasks also accept: organization_slug, project_ids, and queries.
