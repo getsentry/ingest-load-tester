@@ -17,7 +17,6 @@
 
 users:
 
-  # Priority 1: Issue list - highest volume AND latency (#1 Snuba search queries)
   # Target: ~14 req/s (30% of total)
   OrganizationGroupIndex:
     host: https://sentry.io
@@ -34,7 +33,6 @@ users:
         sort_options: ["date", "freq", "new", "trends"]
         queries: ["is:unresolved", ""]
 
-  # Priority 2: Discover events - core query endpoint, heavy Snuba fan-out
   # Target: ~12 req/s (25% of total)
   OrganizationEvents:
     host: https://sentry.io
@@ -55,7 +53,6 @@ users:
         queries: ["", "event.type:error"]
         sort_by: ["-timestamp", "-count()"]
 
-  # Priority 3: Issue detail - mixed Postgres + Snuba
   # Target: ~10 req/s (20% of total)
   GroupDetails:
     host: https://sentry.io
@@ -72,7 +69,6 @@ users:
         detail_weight: 7
         latest_event_weight: 3
 
-  # Priority 4: Time-series charting - expensive Snuba aggregations
   # Target: ~6 req/s (12% of total)
   OrganizationEventsStats:
     host: https://sentry.io

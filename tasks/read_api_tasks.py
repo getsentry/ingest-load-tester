@@ -1,11 +1,5 @@
 """
 Task factories for load-testing Sentry's highest-traffic read API endpoints.
-
-Based on Datadog profiling data, these are the top 4 read endpoints by volume:
-  1. organization_group_index  (~4,185 req/s, p95=1,550ms) - Issue list / Snuba search
-  2. organization_events       (~3,498 req/s, p95=340ms)   - Discover events query
-  3. group_details             (~2,908 req/s, p95=650ms)   - Issue detail (Postgres+Snuba)
-  4. organization_events_stats (~1,688 req/s, p95=451ms)   - Time-series charting
 """
 
 import logging
