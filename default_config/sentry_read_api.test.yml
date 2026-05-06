@@ -1,0 +1,94 @@
+# Load test configuration for Sentry's highest-traffic read API endpoints.
+#
+# Before running, set these environment variables:
+#   SENTRY_AUTH_TOKEN  - Sentry API bearer token with read access
+#   SENTRY_API_HOST    - (only for GroupDetails) e.g. https://sentry.io
+#
+# Or provide auth_token / host directly in the task params below.
+#
+# Each user class maps to one endpoint. Adjust `weight` to enable/disable
+# individual endpoints. Aggregate target rate is ~48 req/s (~10% of US
+# production read traffic).
+#
+# Usage:
+#   cp default_config/sentry_read_api.test.yml config/sentry_read_api.test.yml
+#   # edit config values
+#   locust -f read_api_locustfile.py
+
+users:
+
+  # Priority 1: Issue list - highest volume AND latency (#1 Snuba search queries)
+  # Target: ~14 req/s (30% of total)
+  OrganizationGroupIndex:
+    host: https://sentry.io
+    wait_time: constant(1)
+    weight: 3
+    tasks:
+      organization_group_index_task_factory:
+        weight: 1
+        auth_token: ${SENTRY_AUTH_TOKEN}
+        organization_slug: sentry
+        # project_ids: [1234, 5678]
+        stats_periods: ["24h", "12h", "1h"]
+        limits: [25, 50, 100]
+        sort_options: ["date", "priority", "freq", "new"]
+        queries: ["is:unresolved", ""]
+
+  # Priority 2: Discover events - core query endpoint, heavy Snuba fan-out
+  # Target: ~12 req/s (25% of total)
+  OrganizationEvents:
+    host: https://sentry.io
+    wait_time: constant(1)
+    weight: 3
+    tasks:
+      organization_events_task_factory:
+        weight: 1
+        auth_token: ${SENTRY_AUTH_TOKEN}
+        organization_slug: sentry
+        # project_ids: [1234, 5678]
+        stats_periods: ["24h", "12h", "1h"]
+        limits: [10, 25, 50]
+        field_sets:
+          - ["title", "event.type", "project", "user.display", "timestamp"]
+          - ["title", "count()", "project"]
+        datasets: ["discover", "errors"]
+        queries: ["", "event.type:error"]
+        sort_by: ["-timestamp", "-count()"]
+
+  # Priority 3: Issue detail - mixed Postgres + Snuba
+  # Target: ~10 req/s (20% of total)
+  GroupDetails:
+    host: https://sentry.io
+    wait_time: constant(1)
+    weight: 2
+    tasks:
+      group_details_task_factory:
+        weight: 1
+        auth_token: ${SENTRY_AUTH_TOKEN}
+        organization_slug: sentry
+        # host is needed to pre-fetch issue IDs at startup
+        host: https://sentry.io
+        fetch_limit: 100
+        detail_weight: 7
+        latest_event_weight: 3
+
+  # Priority 4: Time-series charting - expensive Snuba aggregations
+  # Target: ~6 req/s (12% of total)
+  OrganizationEventsStats:
+    host: https://sentry.io
+    wait_time: constant(1)
+    weight: 1
+    tasks:
+      organization_events_stats_task_factory:
+        weight: 1
+        auth_token: ${SENTRY_AUTH_TOKEN}
+        organization_slug: sentry
+        # project_ids: [1234, 5678]
+        stats_periods: ["24h", "12h", "1h"]
+        y_axes:
+          - ["count()"]
+          - ["count()", "count_unique(user)"]
+          - ["p50(transaction.duration)", "p95(transaction.duration)"]
+        intervals: ["1h", "30m", "5m"]
+        queries: ["", "event.type:error"]
+        datasets: ["discover", "errors"]

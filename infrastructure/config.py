@@ -19,9 +19,9 @@ def relay_address():
     host = relay_settings.get("host")
 
     if host is None:
-        raise "Missing relay.host settings from config file:{}".format(
+        raise ValueError("Missing relay.host settings from config file:{}".format(
             _config_file_path()
-        )
+        ))
 
     return host
 

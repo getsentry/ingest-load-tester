@@ -98,7 +98,9 @@ def create_user_class(
 
     _wait_time = _get_wait_time(locust_info)
     if host is None:
-        _host = relay_address()
+        _host = locust_info.get("host")
+        if _host is None:
+            _host = relay_address()
     else:
         _host = host
 
