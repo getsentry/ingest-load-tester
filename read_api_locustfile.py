@@ -20,9 +20,7 @@ organization_events_stats_task_factory = (
 )
 group_details_task_factory = read_api_tasks.group_details_task_factory
 
-_config_path = full_path_from_module_relative_path(
-    __file__, "config/read_api.test.yml"
-)
+_config_path = full_path_from_module_relative_path(__file__, "config/read_api.test.yml")
 
 OrganizationGroupIndex = create_user_class(
     "OrganizationGroupIndex", _config_path, __name__

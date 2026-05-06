@@ -215,9 +215,7 @@ def group_details_task_factory(task_params=None):
     org_slug = task_params.get("organization_slug", "sentry")
     # host is needed to pre-fetch issue IDs outside of Locust's client.
     # Prefer setting it in the YAML task params; API_HOST is a fallback.
-    host = _resolve_env_var(task_params.get("host", "")) or os.environ.get(
-        "API_HOST"
-    )
+    host = _resolve_env_var(task_params.get("host", "")) or os.environ.get("API_HOST")
     fetch_limit = task_params.get("fetch_limit", 100)
     detail_weight = task_params.get("detail_weight", 1)
     latest_event_weight = task_params.get("latest_event_weight", 0)
