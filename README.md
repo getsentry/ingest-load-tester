@@ -1,26 +1,6 @@
 # ingest-load-tester
 
-> ### IMPORTANT NOTE: This is our legacy load tester, new tests should preferably be developed in [go-load-tester](https://github.com/getsentry/go-load-tester).
-
-
-The project contains two tools: a load tester based on Locust (see https://locust.io/) and a
-fake Sentry server that contains just enough functionality to get relay working with an upstream.
-
-## Component: Fake Sentry Server
-
-The FakeSentryServer runs a Flask server that responds to the security challenge messages from Relay and
-is able to provide project configurations for any project (it responds with a canned project configuration)
-
-The FakeSentryServer can be configured via the `config/fake.sentry.config.yml` file (situated in the top level directory).
-
-To start the Fake Sentry Server run:
-
-    make fake-sentry
-
-`uwsgi` is used under the hood, and its parameters can be tweaked by providing environment variables.
-For example, to achieve higher throughput, one can raise the number of workers and the size of listen queue:
-
-    UWSGI_LISTEN=10000 UWSGI_PROCESSES=16 make fake-sentry
+The project contains a load tester based on Locust (see https://locust.io/).
 
 ## Component: Load tester
 
