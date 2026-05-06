@@ -14,15 +14,11 @@ from tasks import read_api_tasks
 organization_group_index_task_factory = (
     read_api_tasks.organization_group_index_task_factory
 )
-organization_events_task_factory = (
-    read_api_tasks.organization_events_task_factory
-)
+organization_events_task_factory = read_api_tasks.organization_events_task_factory
 organization_events_stats_task_factory = (
     read_api_tasks.organization_events_stats_task_factory
 )
-group_details_task_factory = (
-    read_api_tasks.group_details_task_factory
-)
+group_details_task_factory = read_api_tasks.group_details_task_factory
 
 _config_path = full_path_from_module_relative_path(
     __file__, "config/sentry_read_api.test.yml"
@@ -31,12 +27,8 @@ _config_path = full_path_from_module_relative_path(
 OrganizationGroupIndex = create_user_class(
     "OrganizationGroupIndex", _config_path, __name__
 )
-OrganizationEvents = create_user_class(
-    "OrganizationEvents", _config_path, __name__
-)
+OrganizationEvents = create_user_class("OrganizationEvents", _config_path, __name__)
 OrganizationEventsStats = create_user_class(
     "OrganizationEventsStats", _config_path, __name__
 )
-GroupDetails = create_user_class(
-    "GroupDetails", _config_path, __name__
-)
+GroupDetails = create_user_class("GroupDetails", _config_path, __name__)

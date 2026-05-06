@@ -124,9 +124,7 @@ def organization_events_task_factory(task_params=None):
     headers = _read_headers(auth_token)
 
     def inner(user):
-        fields = _choice(
-            field_sets, ["title", "event.type", "project", "timestamp"]
-        )
+        fields = _choice(field_sets, ["title", "event.type", "project", "timestamp"])
         params = [("field", f) for f in fields]
 
         params.append(("statsPeriod", _choice(stats_periods, "24h")))
@@ -241,9 +239,7 @@ def group_details_task_factory(task_params=None):
 
     headers = _read_headers(auth_token)
     detail_name = f"/api/0/organizations/{org_slug}/issues/{{id}}/"
-    latest_event_name = (
-        f"/api/0/organizations/{org_slug}/issues/{{id}}/events/latest/"
-    )
+    latest_event_name = f"/api/0/organizations/{org_slug}/issues/{{id}}/events/latest/"
 
     def inner(user):
         issue_id = random.choice(issue_ids)
@@ -281,9 +277,7 @@ def _fetch_issue_ids(host, auth_token, org_slug, limit):
     headers = _read_headers(auth_token)
 
     try:
-        resp = requests.get(
-            url, headers=headers, params={"limit": limit}, timeout=30
-        )
+        resp = requests.get(url, headers=headers, params={"limit": limit}, timeout=30)
         resp.raise_for_status()
         issues = resp.json()
         return [str(issue["id"]) for issue in issues]

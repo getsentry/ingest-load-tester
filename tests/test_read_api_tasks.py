@@ -134,9 +134,7 @@ class TestOrganizationGroupIndex:
         assert call_args[1]["name"] == "/api/0/organizations/myorg/issues/"
 
     def test_bearer_auth_header(self):
-        task = organization_group_index_task_factory(
-            {"auth_token": "secret"}
-        )
+        task = organization_group_index_task_factory({"auth_token": "secret"})
         user = _make_mock_user()
         task(user)
 
