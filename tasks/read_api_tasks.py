@@ -21,10 +21,10 @@ def _resolve_env_var(value):
 def _get_auth_token(task_params):
     token = _resolve_env_var(task_params.get("auth_token", ""))
     if not token:
-        token = os.environ.get("SENTRY_AUTH_TOKEN")
+        token = os.environ.get("AUTH_TOKEN")
     if not token:
         raise ValueError(
-            "auth_token is required. Set it in task params or SENTRY_AUTH_TOKEN env var."
+            "auth_token is required. Set it in task params or AUTH_TOKEN env var."
         )
     return token
 
@@ -214,9 +214,9 @@ def group_details_task_factory(task_params=None):
     auth_token = _get_auth_token(task_params)
     org_slug = task_params.get("organization_slug", "sentry")
     # host is needed to pre-fetch issue IDs outside of Locust's client.
-    # Prefer setting it in the YAML task params; SENTRY_API_HOST is a fallback.
+    # Prefer setting it in the YAML task params; API_HOST is a fallback.
     host = _resolve_env_var(task_params.get("host", "")) or os.environ.get(
-        "SENTRY_API_HOST"
+        "API_HOST"
     )
     fetch_limit = task_params.get("fetch_limit", 100)
     detail_weight = task_params.get("detail_weight", 1)
@@ -264,7 +264,7 @@ def _fetch_issue_ids(host, auth_token, org_slug, limit):
     if not host:
         raise ValueError(
             "host is required for group_details to fetch issue IDs. "
-            "Set it in task params or SENTRY_API_HOST env var."
+            "Set it in task params or API_HOST env var."
         )
 
     url = f"{host.rstrip('/')}/api/0/organizations/{org_slug}/issues/"

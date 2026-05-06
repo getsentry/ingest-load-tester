@@ -34,7 +34,7 @@ class TestHelpers:
         assert _get_auth_token({"auth_token": "tok123"}) == "tok123"
 
     def test_get_auth_token_from_env(self, monkeypatch):
-        monkeypatch.setenv("SENTRY_AUTH_TOKEN", "env-tok")
+        monkeypatch.setenv("AUTH_TOKEN", "env-tok")
         assert _get_auth_token({}) == "env-tok"
 
     def test_get_auth_token_env_var_syntax(self, monkeypatch):
@@ -42,7 +42,7 @@ class TestHelpers:
         assert _get_auth_token({"auth_token": "${MY_TOK}"}) == "resolved"
 
     def test_get_auth_token_missing_raises(self, monkeypatch):
-        monkeypatch.delenv("SENTRY_AUTH_TOKEN", raising=False)
+        monkeypatch.delenv("AUTH_TOKEN", raising=False)
         with pytest.raises(ValueError, match="auth_token is required"):
             _get_auth_token({})
 

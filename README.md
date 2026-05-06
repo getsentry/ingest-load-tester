@@ -54,7 +54,7 @@ Presuming that you are in the load-tests directory you can run:
     make TEST=kafka_consumers load-test
     make TEST=read_api load-test
 
-These tests will run with the configuration files `config/simple.test.yml`, `config/kafka_consumers.test.yml`, and `config/sentry_read_api.test.yml` respectively.
+These tests will run with the configuration files `config/simple.test.yml`, `config/kafka_consumers.test.yml`, and `config/read_api.test.yml` respectively.
 
 Which will ensure that the virtual environment is installed and set up and will call:
 `.venv/bin/locust -f simple_locustfile.py`
@@ -256,7 +256,7 @@ synthetic RRWeb recording data (mouse movements, clicks, scrolls, etc.).
 Load tests for Sentry's highest-traffic read API endpoints. Unlike the envelope/kafka tasks above which
 test the ingest (write) path, these tasks issue authenticated GET requests against Sentry's REST API.
 
-Requires a `SENTRY_AUTH_TOKEN` environment variable (or `auth_token` in the task config) with org-level
+Requires an `AUTH_TOKEN` environment variable (or `auth_token` in the task config) with org-level
 read access.
 
 | Task | Endpoint | Description | Key Config |
