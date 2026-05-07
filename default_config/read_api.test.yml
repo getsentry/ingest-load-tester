@@ -2,24 +2,17 @@
 #
 # Before running, set these environment variables:
 #   AUTH_TOKEN  - API bearer token with read access
-#   API_HOST    - (only for GroupDetails) e.g. https://sentry.io
+#   API_HOST    - (only for GroupDetails) e.g. http://localhost:8000
 #
 # Or provide auth_token / host directly in the task params below.
 #
 # Each user class maps to one endpoint. Adjust `weight` to enable/disable
-# individual endpoints. Aggregate target rate is ~48 req/s (~10% of US
-# production read traffic).
-#
-# Usage:
-#   cp default_config/read_api.test.yml config/read_api.test.yml
-#   # edit config values
-#   locust -f read_api_locustfile.py
+# individual endpoints.
 
 users:
 
-  # Target: ~14 req/s (30% of total)
   OrganizationGroupIndex:
-    host: https://sentry.io
+    host: http://localhost:8000
     wait_time: constant(1)
     weight: 3
     tasks:
@@ -33,9 +26,8 @@ users:
         sort_options: ["date", "freq", "new", "trends"]
         queries: ["is:unresolved", ""]
 
-  # Target: ~12 req/s (25% of total)
   OrganizationEvents:
-    host: https://sentry.io
+    host: http://localhost:8000
     wait_time: constant(1)
     weight: 3
     tasks:
@@ -53,9 +45,8 @@ users:
         queries: ["", "event.type:error"]
         sort_by: ["-timestamp", "-count()"]
 
-  # Target: ~10 req/s (20% of total)
   GroupDetails:
-    host: https://sentry.io
+    host: http://localhost:8000
     wait_time: constant(1)
     weight: 2
     tasks:
@@ -64,14 +55,13 @@ users:
         auth_token: ${AUTH_TOKEN}
         organization_slug: your-org-slug
         # host is needed to pre-fetch issue IDs at startup
-        host: https://sentry.io
+        host: http://localhost:8000
         fetch_limit: 100
         detail_weight: 7
         latest_event_weight: 3
 
-  # Target: ~6 req/s (12% of total)
   OrganizationEventsStats:
-    host: https://sentry.io
+    host: http://localhost:8000
     wait_time: constant(1)
     weight: 1
     tasks:
