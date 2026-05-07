@@ -100,7 +100,7 @@ def create_user_class(
     if host is None:
         # different user classes can point at different hosts, especially important for
         # read APIs which target a different service than Relay
-        _host = locust_info.get("host") 
+        _host = locust_info.get("host")
         if _host is None:
             _host = relay_address()
     else:
