@@ -358,8 +358,7 @@ def group_events_task_factory(task_params=None):
     """
     Issue events list endpoint: GET /api/0/organizations/{org}/issues/{id}/events/
 
-    Second-highest latency endpoint (p95 1,480ms). Pre-fetches real issue IDs.
-    Randomizes query, full (triggers expensive serialization), statsPeriod, and
+    Pre-fetches real issue IDs.Randomizes query, full (triggers expensive serialization), statsPeriod, and
     per_page per request.
     """
     if task_params is None:
