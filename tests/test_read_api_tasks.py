@@ -12,9 +12,15 @@ from tasks.read_api_tasks import (
     _read_headers,
     _resolve_env_var,
     group_details_task_factory,
+    group_event_details_task_factory,
+    group_events_task_factory,
     organization_events_stats_task_factory,
     organization_events_task_factory,
+    organization_group_index_stats_task_factory,
     organization_group_index_task_factory,
+    organization_releases_task_factory,
+    organization_tags_task_factory,
+    project_group_index_task_factory,
 )
 
 
@@ -339,3 +345,446 @@ class TestGroupDetails:
         name = user.client.get.call_args[1]["name"]
         assert "{id}" in name
         assert "99" not in name
+
+
+class TestGroupEventDetails:
+    @patch("tasks.read_api_tasks._fetch_issue_ids")
+    def test_factory_returns_callable(self, mock_fetch):
+        mock_fetch.return_value = ["111", "222"]
+        task = group_event_details_task_factory(
+            {"auth_token": "tok", "host": "https://sentry.io"}
+        )
+        assert callable(task)
+
+    @patch("tasks.read_api_tasks._fetch_issue_ids")
+    def test_url_uses_event_id_type(self, mock_fetch):
+        mock_fetch.return_value = ["42"]
+        task = group_event_details_task_factory(
+            {
+                "auth_token": "tok",
+                "organization_slug": "myorg",
+                "host": "https://sentry.io",
+                "event_id_types": ["recommended"],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        url = user.client.get.call_args[0][0]
+        assert url == "/api/0/organizations/myorg/issues/42/events/recommended/"
+
+    @patch("tasks.read_api_tasks._fetch_issue_ids")
+    def test_name_param_uses_template(self, mock_fetch):
+        mock_fetch.return_value = ["99"]
+        task = group_event_details_task_factory(
+            {
+                "auth_token": "tok",
+                "organization_slug": "sentry",
+                "host": "https://sentry.io",
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        name = user.client.get.call_args[1]["name"]
+        assert "{id}" in name
+        assert "{event_id}" in name
+        assert "99" not in name
+
+    @patch("tasks.read_api_tasks._fetch_issue_ids")
+    def test_no_issue_ids_raises(self, mock_fetch):
+        mock_fetch.return_value = []
+        with pytest.raises(ValueError, match="Failed to fetch issue IDs"):
+            group_event_details_task_factory(
+                {"auth_token": "tok", "host": "https://sentry.io"}
+            )
+
+    @patch("tasks.read_api_tasks._fetch_issue_ids")
+    def test_bearer_auth_header(self, mock_fetch):
+        mock_fetch.return_value = ["1"]
+        task = group_event_details_task_factory(
+            {"auth_token": "secret", "host": "https://sentry.io"}
+        )
+        user = _make_mock_user()
+        task(user)
+
+        headers = user.client.get.call_args[1]["headers"]
+        assert headers["Authorization"] == "Bearer secret"
+
+
+class TestOrganizationTags:
+    def test_factory_returns_callable(self):
+        task = organization_tags_task_factory({"auth_token": "tok"})
+        assert callable(task)
+
+    def test_request_url_structure(self):
+        task = organization_tags_task_factory(
+            {
+                "auth_token": "tok",
+                "organization_slug": "myorg",
+                "stats_periods": ["1h"],
+                "datasets": [""],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        url = user.client.get.call_args[0][0]
+        assert url.startswith("/api/0/organizations/myorg/tags/")
+        assert "statsPeriod=1h" in url
+        assert (
+            user.client.get.call_args[1]["name"] == "/api/0/organizations/myorg/tags/"
+        )
+
+    def test_optional_dataset(self):
+        task = organization_tags_task_factory(
+            {
+                "auth_token": "tok",
+                "datasets": ["events"],
+                "stats_periods": ["1h"],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        url = user.client.get.call_args[0][0]
+        assert "dataset=events" in url
+
+    def test_optional_project_filter(self):
+        task = organization_tags_task_factory(
+            {
+                "auth_token": "tok",
+                "project_ids": [42],
+                "stats_periods": ["1h"],
+                "datasets": [""],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        url = user.client.get.call_args[0][0]
+        assert "project=42" in url
+
+
+class TestGroupEvents:
+    @patch("tasks.read_api_tasks._fetch_issue_ids")
+    def test_factory_returns_callable(self, mock_fetch):
+        mock_fetch.return_value = ["111"]
+        task = group_events_task_factory(
+            {"auth_token": "tok", "host": "https://sentry.io"}
+        )
+        assert callable(task)
+
+    @patch("tasks.read_api_tasks._fetch_issue_ids")
+    def test_url_contains_issue_id(self, mock_fetch):
+        mock_fetch.return_value = ["42"]
+        task = group_events_task_factory(
+            {
+                "auth_token": "tok",
+                "organization_slug": "myorg",
+                "host": "https://sentry.io",
+                "stats_periods": ["24h"],
+                "per_page_values": [10],
+                "queries": [""],
+                "full_options": [False],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        url = user.client.get.call_args[0][0]
+        assert "/issues/42/events/" in url
+
+    @patch("tasks.read_api_tasks._fetch_issue_ids")
+    def test_full_param(self, mock_fetch):
+        mock_fetch.return_value = ["1"]
+        task = group_events_task_factory(
+            {
+                "auth_token": "tok",
+                "host": "https://sentry.io",
+                "stats_periods": ["24h"],
+                "per_page_values": [10],
+                "queries": [""],
+                "full_options": [True],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        url = user.client.get.call_args[0][0]
+        assert "full=true" in url
+
+    @patch("tasks.read_api_tasks._fetch_issue_ids")
+    def test_name_param_uses_template(self, mock_fetch):
+        mock_fetch.return_value = ["99"]
+        task = group_events_task_factory(
+            {
+                "auth_token": "tok",
+                "organization_slug": "sentry",
+                "host": "https://sentry.io",
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        name = user.client.get.call_args[1]["name"]
+        assert "{id}" in name
+        assert "99" not in name
+
+    @patch("tasks.read_api_tasks._fetch_issue_ids")
+    def test_no_issue_ids_raises(self, mock_fetch):
+        mock_fetch.return_value = []
+        with pytest.raises(ValueError, match="Failed to fetch issue IDs"):
+            group_events_task_factory(
+                {"auth_token": "tok", "host": "https://sentry.io"}
+            )
+
+
+class TestOrganizationReleases:
+    def test_factory_returns_callable(self):
+        task = organization_releases_task_factory({"auth_token": "tok"})
+        assert callable(task)
+
+    def test_request_url_structure(self):
+        task = organization_releases_task_factory(
+            {
+                "auth_token": "tok",
+                "organization_slug": "myorg",
+                "per_page_values": [25],
+                "sort_options": ["date"],
+                "summary_stats_periods": ["24h"],
+                "queries": [""],
+                "health_stat_options": [""],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        url = user.client.get.call_args[0][0]
+        assert url.startswith("/api/0/organizations/myorg/releases/")
+        assert "per_page=25" in url
+        assert "sort=date" in url
+        assert "summaryStatsPeriod=24h" in url
+        assert (
+            user.client.get.call_args[1]["name"]
+            == "/api/0/organizations/myorg/releases/"
+        )
+
+    def test_flatten_added_for_session_sorts(self):
+        task = organization_releases_task_factory(
+            {
+                "auth_token": "tok",
+                "per_page_values": [10],
+                "sort_options": ["sessions"],
+                "summary_stats_periods": ["24h"],
+                "queries": [""],
+                "health_stat_options": [""],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        url = user.client.get.call_args[0][0]
+        assert "sort=sessions" in url
+        assert "flatten=1" in url
+
+    def test_no_flatten_for_date_sort(self):
+        task = organization_releases_task_factory(
+            {
+                "auth_token": "tok",
+                "per_page_values": [10],
+                "sort_options": ["date"],
+                "summary_stats_periods": ["24h"],
+                "queries": [""],
+                "health_stat_options": [""],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        url = user.client.get.call_args[0][0]
+        assert "sort=date" in url
+        assert "flatten" not in url
+
+    def test_health_stat_param(self):
+        task = organization_releases_task_factory(
+            {
+                "auth_token": "tok",
+                "per_page_values": [10],
+                "sort_options": ["date"],
+                "summary_stats_periods": ["24h"],
+                "queries": [""],
+                "health_stat_options": ["sessions"],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        url = user.client.get.call_args[0][0]
+        assert "healthStat=sessions" in url
+
+    def test_optional_project_filter(self):
+        task = organization_releases_task_factory(
+            {
+                "auth_token": "tok",
+                "project_ids": [42],
+                "per_page_values": [10],
+                "sort_options": ["date"],
+                "summary_stats_periods": ["24h"],
+                "queries": [""],
+                "health_stat_options": [""],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        url = user.client.get.call_args[0][0]
+        assert "project=42" in url
+
+
+class TestProjectGroupIndex:
+    def test_factory_returns_callable(self):
+        task = project_group_index_task_factory(
+            {"auth_token": "tok", "project_slugs": ["my-project"]}
+        )
+        assert callable(task)
+
+    def test_request_url_structure(self):
+        task = project_group_index_task_factory(
+            {
+                "auth_token": "tok",
+                "organization_slug": "myorg",
+                "project_slugs": ["web-app"],
+                "stats_periods": ["24h"],
+                "limits": [25],
+                "sort_options": ["date"],
+                "queries": ["is:unresolved"],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        url = user.client.get.call_args[0][0]
+        assert url.startswith("/api/0/projects/myorg/web-app/issues/")
+        assert "statsPeriod=24h" in url
+        assert "sort=date" in url
+        assert "limit=25" in url
+
+    def test_name_param_uses_template(self):
+        task = project_group_index_task_factory(
+            {
+                "auth_token": "tok",
+                "organization_slug": "myorg",
+                "project_slugs": ["web-app"],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        name = user.client.get.call_args[1]["name"]
+        assert "{project_slug}" in name
+        assert "web-app" not in name
+
+    def test_missing_project_slugs_raises(self):
+        with pytest.raises(ValueError, match="project_slugs is required"):
+            project_group_index_task_factory({"auth_token": "tok"})
+
+    def test_empty_project_slugs_raises(self):
+        with pytest.raises(ValueError, match="project_slugs is required"):
+            project_group_index_task_factory({"auth_token": "tok", "project_slugs": []})
+
+
+class TestOrganizationGroupIndexStats:
+    @patch("tasks.read_api_tasks._fetch_issue_ids")
+    def test_factory_returns_callable(self, mock_fetch):
+        mock_fetch.return_value = ["111", "222"]
+        task = organization_group_index_stats_task_factory(
+            {"auth_token": "tok", "host": "https://sentry.io"}
+        )
+        assert callable(task)
+
+    @patch("tasks.read_api_tasks._fetch_issue_ids")
+    def test_request_url_structure(self, mock_fetch):
+        mock_fetch.return_value = ["1", "2", "3"]
+        task = organization_group_index_stats_task_factory(
+            {
+                "auth_token": "tok",
+                "organization_slug": "myorg",
+                "host": "https://sentry.io",
+                "batch_size": 2,
+                "stats_periods": ["24h"],
+                "group_stats_periods": ["14d"],
+                "queries": [""],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        url = user.client.get.call_args[0][0]
+        assert url.startswith("/api/0/organizations/myorg/issues-stats/")
+        assert "groups=" in url
+        assert "statsPeriod=24h" in url
+        assert "groupStatsPeriod=14d" in url
+
+    @patch("tasks.read_api_tasks._fetch_issue_ids")
+    def test_multi_value_groups(self, mock_fetch):
+        mock_fetch.return_value = [str(i) for i in range(30)]
+        task = organization_group_index_stats_task_factory(
+            {
+                "auth_token": "tok",
+                "host": "https://sentry.io",
+                "batch_size": 5,
+                "stats_periods": ["24h"],
+                "queries": [""],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        url = user.client.get.call_args[0][0]
+        assert url.count("groups=") == 5
+
+    @patch("tasks.read_api_tasks._fetch_issue_ids")
+    def test_batch_size_capped_at_available(self, mock_fetch):
+        mock_fetch.return_value = ["1", "2", "3"]
+        task = organization_group_index_stats_task_factory(
+            {
+                "auth_token": "tok",
+                "host": "https://sentry.io",
+                "batch_size": 25,
+                "stats_periods": ["24h"],
+                "queries": [""],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        url = user.client.get.call_args[0][0]
+        assert url.count("groups=") == 3
+
+    @patch("tasks.read_api_tasks._fetch_issue_ids")
+    def test_no_issue_ids_raises(self, mock_fetch):
+        mock_fetch.return_value = []
+        with pytest.raises(ValueError, match="Failed to fetch issue IDs"):
+            organization_group_index_stats_task_factory(
+                {"auth_token": "tok", "host": "https://sentry.io"}
+            )
+
+    @patch("tasks.read_api_tasks._fetch_issue_ids")
+    def test_optional_project_filter(self, mock_fetch):
+        mock_fetch.return_value = ["1"]
+        task = organization_group_index_stats_task_factory(
+            {
+                "auth_token": "tok",
+                "host": "https://sentry.io",
+                "project_ids": [42],
+                "batch_size": 1,
+                "stats_periods": ["24h"],
+                "queries": [""],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        url = user.client.get.call_args[0][0]
+        assert "project=42" in url
