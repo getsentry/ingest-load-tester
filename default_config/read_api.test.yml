@@ -105,8 +105,7 @@ users:
         organization_slug: your-org-slug
         # project_ids: [1234, 5678]
         stats_periods: ["90d", "24h", "12h", "1h"]
-        datasets: ["errors", "discover"]
-        queries: ["", "is:unresolved"]
+        datasets: ["events", "discover"]
 
   # Priority #7 - Issue events list, highest latency (p95 1,480ms)
   GroupEvents:
@@ -140,7 +139,7 @@ users:
         sort_options: ["date", "sessions", "crash_free_users"]
         queries: [""]
         health_stat_options: ["sessions", ""]
-        stats_periods: ["90d", "24h", "12h"]
+        summary_stats_periods: ["24h", "48h", "7d", "14d"]
 
   # Priority #9 - Project-scoped issue list, p95 1,043ms
   ProjectGroupIndex:
@@ -153,7 +152,7 @@ users:
         auth_token: ${AUTH_TOKEN}
         organization_slug: your-org-slug
         project_slugs: ["your-project-slug"]
-        stats_periods: ["90d", "24h", "12h", "1h"]
+        stats_periods: ["24h", "14d"]
         limits: [25, 50, 100]
         sort_options: ["date", "freq", "new", "trends"]
         queries: ["is:unresolved", ""]
@@ -173,4 +172,5 @@ users:
         batch_size: 25
         # project_ids: [1234, 5678]
         stats_periods: ["90d", "24h", "12h", "1h"]
+        group_stats_periods: ["24h", "14d", "auto"]
         queries: ["is:unresolved", ""]

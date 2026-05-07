@@ -424,7 +424,6 @@ class TestOrganizationTags:
                 "organization_slug": "myorg",
                 "stats_periods": ["1h"],
                 "datasets": [""],
-                "queries": [""],
             }
         )
         user = _make_mock_user()
@@ -441,16 +440,15 @@ class TestOrganizationTags:
         task = organization_tags_task_factory(
             {
                 "auth_token": "tok",
-                "datasets": ["errors"],
+                "datasets": ["events"],
                 "stats_periods": ["1h"],
-                "queries": [""],
             }
         )
         user = _make_mock_user()
         task(user)
 
         url = user.client.get.call_args[0][0]
-        assert "dataset=errors" in url
+        assert "dataset=events" in url
 
     def test_optional_project_filter(self):
         task = organization_tags_task_factory(
@@ -459,7 +457,6 @@ class TestOrganizationTags:
                 "project_ids": [42],
                 "stats_periods": ["1h"],
                 "datasets": [""],
-                "queries": [""],
             }
         )
         user = _make_mock_user()
@@ -555,7 +552,7 @@ class TestOrganizationReleases:
                 "organization_slug": "myorg",
                 "per_page_values": [25],
                 "sort_options": ["date"],
-                "stats_periods": ["24h"],
+                "summary_stats_periods": ["24h"],
                 "queries": [""],
                 "health_stat_options": [""],
             }
@@ -567,11 +564,47 @@ class TestOrganizationReleases:
         assert url.startswith("/api/0/organizations/myorg/releases/")
         assert "per_page=25" in url
         assert "sort=date" in url
-        assert "statsPeriod=24h" in url
+        assert "summaryStatsPeriod=24h" in url
         assert (
             user.client.get.call_args[1]["name"]
             == "/api/0/organizations/myorg/releases/"
         )
+
+    def test_flatten_added_for_session_sorts(self):
+        task = organization_releases_task_factory(
+            {
+                "auth_token": "tok",
+                "per_page_values": [10],
+                "sort_options": ["sessions"],
+                "summary_stats_periods": ["24h"],
+                "queries": [""],
+                "health_stat_options": [""],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        url = user.client.get.call_args[0][0]
+        assert "sort=sessions" in url
+        assert "flatten=1" in url
+
+    def test_no_flatten_for_date_sort(self):
+        task = organization_releases_task_factory(
+            {
+                "auth_token": "tok",
+                "per_page_values": [10],
+                "sort_options": ["date"],
+                "summary_stats_periods": ["24h"],
+                "queries": [""],
+                "health_stat_options": [""],
+            }
+        )
+        user = _make_mock_user()
+        task(user)
+
+        url = user.client.get.call_args[0][0]
+        assert "sort=date" in url
+        assert "flatten" not in url
 
     def test_health_stat_param(self):
         task = organization_releases_task_factory(
@@ -579,7 +612,7 @@ class TestOrganizationReleases:
                 "auth_token": "tok",
                 "per_page_values": [10],
                 "sort_options": ["date"],
-                "stats_periods": ["24h"],
+                "summary_stats_periods": ["24h"],
                 "queries": [""],
                 "health_stat_options": ["sessions"],
             }
@@ -597,7 +630,7 @@ class TestOrganizationReleases:
                 "project_ids": [42],
                 "per_page_values": [10],
                 "sort_options": ["date"],
-                "stats_periods": ["24h"],
+                "summary_stats_periods": ["24h"],
                 "queries": [""],
                 "health_stat_options": [""],
             }
@@ -622,7 +655,7 @@ class TestProjectGroupIndex:
                 "auth_token": "tok",
                 "organization_slug": "myorg",
                 "project_slugs": ["web-app"],
-                "stats_periods": ["1h"],
+                "stats_periods": ["24h"],
                 "limits": [25],
                 "sort_options": ["date"],
                 "queries": ["is:unresolved"],
@@ -633,7 +666,7 @@ class TestProjectGroupIndex:
 
         url = user.client.get.call_args[0][0]
         assert url.startswith("/api/0/projects/myorg/web-app/issues/")
-        assert "statsPeriod=1h" in url
+        assert "statsPeriod=24h" in url
         assert "sort=date" in url
         assert "limit=25" in url
 
@@ -680,6 +713,7 @@ class TestOrganizationGroupIndexStats:
                 "host": "https://sentry.io",
                 "batch_size": 2,
                 "stats_periods": ["24h"],
+                "group_stats_periods": ["14d"],
                 "queries": [""],
             }
         )
@@ -690,6 +724,7 @@ class TestOrganizationGroupIndexStats:
         assert url.startswith("/api/0/organizations/myorg/issues-stats/")
         assert "groups=" in url
         assert "statsPeriod=24h" in url
+        assert "groupStatsPeriod=14d" in url
 
     @patch("tasks.read_api_tasks._fetch_issue_ids")
     def test_multi_value_groups(self, mock_fetch):

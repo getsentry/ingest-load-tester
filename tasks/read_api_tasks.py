@@ -324,7 +324,7 @@ def organization_tags_task_factory(task_params=None):
     Organization tags endpoint: GET /api/0/organizations/{org}/tags/
 
     Powers filter dropdowns across the UI. Randomizes statsPeriod, dataset,
-    query, and optional project filter per request.
+    and optional project filter per request.
     """
     if task_params is None:
         task_params = {}
@@ -333,8 +333,7 @@ def organization_tags_task_factory(task_params=None):
     org_slug = task_params.get("organization_slug", "sentry")
     project_ids = task_params.get("project_ids", [])
     stats_periods = task_params.get("stats_periods", ["24h", "12h", "1h"])
-    datasets = task_params.get("datasets", ["errors", "discover"])
-    queries = task_params.get("queries", ["", "is:unresolved"])
+    datasets = task_params.get("datasets", ["events", "discover"])
 
     base_path = f"/api/0/organizations/{org_slug}/tags/"
     headers = _read_headers(auth_token)
@@ -345,10 +344,6 @@ def organization_tags_task_factory(task_params=None):
         dataset = _choice(datasets, "")
         if dataset:
             params.append(("dataset", dataset))
-
-        query = _choice(queries, "")
-        if query:
-            params.append(("query", query))
 
         if project_ids:
             params.append(("project", random.choice(project_ids)))
@@ -416,7 +411,8 @@ def organization_releases_task_factory(task_params=None):
     """
     Release listing endpoint: GET /api/0/organizations/{org}/releases/
 
-    Randomizes per_page, sort, query, healthStat, and optional project filter.
+    Randomizes per_page, sort, query, summaryStatsPeriod, healthStat, and
+    optional project filter. Session-based sorts require flatten=1.
     """
     if task_params is None:
         task_params = {}
@@ -430,17 +426,28 @@ def organization_releases_task_factory(task_params=None):
     )
     queries = task_params.get("queries", [""])
     health_stat_options = task_params.get("health_stat_options", ["sessions", ""])
-    stats_periods = task_params.get("stats_periods", ["24h", "12h"])
+    summary_stats_periods = task_params.get(
+        "summary_stats_periods", ["24h", "48h", "7d", "14d"]
+    )
+
+    _session_sorts = frozenset(
+        ["crash_free_sessions", "crash_free_users", "sessions", "users",
+         "sessions_24h", "users_24h"]
+    )
 
     base_path = f"/api/0/organizations/{org_slug}/releases/"
     headers = _read_headers(auth_token)
 
     def inner(user):
+        sort = _choice(sort_options, "date")
         params = [
             ("per_page", _choice(per_page_values, 10)),
-            ("sort", _choice(sort_options, "date")),
-            ("statsPeriod", _choice(stats_periods, "24h")),
+            ("sort", sort),
+            ("summaryStatsPeriod", _choice(summary_stats_periods, "24h")),
         ]
+
+        if sort in _session_sorts:
+            params.append(("flatten", "1"))
 
         query = _choice(queries, "")
         if query:
@@ -478,7 +485,7 @@ def project_group_index_task_factory(task_params=None):
             "Provide a list of project slugs in task params."
         )
 
-    stats_periods = task_params.get("stats_periods", ["24h", "12h", "1h"])
+    stats_periods = task_params.get("stats_periods", ["24h", "14d"])
     limits = task_params.get("limits", [25, 50, 100])
     sort_options = task_params.get("sort_options", ["date", "freq", "new", "trends"])
     queries = task_params.get("queries", ["is:unresolved", ""])
@@ -522,6 +529,9 @@ def organization_group_index_stats_task_factory(task_params=None):
     batch_size = task_params.get("batch_size", 25)
     project_ids = task_params.get("project_ids", [])
     stats_periods = task_params.get("stats_periods", ["24h", "12h", "1h"])
+    group_stats_periods = task_params.get(
+        "group_stats_periods", ["24h", "14d", "auto"]
+    )
     queries = task_params.get("queries", ["is:unresolved", ""])
 
     issue_ids = _fetch_issue_ids(host, auth_token, org_slug, fetch_limit)
@@ -544,6 +554,7 @@ def organization_group_index_stats_task_factory(task_params=None):
         params = [("groups", gid) for gid in batch]
 
         params.append(("statsPeriod", _choice(stats_periods, "24h")))
+        params.append(("groupStatsPeriod", _choice(group_stats_periods, "24h")))
 
         query = _choice(queries, "")
         if query:
