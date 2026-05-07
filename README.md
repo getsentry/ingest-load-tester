@@ -265,5 +265,11 @@ read access.
 | Organization Events | `GET /api/0/organizations/{org}/events/` | Discover events query with heavy Snuba fan-out | field_sets, datasets, per_page_values, sort_by |
 | Group Details | `GET /api/0/organizations/{org}/issues/{id}/` | Issue detail with optional latest-event sub-path; pre-fetches real issue IDs at startup | host (required), fetch_limit, detail_weight, latest_event_weight |
 | Organization Events Stats | `GET /api/0/organizations/{org}/events-stats/` | Time-series charting with expensive Snuba aggregations | y_axes, intervals, datasets |
+| Group Event Details | `GET /api/0/organizations/{org}/issues/{id}/events/{event_id}/` | Issue event detail view; pre-fetches issue IDs, uses latest/oldest/recommended | host (required), fetch_limit, event_id_types |
+| Organization Tags | `GET /api/0/organizations/{org}/tags/` | Filter dropdown tags — called on nearly every page | stats_periods, datasets |
+| Group Events | `GET /api/0/organizations/{org}/issues/{id}/events/` | Issue events list — 2nd highest latency endpoint; pre-fetches issue IDs | host (required), fetch_limit, full_options, per_page_values |
+| Organization Releases | `GET /api/0/organizations/{org}/releases/` | Release listing with health stats | per_page_values, sort_options, health_stat_options |
+| Project Group Index | `GET /api/0/projects/{org}/{project_slug}/issues/` | Project-scoped issue list — same Snuba search path | project_slugs (required), limits, sort_options |
+| Organization Group Index Stats | `GET /api/0/organizations/{org}/issues-stats/` | Companion to issue list — fetches sparkline stats in batches | host (required), fetch_limit, batch_size |
 
 All tasks also accept: organization_slug, project_ids, and queries.

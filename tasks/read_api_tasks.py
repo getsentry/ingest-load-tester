@@ -279,6 +279,285 @@ def group_details_task_factory(task_params=None):
     return inner
 
 
+def group_event_details_task_factory(task_params=None):
+    """
+    Issue event detail endpoint:
+      GET /api/0/organizations/{org}/issues/{id}/events/{event_id}/
+
+    Pre-fetches real issue IDs at construction time. Each request picks a random
+    issue and a random event_id type (latest, oldest, recommended).
+    """
+    if task_params is None:
+        task_params = {}
+
+    auth_token = _get_auth_token(task_params)
+    org_slug = task_params.get("organization_slug", "sentry")
+    host = _resolve_env_var(task_params.get("host", "")) or os.environ.get("API_HOST")
+    fetch_limit = task_params.get("fetch_limit", 100)
+    event_id_types = task_params.get(
+        "event_id_types", ["latest", "oldest", "recommended"]
+    )
+
+    issue_ids = _fetch_issue_ids(host, auth_token, org_slug, fetch_limit)
+    if not issue_ids:
+        raise ValueError(
+            f"Failed to fetch issue IDs for org '{org_slug}'. "
+            f"Ensure host (got: {host!r}) and auth_token are correct."
+        )
+
+    logger.info("Fetched %d issue IDs for group_event_details", len(issue_ids))
+
+    headers = _read_headers(auth_token)
+    name = f"/api/0/organizations/{org_slug}/issues/{{id}}/events/{{event_id}}/"
+
+    def inner(user):
+        issue_id = random.choice(issue_ids)
+        event_id = _choice(event_id_types, "latest")
+        path = f"/api/0/organizations/{org_slug}/issues/{issue_id}/events/{event_id}/"
+        return user.client.get(path, headers=headers, name=name)
+
+    return inner
+
+
+def organization_tags_task_factory(task_params=None):
+    """
+    Organization tags endpoint: GET /api/0/organizations/{org}/tags/
+
+    Powers filter dropdowns across the UI. Randomizes statsPeriod, dataset,
+    query, and optional project filter per request.
+    """
+    if task_params is None:
+        task_params = {}
+
+    auth_token = _get_auth_token(task_params)
+    org_slug = task_params.get("organization_slug", "sentry")
+    project_ids = task_params.get("project_ids", [])
+    stats_periods = task_params.get("stats_periods", ["24h", "12h", "1h"])
+    datasets = task_params.get("datasets", ["errors", "discover"])
+    queries = task_params.get("queries", ["", "is:unresolved"])
+
+    base_path = f"/api/0/organizations/{org_slug}/tags/"
+    headers = _read_headers(auth_token)
+
+    def inner(user):
+        params = [("statsPeriod", _choice(stats_periods, "24h"))]
+
+        dataset = _choice(datasets, "")
+        if dataset:
+            params.append(("dataset", dataset))
+
+        query = _choice(queries, "")
+        if query:
+            params.append(("query", query))
+
+        if project_ids:
+            params.append(("project", random.choice(project_ids)))
+
+        url = _build_query_url(base_path, params)
+        return user.client.get(url, headers=headers, name=base_path)
+
+    return inner
+
+
+def group_events_task_factory(task_params=None):
+    """
+    Issue events list endpoint: GET /api/0/organizations/{org}/issues/{id}/events/
+
+    Second-highest latency endpoint (p95 1,480ms). Pre-fetches real issue IDs.
+    Randomizes query, full (triggers expensive serialization), statsPeriod, and
+    per_page per request.
+    """
+    if task_params is None:
+        task_params = {}
+
+    auth_token = _get_auth_token(task_params)
+    org_slug = task_params.get("organization_slug", "sentry")
+    host = _resolve_env_var(task_params.get("host", "")) or os.environ.get("API_HOST")
+    fetch_limit = task_params.get("fetch_limit", 100)
+    queries = task_params.get("queries", ["", "is:unresolved"])
+    full_options = task_params.get("full_options", [True, False])
+    stats_periods = task_params.get("stats_periods", ["24h", "12h", "1h"])
+    per_page_values = task_params.get("per_page_values", [10, 25, 50])
+
+    issue_ids = _fetch_issue_ids(host, auth_token, org_slug, fetch_limit)
+    if not issue_ids:
+        raise ValueError(
+            f"Failed to fetch issue IDs for org '{org_slug}'. "
+            f"Ensure host (got: {host!r}) and auth_token are correct."
+        )
+
+    logger.info("Fetched %d issue IDs for group_events", len(issue_ids))
+
+    headers = _read_headers(auth_token)
+    name = f"/api/0/organizations/{org_slug}/issues/{{id}}/events/"
+
+    def inner(user):
+        issue_id = random.choice(issue_ids)
+        params = [
+            ("statsPeriod", _choice(stats_periods, "24h")),
+            ("per_page", _choice(per_page_values, 10)),
+        ]
+
+        query = _choice(queries, "")
+        if query:
+            params.append(("query", query))
+
+        if _choice(full_options, False):
+            params.append(("full", "true"))
+
+        path = f"/api/0/organizations/{org_slug}/issues/{issue_id}/events/"
+        url = _build_query_url(path, params)
+        return user.client.get(url, headers=headers, name=name)
+
+    return inner
+
+
+def organization_releases_task_factory(task_params=None):
+    """
+    Release listing endpoint: GET /api/0/organizations/{org}/releases/
+
+    Randomizes per_page, sort, query, healthStat, and optional project filter.
+    """
+    if task_params is None:
+        task_params = {}
+
+    auth_token = _get_auth_token(task_params)
+    org_slug = task_params.get("organization_slug", "sentry")
+    project_ids = task_params.get("project_ids", [])
+    per_page_values = task_params.get("per_page_values", [10, 25, 50])
+    sort_options = task_params.get(
+        "sort_options", ["date", "sessions", "crash_free_users"]
+    )
+    queries = task_params.get("queries", [""])
+    health_stat_options = task_params.get("health_stat_options", ["sessions", ""])
+    stats_periods = task_params.get("stats_periods", ["24h", "12h"])
+
+    base_path = f"/api/0/organizations/{org_slug}/releases/"
+    headers = _read_headers(auth_token)
+
+    def inner(user):
+        params = [
+            ("per_page", _choice(per_page_values, 10)),
+            ("sort", _choice(sort_options, "date")),
+            ("statsPeriod", _choice(stats_periods, "24h")),
+        ]
+
+        query = _choice(queries, "")
+        if query:
+            params.append(("query", query))
+
+        health_stat = _choice(health_stat_options, "")
+        if health_stat:
+            params.append(("healthStat", health_stat))
+
+        if project_ids:
+            params.append(("project", random.choice(project_ids)))
+
+        url = _build_query_url(base_path, params)
+        return user.client.get(url, headers=headers, name=base_path)
+
+    return inner
+
+
+def project_group_index_task_factory(task_params=None):
+    """
+    Project-scoped issue list: GET /api/0/projects/{org}/{project_slug}/issues/
+
+    Same Snuba search path as organization_group_index but scoped to a single
+    project. Requires project_slugs in config.
+    """
+    if task_params is None:
+        task_params = {}
+
+    auth_token = _get_auth_token(task_params)
+    org_slug = task_params.get("organization_slug", "sentry")
+    project_slugs = task_params.get("project_slugs", [])
+    if not project_slugs:
+        raise ValueError(
+            "project_slugs is required for project_group_index. "
+            "Provide a list of project slugs in task params."
+        )
+
+    stats_periods = task_params.get("stats_periods", ["24h", "12h", "1h"])
+    limits = task_params.get("limits", [25, 50, 100])
+    sort_options = task_params.get("sort_options", ["date", "freq", "new", "trends"])
+    queries = task_params.get("queries", ["is:unresolved", ""])
+
+    headers = _read_headers(auth_token)
+    name = f"/api/0/projects/{org_slug}/{{project_slug}}/issues/"
+
+    def inner(user):
+        project_slug = random.choice(project_slugs)
+        params = [
+            ("statsPeriod", _choice(stats_periods, "24h")),
+            ("sort", _choice(sort_options, "date")),
+            ("limit", _choice(limits, 25)),
+        ]
+
+        query = _choice(queries, "is:unresolved")
+        if query:
+            params.append(("query", query))
+
+        path = f"/api/0/projects/{org_slug}/{project_slug}/issues/"
+        url = _build_query_url(path, params)
+        return user.client.get(url, headers=headers, name=name)
+
+    return inner
+
+
+def organization_group_index_stats_task_factory(task_params=None):
+    """
+    Issues stats companion endpoint: GET /api/0/organizations/{org}/issues-stats/
+
+    Fired alongside the issue list to fetch sparkline data. Pre-fetches real
+    issue IDs, then sends batches of group IDs per request.
+    """
+    if task_params is None:
+        task_params = {}
+
+    auth_token = _get_auth_token(task_params)
+    org_slug = task_params.get("organization_slug", "sentry")
+    host = _resolve_env_var(task_params.get("host", "")) or os.environ.get("API_HOST")
+    fetch_limit = task_params.get("fetch_limit", 100)
+    batch_size = task_params.get("batch_size", 25)
+    project_ids = task_params.get("project_ids", [])
+    stats_periods = task_params.get("stats_periods", ["24h", "12h", "1h"])
+    queries = task_params.get("queries", ["is:unresolved", ""])
+
+    issue_ids = _fetch_issue_ids(host, auth_token, org_slug, fetch_limit)
+    if not issue_ids:
+        raise ValueError(
+            f"Failed to fetch issue IDs for org '{org_slug}'. "
+            f"Ensure host (got: {host!r}) and auth_token are correct."
+        )
+
+    logger.info(
+        "Fetched %d issue IDs for organization_group_index_stats", len(issue_ids)
+    )
+
+    base_path = f"/api/0/organizations/{org_slug}/issues-stats/"
+    headers = _read_headers(auth_token)
+
+    def inner(user):
+        sample_size = min(batch_size, len(issue_ids))
+        batch = random.sample(issue_ids, sample_size)
+        params = [("groups", gid) for gid in batch]
+
+        params.append(("statsPeriod", _choice(stats_periods, "24h")))
+
+        query = _choice(queries, "")
+        if query:
+            params.append(("query", query))
+
+        if project_ids:
+            params.append(("project", random.choice(project_ids)))
+
+        url = _build_query_url(base_path, params)
+        return user.client.get(url, headers=headers, name=base_path)
+
+    return inner
+
+
 def _fetch_issue_ids(host, auth_token, org_slug, limit):
     if not host:
         raise ValueError(

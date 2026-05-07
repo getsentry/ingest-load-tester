@@ -19,6 +19,14 @@ organization_events_stats_task_factory = (
     read_api_tasks.organization_events_stats_task_factory
 )
 group_details_task_factory = read_api_tasks.group_details_task_factory
+group_event_details_task_factory = read_api_tasks.group_event_details_task_factory
+organization_tags_task_factory = read_api_tasks.organization_tags_task_factory
+group_events_task_factory = read_api_tasks.group_events_task_factory
+organization_releases_task_factory = read_api_tasks.organization_releases_task_factory
+project_group_index_task_factory = read_api_tasks.project_group_index_task_factory
+organization_group_index_stats_task_factory = (
+    read_api_tasks.organization_group_index_stats_task_factory
+)
 
 _config_path = full_path_from_module_relative_path(__file__, "config/read_api.test.yml")
 
@@ -30,3 +38,11 @@ OrganizationEventsStats = create_user_class(
     "OrganizationEventsStats", _config_path, __name__
 )
 GroupDetails = create_user_class("GroupDetails", _config_path, __name__)
+GroupEventDetails = create_user_class("GroupEventDetails", _config_path, __name__)
+OrganizationTags = create_user_class("OrganizationTags", _config_path, __name__)
+GroupEvents = create_user_class("GroupEvents", _config_path, __name__)
+OrganizationReleases = create_user_class("OrganizationReleases", _config_path, __name__)
+ProjectGroupIndex = create_user_class("ProjectGroupIndex", _config_path, __name__)
+OrganizationGroupIndexStats = create_user_class(
+    "OrganizationGroupIndexStats", _config_path, __name__
+)
