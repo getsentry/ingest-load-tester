@@ -88,6 +88,11 @@ def organization_group_index_task_factory(task_params=None):
     return inner
 
 
+def _is_sort_in_fields(sort_key, fields):
+    bare = sort_key.lstrip("-")
+    return bare in fields or bare == "timestamp"
+
+
 def organization_events_task_factory(task_params=None):
     """
     Discover events endpoint: GET /api/0/organizations/{org}/events/
@@ -132,7 +137,9 @@ def organization_events_task_factory(task_params=None):
         if query:
             params.append(("query", query))
 
-        sort = _choice(sort_by, "")
+        # we can't sort by an aggregate (e.g. -count()) not present in fields
+        valid_sorts = [s for s in sort_by if _is_sort_in_fields(s, fields)]
+        sort = _choice(valid_sorts, "") if valid_sorts else ""
         if sort:
             params.append(("sort", sort))
 
@@ -174,8 +181,23 @@ def organization_events_stats_task_factory(task_params=None):
     base_path = f"/api/0/organizations/{org_slug}/events-stats/"
     headers = _read_headers(auth_token)
 
+    # transaction.duration metrics aren't available on the "errors" dataset
+    _transaction_y_axes = {
+        "p50(transaction.duration)",
+        "p95(transaction.duration)",
+        "p99(transaction.duration)",
+        "avg(transaction.duration)",
+    }
+
+    def _is_y_axis_compatible(y_axis_set, dataset):
+        if dataset != "errors":
+            return True
+        return not any(y in _transaction_y_axes for y in y_axis_set)
+
     def inner(user):
-        y_axis_set = _choice(y_axes, ["count()"])
+        dataset = _choice(datasets, "")
+        compatible = [ys for ys in y_axes if _is_y_axis_compatible(ys, dataset)]
+        y_axis_set = _choice(compatible, ["count()"]) if compatible else ["count()"]
         params = [("yAxis", y) for y in y_axis_set]
 
         params.append(("statsPeriod", _choice(stats_periods, "24h")))
@@ -185,7 +207,6 @@ def organization_events_stats_task_factory(task_params=None):
         if query:
             params.append(("query", query))
 
-        dataset = _choice(datasets, "")
         if dataset:
             params.append(("dataset", dataset))
 
