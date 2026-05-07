@@ -90,7 +90,7 @@ def organization_group_index_task_factory(task_params=None):
 
 def _is_sort_in_fields(sort_key, fields):
     bare = sort_key.lstrip("-")
-    return bare in fields or bare == "timestamp"
+    return bare in fields
 
 
 def organization_events_task_factory(task_params=None):
