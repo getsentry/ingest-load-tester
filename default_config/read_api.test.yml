@@ -79,7 +79,6 @@ users:
         queries: ["", "event.type:error"]
         datasets: ["discover", "errors"]
 
-  # Priority #5 - Issue event detail, 1,490 req/s in prod
   GroupEventDetails:
     host: http://localhost:8000
     wait_time: constant(1)
@@ -93,7 +92,6 @@ users:
         fetch_limit: 100
         event_id_types: ["latest", "oldest", "recommended"]
 
-  # Priority #6 - Filter dropdowns, 2,160 req/s in prod
   OrganizationTags:
     host: http://localhost:8000
     wait_time: constant(1)
@@ -107,7 +105,6 @@ users:
         stats_periods: ["90d", "24h", "12h", "1h"]
         datasets: ["events", "discover"]
 
-  # Priority #7 - Issue events list, highest latency (p95 1,480ms)
   GroupEvents:
     host: http://localhost:8000
     wait_time: constant(1)
@@ -119,12 +116,10 @@ users:
         organization_slug: your-org-slug
         host: http://localhost:8000
         fetch_limit: 100
-        queries: ["", "is:unresolved"]
         full_options: [true, false]
         stats_periods: ["90d", "24h", "12h", "1h"]
         per_page_values: [10, 25, 50]
 
-  # Priority #8 - Release listing, p95 614ms
   OrganizationReleases:
     host: http://localhost:8000
     wait_time: constant(1)
@@ -141,7 +136,6 @@ users:
         health_stat_options: ["sessions", ""]
         summary_stats_periods: ["24h", "48h", "7d", "14d"]
 
-  # Priority #9 - Project-scoped issue list, p95 1,043ms
   ProjectGroupIndex:
     host: http://localhost:8000
     wait_time: constant(1)
@@ -151,13 +145,12 @@ users:
         weight: 1
         auth_token: ${AUTH_TOKEN}
         organization_slug: your-org-slug
-        project_slugs: ["your-project-slug"]
+        project_slugs: ["your-project-slug"] # real project slug required
         stats_periods: ["24h", "14d"]
         limits: [25, 50, 100]
-        sort_options: ["date", "freq", "new", "trends"]
+        sort_options: ["date", "new"]
         queries: ["is:unresolved", ""]
 
-  # Priority #10 - Companion to issue list, 808 req/s in prod
   OrganizationGroupIndexStats:
     host: http://localhost:8000
     wait_time: constant(1)

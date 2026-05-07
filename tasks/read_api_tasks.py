@@ -369,7 +369,7 @@ def group_events_task_factory(task_params=None):
     org_slug = task_params.get("organization_slug", "sentry")
     host = _resolve_env_var(task_params.get("host", "")) or os.environ.get("API_HOST")
     fetch_limit = task_params.get("fetch_limit", 100)
-    queries = task_params.get("queries", ["", "is:unresolved"])
+    queries = task_params.get("queries", [""])
     full_options = task_params.get("full_options", [True, False])
     stats_periods = task_params.get("stats_periods", ["24h", "12h", "1h"])
     per_page_values = task_params.get("per_page_values", [10, 25, 50])
@@ -487,7 +487,7 @@ def project_group_index_task_factory(task_params=None):
 
     stats_periods = task_params.get("stats_periods", ["24h", "14d"])
     limits = task_params.get("limits", [25, 50, 100])
-    sort_options = task_params.get("sort_options", ["date", "freq", "new", "trends"])
+    sort_options = task_params.get("sort_options", ["date", "new"])
     queries = task_params.get("queries", ["is:unresolved", ""])
 
     headers = _read_headers(auth_token)
