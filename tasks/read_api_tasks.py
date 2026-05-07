@@ -431,8 +431,14 @@ def organization_releases_task_factory(task_params=None):
     )
 
     _session_sorts = frozenset(
-        ["crash_free_sessions", "crash_free_users", "sessions", "users",
-         "sessions_24h", "users_24h"]
+        [
+            "crash_free_sessions",
+            "crash_free_users",
+            "sessions",
+            "users",
+            "sessions_24h",
+            "users_24h",
+        ]
     )
 
     base_path = f"/api/0/organizations/{org_slug}/releases/"
@@ -529,9 +535,7 @@ def organization_group_index_stats_task_factory(task_params=None):
     batch_size = task_params.get("batch_size", 25)
     project_ids = task_params.get("project_ids", [])
     stats_periods = task_params.get("stats_periods", ["24h", "12h", "1h"])
-    group_stats_periods = task_params.get(
-        "group_stats_periods", ["24h", "14d", "auto"]
-    )
+    group_stats_periods = task_params.get("group_stats_periods", ["24h", "14d", "auto"])
     queries = task_params.get("queries", ["is:unresolved", ""])
 
     issue_ids = _fetch_issue_ids(host, auth_token, org_slug, fetch_limit)
