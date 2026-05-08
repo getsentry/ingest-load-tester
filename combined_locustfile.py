@@ -49,9 +49,11 @@ _read_api_classes = create_org_user_classes(
 if _ingest_classes or _read_api_classes:
     for _cls in (_ingest_classes or []) + (_read_api_classes or []):
         globals()[_cls.__name__] = _cls
+    del _cls  # prevent leaked loop var from being picked up as a duplicate User class
 else:
     for _config_path in (_ingest_config, _read_api_config):
         for _user_name in _load_locust_config(_config_path):
             _cls = create_user_class(_user_name, _config_path, __name__)
             if _cls is not None:
                 globals()[_user_name] = _cls
+    del _cls  # prevent leaked loop var from being picked up as a duplicate User class

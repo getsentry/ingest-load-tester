@@ -35,6 +35,7 @@ _org_classes = create_org_user_classes(
 if _org_classes:
     for _cls in _org_classes:
         globals()[_cls.__name__] = _cls
+    del _cls  # prevent leaked loop var from being picked up as a duplicate User class
 else:
     TransactionEvents = create_user_class("TransactionEvents", _config_path, __name__)
     # SimpleLoadTest = create_user_class("SimpleLoadTest", _config_path, __name__)

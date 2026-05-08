@@ -1,6 +1,6 @@
 #!/bin/sh
-STAGED_FILES=$(git diff --cached --name-only --diff-filter=d -- '*.py')
-if [ -n "$STAGED_FILES" ]; then
-    make format
-    echo "$STAGED_FILES" | xargs git add
+# Reject commits if any Python files aren't formatted with black.
+if ! make style 2>/dev/null; then
+    echo "Pre-commit: Python files are not formatted. Run 'make format' and re-stage."
+    exit 1
 fi

@@ -31,6 +31,16 @@ kafka:
 #    user_tasks:
 #      - TransactionEvents
 #      - OrganizationGroupIndex
+#
+# Simplified version if you are only testing the read_apis:
+# organizations:
+#     - slug: sentry
+#       weight: 3
+#       auth_token: ${AUTH_TOKEN}
+#       api_host: http://localhost:8000
+#       project_slugs: ["test"]
+#       user_tasks:
+#         - OrganizationGroupIndex
 
 #fake_projects:
 #  enable_metrics_extraction: false

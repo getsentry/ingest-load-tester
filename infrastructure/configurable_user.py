@@ -138,6 +138,7 @@ def create_user_class(
             return self.params
 
     ConfigurableUser.__name__ = name
+    ConfigurableUser.__qualname__ = name
 
     return ConfigurableUser
 
@@ -168,6 +169,7 @@ def create_org_user_classes(
             )
             if cls is not None:
                 cls.__name__ = class_name
+                cls.__qualname__ = class_name
                 classes.append(cls)
 
     return classes if classes else None
