@@ -177,9 +177,7 @@ def _inject_org_params(locust_info, org_profile):
         if org_profile.api_host:
             task_info.setdefault("host", org_profile.api_host)
         if org_profile.projects:
-            task_info.setdefault(
-                "project_ids", [p["id"] for p in org_profile.projects]
-            )
+            task_info.setdefault("project_ids", [p["id"] for p in org_profile.projects])
         if org_profile.project_slugs:
             task_info.setdefault("project_slugs", org_profile.project_slugs)
 

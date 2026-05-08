@@ -6,7 +6,11 @@ new_limit = min(current_limits[1], 12000)
 resource.setrlimit(resource.RLIMIT_NOFILE, (new_limit, new_limit))
 
 ###
-from infrastructure import full_path_from_module_relative_path, create_user_class, create_org_user_classes
+from infrastructure import (
+    full_path_from_module_relative_path,
+    create_user_class,
+    create_org_user_classes,
+)
 from tasks import event_tasks
 
 

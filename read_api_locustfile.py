@@ -5,7 +5,11 @@ current_limits = resource.getrlimit(resource.RLIMIT_NOFILE)
 new_limit = min(current_limits[1], 12000)
 resource.setrlimit(resource.RLIMIT_NOFILE, (new_limit, new_limit))
 
-from infrastructure import full_path_from_module_relative_path, create_user_class, create_org_user_classes
+from infrastructure import (
+    full_path_from_module_relative_path,
+    create_user_class,
+    create_org_user_classes,
+)
 from tasks import read_api_tasks
 
 # Expose task factories so the YAML config can reference them by name.
@@ -45,7 +49,9 @@ else:
     GroupEventDetails = create_user_class("GroupEventDetails", _config_path, __name__)
     OrganizationTags = create_user_class("OrganizationTags", _config_path, __name__)
     GroupEvents = create_user_class("GroupEvents", _config_path, __name__)
-    OrganizationReleases = create_user_class("OrganizationReleases", _config_path, __name__)
+    OrganizationReleases = create_user_class(
+        "OrganizationReleases", _config_path, __name__
+    )
     ProjectGroupIndex = create_user_class("ProjectGroupIndex", _config_path, __name__)
     OrganizationGroupIndexStats = create_user_class(
         "OrganizationGroupIndexStats", _config_path, __name__

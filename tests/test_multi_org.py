@@ -235,11 +235,7 @@ class TestInjectOrgParams:
 
     def test_does_not_mutate_original(self):
         org = _make_org_profile(slug="acme")
-        locust_info = {
-            "tasks": {
-                "some_task_factory": {"weight": 1}
-            }
-        }
+        locust_info = {"tasks": {"some_task_factory": {"weight": 1}}}
         original_tasks = copy.deepcopy(locust_info)
         _inject_org_params(locust_info, org)
         assert locust_info == original_tasks
@@ -254,11 +250,7 @@ class TestInjectOrgParams:
 
     def test_skips_none_auth_token(self):
         org = _make_org_profile(auth_token=None)
-        locust_info = {
-            "tasks": {
-                "some_task_factory": {"weight": 1}
-            }
-        }
+        locust_info = {"tasks": {"some_task_factory": {"weight": 1}}}
         result = _inject_org_params(locust_info, org)
         assert "auth_token" not in result["tasks"]["some_task_factory"]
 

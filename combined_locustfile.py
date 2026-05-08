@@ -14,7 +14,11 @@ current_limits = resource.getrlimit(resource.RLIMIT_NOFILE)
 new_limit = min(current_limits[1], 12000)
 resource.setrlimit(resource.RLIMIT_NOFILE, (new_limit, new_limit))
 
-from infrastructure import full_path_from_module_relative_path, create_user_class, create_org_user_classes
+from infrastructure import (
+    full_path_from_module_relative_path,
+    create_user_class,
+    create_org_user_classes,
+)
 from infrastructure.configurable_user import _load_locust_config
 from tasks import event_tasks, read_api_tasks
 
@@ -31,7 +35,9 @@ for _mod in (event_tasks, read_api_tasks):
 # In single-org mode, fall back to creating user classes from whatever the YAMLs define.
 
 _ingest_config = full_path_from_module_relative_path(__file__, "config/simple.test.yml")
-_read_api_config = full_path_from_module_relative_path(__file__, "config/read_api.test.yml")
+_read_api_config = full_path_from_module_relative_path(
+    __file__, "config/read_api.test.yml"
+)
 
 _ingest_classes = create_org_user_classes(_ingest_config, __name__)
 _read_api_classes = create_org_user_classes(_read_api_config, __name__)
