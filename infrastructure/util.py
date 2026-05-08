@@ -95,6 +95,12 @@ def load_object(name: str, locust_module_name):
     return object
 
 
+def resolve_env_var(value):
+    if isinstance(value, str) and value.startswith("${") and value.endswith("}"):
+        return os.environ.get(value[2:-1])
+    return value
+
+
 def get_value_with_env_override(d, key, conversion_func=lambda x: x):
     """
     Gets a value from a dictionary

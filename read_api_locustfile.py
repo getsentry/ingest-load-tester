@@ -33,7 +33,9 @@ organization_group_index_stats_task_factory = (
 )
 
 _config_path = full_path_from_module_relative_path(__file__, "config/read_api.test.yml")
-_org_classes = create_org_user_classes(_config_path, __name__)
+_org_classes = create_org_user_classes(
+    _config_path, __name__, org_host_field="api_host"
+)
 if _org_classes:
     for _cls in _org_classes:
         globals()[_cls.__name__] = _cls

@@ -8,8 +8,8 @@ from infrastructure.config import (
     OrgProfile,
     load_org_profiles,
     generate_project_info,
-    _resolve_env_var,
 )
+from infrastructure.util import resolve_env_var as _resolve_env_var
 from infrastructure.configurable_user import (
     create_org_user_classes,
     _inject_org_params,
@@ -214,24 +214,46 @@ class TestInjectOrgParams:
         assert task_info["project_ids"] == [1]
         assert task_info["project_slugs"] == ["web"]
 
-    def test_does_not_overwrite_existing_values(self):
+    def test_org_identity_fields_override_yaml_defaults(self):
         org = _make_org_profile(
             slug="acme",
             auth_token="org-tok",
+            api_host="https://acme.sentry.io",
         )
         locust_info = {
             "tasks": {
                 "some_task_factory": {
                     "weight": 1,
-                    "organization_slug": "custom-slug",
-                    "auth_token": "custom-tok",
+                    "organization_slug": "yaml-slug",
+                    "auth_token": "yaml-tok",
+                    "host": "http://localhost:8000",
                 }
             },
         }
         result = _inject_org_params(locust_info, org)
         task_info = result["tasks"]["some_task_factory"]
-        assert task_info["organization_slug"] == "custom-slug"
-        assert task_info["auth_token"] == "custom-tok"
+        assert task_info["organization_slug"] == "acme"
+        assert task_info["auth_token"] == "org-tok"
+        assert task_info["host"] == "https://acme.sentry.io"
+
+    def test_project_fields_use_setdefault(self):
+        org = _make_org_profile(
+            projects=[{"id": 1, "key": "k"}, {"id": 2, "key": "k2"}],
+            project_slugs=["web", "mobile"],
+        )
+        locust_info = {
+            "tasks": {
+                "some_task_factory": {
+                    "weight": 1,
+                    "project_ids": [99],
+                    "project_slugs": ["custom"],
+                }
+            },
+        }
+        result = _inject_org_params(locust_info, org)
+        task_info = result["tasks"]["some_task_factory"]
+        assert task_info["project_ids"] == [99]
+        assert task_info["project_slugs"] == ["custom"]
 
     def test_does_not_mutate_original(self):
         org = _make_org_profile(slug="acme")

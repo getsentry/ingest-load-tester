@@ -39,8 +39,12 @@ _read_api_config = full_path_from_module_relative_path(
     __file__, "config/read_api.test.yml"
 )
 
-_ingest_classes = create_org_user_classes(_ingest_config, __name__)
-_read_api_classes = create_org_user_classes(_read_api_config, __name__)
+_ingest_classes = create_org_user_classes(
+    _ingest_config, __name__, org_host_field="relay_host"
+)
+_read_api_classes = create_org_user_classes(
+    _read_api_config, __name__, org_host_field="api_host"
+)
 
 if _ingest_classes or _read_api_classes:
     for _cls in (_ingest_classes or []) + (_read_api_classes or []):

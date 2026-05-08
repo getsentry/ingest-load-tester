@@ -1,7 +1,6 @@
 from collections import namedtuple
 from math import floor
 from random import random
-import os
 import urllib.parse
 
 from yaml import load
@@ -11,19 +10,13 @@ try:
 except ImportError:
     from yaml import Loader, Dumper, FullLoader
 
-from .util import full_path_from_module_relative_path, memoize
+from .util import full_path_from_module_relative_path, memoize, resolve_env_var
 
 
 OrgProfile = namedtuple(
     "OrgProfile",
     "slug, org_id, weight, relay_host, auth_token, api_host, projects, project_slugs, user_tasks",
 )
-
-
-def _resolve_env_var(value):
-    if isinstance(value, str) and value.startswith("${") and value.endswith("}"):
-        return os.environ.get(value[2:-1])
-    return value
 
 
 def load_org_profiles():
@@ -39,9 +32,9 @@ def load_org_profiles():
                 slug=org["slug"],
                 org_id=org.get("org_id"),
                 weight=org.get("weight", 1),
-                relay_host=_resolve_env_var(org.get("relay_host")),
-                auth_token=_resolve_env_var(org.get("auth_token")),
-                api_host=_resolve_env_var(org.get("api_host")),
+                relay_host=resolve_env_var(org.get("relay_host")),
+                auth_token=resolve_env_var(org.get("auth_token")),
+                api_host=resolve_env_var(org.get("api_host")),
                 projects=org.get("projects", []),
                 project_slugs=org.get("project_slugs", []),
                 user_tasks=org.get("user_tasks", []),

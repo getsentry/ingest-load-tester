@@ -79,7 +79,13 @@ def _get_wait_time(locust_info):
 
 
 def create_user_class(
-    name, config_file_name, module_name, host=None, base_classes=None, org_profile=None
+    name,
+    config_file_name,
+    module_name,
+    host=None,
+    base_classes=None,
+    org_profile=None,
+    org_host_field=None,
 ):
     if base_classes is None:
         base_classes = (FastHttpUser,)
@@ -104,9 +110,11 @@ def create_user_class(
 
     _wait_time = _get_wait_time(locust_info)
     if host is None:
-        _host = locust_info.get("host")
-        if _host is None and org_profile is not None:
-            _host = org_profile.relay_host or org_profile.api_host
+        _host = None
+        if org_profile is not None and org_host_field is not None:
+            _host = getattr(org_profile, org_host_field, None)
+        if _host is None:
+            _host = locust_info.get("host")
         if _host is None:
             _host = relay_address()
     else:
@@ -134,7 +142,9 @@ def create_user_class(
     return ConfigurableUser
 
 
-def create_org_user_classes(config_file_name, module_name, base_classes=None):
+def create_org_user_classes(
+    config_file_name, module_name, base_classes=None, org_host_field=None
+):
     org_profiles = load_org_profiles()
     if not org_profiles:
         return None
@@ -154,6 +164,7 @@ def create_org_user_classes(config_file_name, module_name, base_classes=None):
                 module_name,
                 base_classes=base_classes,
                 org_profile=org,
+                org_host_field=org_host_field,
             )
             if cls is not None:
                 cls.__name__ = class_name
@@ -171,11 +182,15 @@ def _inject_org_params(locust_info, org_profile):
     for _task_name, task_info in tasks_info.items():
         if not isinstance(task_info, abc.Mapping):
             continue
-        task_info.setdefault("organization_slug", org_profile.slug)
+        # Org-identity fields override YAML defaults — the whole point of
+        # multi-org mode is that each org brings its own slug, credentials,
+        # and host.  Per-project fields use setdefault so YAML can still
+        # narrow to specific projects within an org
+        task_info["organization_slug"] = org_profile.slug
         if org_profile.auth_token:
-            task_info.setdefault("auth_token", org_profile.auth_token)
+            task_info["auth_token"] = org_profile.auth_token
         if org_profile.api_host:
-            task_info.setdefault("host", org_profile.api_host)
+            task_info["host"] = org_profile.api_host
         if org_profile.projects:
             task_info.setdefault("project_ids", [p["id"] for p in org_profile.projects])
         if org_profile.project_slugs:

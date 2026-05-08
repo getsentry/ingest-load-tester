@@ -4,13 +4,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from infrastructure.util import resolve_env_var as _resolve_env_var
 from tasks.read_api_tasks import (
     _build_query_url,
     _choice,
     _fetch_issue_ids,
     _get_auth_token,
     _read_headers,
-    _resolve_env_var,
     group_details_task_factory,
     group_event_details_task_factory,
     group_events_task_factory,
