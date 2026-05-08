@@ -1,9 +1,10 @@
+import copy
 from collections import abc
 
 from locust.contrib.fasthttp import FastHttpUser
 from yaml import load
 
-from .config import relay_address, generate_project_info, ProjectInfo
+from .config import relay_address, generate_project_info, load_org_profiles, ProjectInfo
 from .util import memoize, load_object
 
 try:
@@ -78,7 +79,7 @@ def _get_wait_time(locust_info):
 
 
 def create_user_class(
-    name, config_file_name, module_name, host=None, base_classes=None
+    name, config_file_name, module_name, host=None, base_classes=None, org_profile=None
 ):
     if base_classes is None:
         base_classes = (FastHttpUser,)
@@ -89,7 +90,12 @@ def create_user_class(
     if locust_info is None:
         return None
 
+    if org_profile is not None:
+        locust_info = _inject_org_params(locust_info, org_profile)
+
     _weight = locust_info.get("weight", 1)
+    if org_profile is not None:
+        _weight = _weight * org_profile.weight
 
     if _weight == 0:
         return None  # locust is disabled don't bother loading it
@@ -98,13 +104,15 @@ def create_user_class(
 
     _wait_time = _get_wait_time(locust_info)
     if host is None:
-        # different user classes can point at different hosts, especially important for
-        # read APIs which target a different service than Relay
         _host = locust_info.get("host")
+        if _host is None and org_profile is not None:
+            _host = org_profile.relay_host or org_profile.api_host
         if _host is None:
             _host = relay_address()
     else:
         _host = host
+
+    _org_profile = org_profile
 
     class ConfigurableUser(*base_classes):
         """
@@ -116,6 +124,7 @@ def create_user_class(
         weight = _weight
         params = locust_info
         host = _host
+        org_profile = _org_profile
 
         def get_params(self):
             return self.params
@@ -123,6 +132,58 @@ def create_user_class(
     ConfigurableUser.__name__ = name
 
     return ConfigurableUser
+
+
+def create_org_user_classes(config_file_name, module_name, base_classes=None):
+    org_profiles = load_org_profiles()
+    if not org_profiles:
+        return None
+
+    config = _load_locust_config(config_file_name)
+    classes = []
+
+    for org in org_profiles:
+        for task_name in org.user_tasks:
+            if task_name not in config:
+                continue
+
+            class_name = f"{task_name}_{org.slug.replace('-', '_')}"
+            cls = create_user_class(
+                task_name,
+                config_file_name,
+                module_name,
+                base_classes=base_classes,
+                org_profile=org,
+            )
+            if cls is not None:
+                cls.__name__ = class_name
+                classes.append(cls)
+
+    return classes if classes else None
+
+
+def _inject_org_params(locust_info, org_profile):
+    locust_info = copy.deepcopy(locust_info)
+    tasks_info = locust_info.get("tasks")
+    if not isinstance(tasks_info, abc.Mapping):
+        return locust_info
+
+    for _task_name, task_info in tasks_info.items():
+        if not isinstance(task_info, abc.Mapping):
+            continue
+        task_info.setdefault("organization_slug", org_profile.slug)
+        if org_profile.auth_token:
+            task_info.setdefault("auth_token", org_profile.auth_token)
+        if org_profile.api_host:
+            task_info.setdefault("host", org_profile.api_host)
+        if org_profile.projects:
+            task_info.setdefault(
+                "project_ids", [p["id"] for p in org_profile.projects]
+            )
+        if org_profile.project_slugs:
+            task_info.setdefault("project_slugs", org_profile.project_slugs)
+
+    return locust_info
 
 
 @memoize
@@ -152,4 +213,5 @@ def get_project_info(user) -> ProjectInfo:
     """
     locust_params = user.get_params()
     num_projects = locust_params.get("num_projects", 1)
-    return generate_project_info(num_projects)
+    org_profile = getattr(user, "org_profile", None)
+    return generate_project_info(num_projects, org_profile=org_profile)

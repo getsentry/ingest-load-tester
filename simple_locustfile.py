@@ -6,7 +6,7 @@ new_limit = min(current_limits[1], 12000)
 resource.setrlimit(resource.RLIMIT_NOFILE, (new_limit, new_limit))
 
 ###
-from infrastructure import full_path_from_module_relative_path, create_user_class
+from infrastructure import full_path_from_module_relative_path, create_user_class, create_org_user_classes
 from tasks import event_tasks
 
 
@@ -23,9 +23,14 @@ profile_chunk_envelope_task_factory = event_tasks.profile_chunk_envelope_task_fa
 replay_envelope_task_factory = event_tasks.replay_envelope_task_factory
 
 _config_path = full_path_from_module_relative_path(__file__, "config/simple.test.yml")
-SimpleLoadTest = create_user_class("SimpleLoadTest", _config_path, __name__)
-RandomEvents = create_user_class("RandomEvents", _config_path, __name__)
-TransactionEvents = create_user_class("TransactionEvents", _config_path, __name__)
-LogEvents = create_user_class("LogEvents", _config_path, __name__)
-ProfileChunkEvents = create_user_class("ProfileChunkEvents", _config_path, __name__)
-ReplayEvents = create_user_class("ReplayEvents", _config_path, __name__)
+_org_classes = create_org_user_classes(_config_path, __name__)
+if _org_classes:
+    for _cls in _org_classes:
+        globals()[_cls.__name__] = _cls
+else:
+    SimpleLoadTest = create_user_class("SimpleLoadTest", _config_path, __name__)
+    RandomEvents = create_user_class("RandomEvents", _config_path, __name__)
+    TransactionEvents = create_user_class("TransactionEvents", _config_path, __name__)
+    LogEvents = create_user_class("LogEvents", _config_path, __name__)
+    ProfileChunkEvents = create_user_class("ProfileChunkEvents", _config_path, __name__)
+    ReplayEvents = create_user_class("ReplayEvents", _config_path, __name__)
