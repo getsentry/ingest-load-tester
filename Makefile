@@ -21,7 +21,7 @@ about:
 	less readme.md
 .PHONY: about
 
-config: setup-venv setup-config
+config: setup-venv setup-config setup-hooks
 .PHONY: config
 
 fake-sentry: setup-venv
@@ -43,6 +43,10 @@ setup-brew:
 	brew bundle
 .PHONY: setup-brew
 
+
+setup-hooks:
+	git config core.hooksPath bin/hooks
+.PHONY: setup-hooks
 
 setup-config: $(CONFIG_FILES)
 .PHONY: setup-config
