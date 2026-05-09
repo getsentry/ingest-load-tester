@@ -9,7 +9,7 @@ from infrastructure.config import (
     load_org_profiles,
     generate_project_info,
 )
-from infrastructure.util import resolve_env_var as _resolve_env_var
+from infrastructure.util import resolve_env_var
 from infrastructure.configurable_user import (
     create_org_user_classes,
     _inject_org_params,
@@ -34,21 +34,21 @@ def _make_org_profile(**overrides):
 
 class TestResolveEnvVar:
     def test_plain_string(self):
-        assert _resolve_env_var("hello") == "hello"
+        assert resolve_env_var("hello") == "hello"
 
     def test_env_var_syntax(self, monkeypatch):
         monkeypatch.setenv("MY_VAR", "resolved")
-        assert _resolve_env_var("${MY_VAR}") == "resolved"
+        assert resolve_env_var("${MY_VAR}") == "resolved"
 
     def test_missing_env_var(self, monkeypatch):
         monkeypatch.delenv("MISSING", raising=False)
-        assert _resolve_env_var("${MISSING}") is None
+        assert resolve_env_var("${MISSING}") is None
 
     def test_none_passthrough(self):
-        assert _resolve_env_var(None) is None
+        assert resolve_env_var(None) is None
 
     def test_non_string_passthrough(self):
-        assert _resolve_env_var(42) == 42
+        assert resolve_env_var(42) == 42
 
 
 class TestLoadOrgProfiles:
