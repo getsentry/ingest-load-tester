@@ -37,9 +37,7 @@ _org_classes = create_org_user_classes(
     _config_path, __name__, org_host_field="api_host"
 )
 if _org_classes:
-    for _cls in _org_classes:
-        globals()[_cls.__name__] = _cls
-    del _cls  # prevent leaked loop var from being picked up as a duplicate User class
+    globals().update({cls.__name__: cls for cls in _org_classes})
 else:
     OrganizationGroupIndex = create_user_class(
         "OrganizationGroupIndex", _config_path, __name__
