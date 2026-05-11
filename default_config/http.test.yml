@@ -196,7 +196,7 @@ users:
         release: ~
 
 # ─── Read API tasks ──────────────────────────────────────────────────────────
-# Organization-specific fields (auth_token, organization_slug, host,
+# Organization-specific fields (auth_token via auth_token_env_var, organization_slug, host,
 # project_ids, project_slugs) are injected from organization profiles
 # in locust.config.yml and do not need to be set here.
 #

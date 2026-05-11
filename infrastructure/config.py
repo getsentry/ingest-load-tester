@@ -1,5 +1,6 @@
 from collections import namedtuple
 from math import floor
+import os
 from random import random
 import urllib.parse
 
@@ -36,7 +37,9 @@ def load_org_profiles():
                 org_id=org.get("org_id"),
                 weight=org.get("weight", 1),
                 relay_host=resolve_env_var(org.get("relay_host")),
-                auth_token=resolve_env_var(org.get("auth_token")),
+                auth_token=os.environ.get(org["auth_token_env_var"])
+                if org.get("auth_token_env_var")
+                else None,
                 api_host=resolve_env_var(org.get("api_host")),
                 projects=org.get("projects", []),
                 project_slugs=org.get("project_slugs", []),

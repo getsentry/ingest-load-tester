@@ -22,7 +22,7 @@ organizations:
     # org_id: 1
     weight: 1
     # relay_host: https://o123.ingest.us.sentry.io
-    # auth_token: ${SENTRY_AUTH_TOKEN}
+    # auth_token_env_var: SENTRY_AUTH_TOKEN # reads os.environ["SENTRY_AUTH_TOKEN"]
     # api_host: https://us.sentry.io
     # projects:
     #   - id: 1

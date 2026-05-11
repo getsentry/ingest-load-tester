@@ -15,12 +15,10 @@ logger = logging.getLogger(__name__)
 
 
 def _get_auth_token(task_params):
-    token = resolve_env_var(task_params.get("auth_token", ""))
-    if not token:
-        token = os.environ.get("AUTH_TOKEN")
+    token = task_params.get("auth_token")
     if not token:
         raise ValueError(
-            "auth_token is required. Set it in task params or AUTH_TOKEN env var."
+            "auth_token is required. Set auth_token_env_var on the organization profile."
         )
     return token
 

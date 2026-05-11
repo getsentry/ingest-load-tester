@@ -65,7 +65,8 @@ class TestLoadOrgProfiles:
             load_org_profiles()
 
     @patch("infrastructure.config.locust_config")
-    def test_parses_single_org(self, mock_config):
+    def test_parses_single_org(self, mock_config, monkeypatch):
+        monkeypatch.setenv("ACME_TOKEN", "tok123")
         mock_config.return_value = {
             "organizations": [
                 {
@@ -73,7 +74,7 @@ class TestLoadOrgProfiles:
                     "org_id": 123,
                     "weight": 5,
                     "relay_host": "https://o123.ingest.sentry.io",
-                    "auth_token": "tok123",
+                    "auth_token_env_var": "ACME_TOKEN",
                     "api_host": "https://sentry.io",
                     "projects": [{"id": 1, "key": "abc"}],
                     "project_slugs": ["web"],
@@ -127,19 +128,47 @@ class TestLoadOrgProfiles:
         assert org.project_slugs == []
 
     @patch("infrastructure.config.locust_config")
-    def test_resolves_env_vars(self, mock_config, monkeypatch):
+    def test_resolves_auth_token_from_env_var(self, mock_config, monkeypatch):
         monkeypatch.setenv("ORG_TOKEN", "secret")
         mock_config.return_value = {
             "organizations": [
                 {
                     "slug": "envorg",
-                    "auth_token": "${ORG_TOKEN}",
+                    "auth_token_env_var": "ORG_TOKEN",
                     "user_tasks": [],
                 },
             ]
         }
         profiles = load_org_profiles()
         assert profiles[0].auth_token == "secret"
+
+    @patch("infrastructure.config.locust_config")
+    def test_auth_token_none_when_env_var_missing(self, mock_config, monkeypatch):
+        monkeypatch.delenv("NONEXISTENT_TOKEN", raising=False)
+        mock_config.return_value = {
+            "organizations": [
+                {
+                    "slug": "envorg",
+                    "auth_token_env_var": "NONEXISTENT_TOKEN",
+                    "user_tasks": [],
+                },
+            ]
+        }
+        profiles = load_org_profiles()
+        assert profiles[0].auth_token is None
+
+    @patch("infrastructure.config.locust_config")
+    def test_auth_token_none_when_no_env_var_key(self, mock_config):
+        mock_config.return_value = {
+            "organizations": [
+                {
+                    "slug": "envorg",
+                    "user_tasks": [],
+                },
+            ]
+        }
+        profiles = load_org_profiles()
+        assert profiles[0].auth_token is None
 
 
 class TestGenerateProjectInfoForOrg:
