@@ -158,6 +158,10 @@ def create_org_user_classes(
             if task_name not in config:
                 continue
 
+            per_user_host_field = config[task_name].get(
+                "org_host_field", org_host_field
+            )
+
             class_name = f"{task_name}_{org.slug.replace('-', '_')}"
             cls = create_user_class(
                 task_name,
@@ -165,7 +169,7 @@ def create_org_user_classes(
                 module_name,
                 base_classes=base_classes,
                 org_profile=org,
-                org_host_field=org_host_field,
+                org_host_field=per_user_host_field,
             )
             if cls is not None:
                 cls.__name__ = class_name

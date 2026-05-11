@@ -50,14 +50,13 @@ normally should be left to their default values).
 In order to load test you need to invoke locust and pass it the locust file that needs to be executed.
 Presuming that you are in the load-tests directory you can run:
 
-    make TEST=simple load-test
+    make TEST=http load-test
     make TEST=kafka_consumers load-test
-    make TEST=read_api load-test
 
-These tests will run with the configuration files `config/simple.test.yml`, `config/kafka_consumers.test.yml`, and `config/read_api.test.yml` respectively.
+These tests will run with the configuration files `config/http.test.yml` and `config/kafka_consumers.test.yml` respectively.
 
 Which will ensure that the virtual environment is installed and set up and will call:
-`.venv/bin/locust -f simple_locustfile.py`
+`.venv/bin/locust -f api_locustfile.py`
 or
 `.venv/bin/locust -f kafka_consumers_locustfile.py`
 
@@ -85,7 +84,7 @@ creates locust tests classes that are derived from `ConfigurableUser` class whic
 
 The `ConfigurableUser` class adds functionality that allows the tests to be configured from a yaml file.
 
-Two locust files are provided ([simple_locustfile.py](https://github.com/getsentry/ingest-load-tester/blob/master/simple_locustfile.py) and [kafka_consumers_locustfile.py](https://github.com/getsentry/ingest-load-tester/blob/master/kafka_consumers_locustfile.py)) and , and others can be easily added. The files have the following structure:
+Two locust files are provided ([http_locustfile.py](https://github.com/getsentry/ingest-load-tester/blob/master/http_locustfile.py) for HTTP-based ingest and read API tests, and [kafka_consumers_locustfile.py](https://github.com/getsentry/ingest-load-tester/blob/master/kafka_consumers_locustfile.py) for Kafka consumer tests). The files have the following structure:
 * import all the task factories that you intend ot use in your user classes in the file
 * define the user classes
 * in the user class configuration use one or more of the imported task factories to define tests.

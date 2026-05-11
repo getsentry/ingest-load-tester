@@ -15,7 +15,7 @@ kafka:
     sessions: ingest-sessions
 
 # Multi-org mode: define organizations here to generate load across multiple orgs.
-# Each org references user task names from test YAMLs (simple.test.yml, read_api.test.yml).
+# Each org references user task names from http.test.yml.
 # When present, replaces the top-level `projects` list for project selection.
 #organizations:
 #  - slug: sentry

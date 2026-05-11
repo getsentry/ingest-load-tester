@@ -2,7 +2,7 @@
 set -eux
 
 COMMAND="${1:-}"
-export LOCUST_FILE=${LOCUST_FILE:-simple_locustfile.py}
+export LOCUST_FILE=${LOCUST_FILE:-http_locustfile.py}
 
 if [[ "$COMMAND" == "bash" ]]; then
   exec /bin/bash

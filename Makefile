@@ -30,7 +30,7 @@ fake-sentry: setup-venv
 
 check-test:
 ifndef TEST
-	$(error TEST is undefined. Please specify a test name such as `make TEST=simple load-test` or `make TEST=kafka_consumers load-test`)
+	$(error TEST is undefined. Please specify a test name such as `make TEST=http load-test` or `make TEST=kafka_consumers load-test`)
 endif
 .PHONY: check-test
 

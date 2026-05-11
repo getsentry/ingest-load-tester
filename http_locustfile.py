@@ -1,0 +1,50 @@
+# Unified locustfile for all HTTP-based load tests (ingest + read API).
+# Registers every task factory from both task modules so that
+# create_org_user_classes() can resolve any task an org profile references.
+
+import resource
+
+# Raise the max number of open files
+current_limits = resource.getrlimit(resource.RLIMIT_NOFILE)
+new_limit = min(current_limits[1], 12000)
+resource.setrlimit(resource.RLIMIT_NOFILE, (new_limit, new_limit))
+
+from infrastructure import (
+    full_path_from_module_relative_path,
+    create_user_class,
+    create_org_user_classes,
+)
+from infrastructure.configurable_user import _load_locust_config
+from tasks import event_tasks, read_api_tasks
+
+# Register all task factories from both task modules into this module's namespace.
+# load_object() resolves factory names against the locustfile's globals, so every
+# factory referenced in a test YAML must be importable here.
+for _mod in (event_tasks, read_api_tasks):
+    for _name in dir(_mod):
+        if _name.endswith("_task_factory"):
+            globals()[_name] = getattr(_mod, _name)
+
+# --- Load user classes ---
+# In multi-org mode, create per-org user classes from the config.
+# In single-org mode, fall back to creating one user class per entry in the YAML.
+
+_config_path = full_path_from_module_relative_path(__file__, "config/http.test.yml")
+
+
+def _load_user_classes():
+    org_classes = create_org_user_classes(
+        _config_path, __name__, org_host_field="relay_host"
+    )
+    if org_classes:
+        return {cls.__name__: cls for cls in org_classes}
+
+    classes = {}
+    for user_name in _load_locust_config(_config_path):
+        cls = create_user_class(user_name, _config_path, __name__)
+        if cls is not None:
+            classes[user_name] = cls
+    return classes
+
+
+globals().update(_load_user_classes())
