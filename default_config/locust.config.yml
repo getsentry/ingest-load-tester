@@ -1,6 +1,5 @@
 # Config file for the load tester
 
-use_fake_projects: true
 relay:
   host: http://127.0.0.1
   port: 3000
@@ -22,21 +21,13 @@ organizations:
     # org_id: 1
     weight: 1
     # relay_host: https://o123.ingest.us.sentry.io
-    # auth_token_env_var: SENTRY_AUTH_TOKEN # reads os.environ["SENTRY_AUTH_TOKEN"]
-    # api_host: https://us.sentry.io
-    # projects:
-    #   - id: 1
-    #     key: "31a5a894b4524f74a9a8d0e27e21ba91"
-    # project_slugs: ["test"]
+    auth_token_env_var: SENTRY_AUTH_TOKEN
+    api_host: https://us.sentry.io
+    projects:
+      - slug: my-project
     user_tasks:
       - TransactionEvents
 
-#fake_projects:
-#  enable_metrics_extraction: false
-projects:
-  #list here all the valid projects with their public keys (not used in fake_sentry mode)
-  - id: 1
-    key: "31a5a894b4524f74a9a8d0e27e21ba91"
 metrics:
   enabled: true
 

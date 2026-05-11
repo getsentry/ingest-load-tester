@@ -7,6 +7,7 @@ from infrastructure.config import (
     OrgProfile,
     load_org_profiles,
     generate_project_info,
+    _resolve_projects,
 )
 from infrastructure.util import resolve_env_var
 from infrastructure.configurable_user import (
@@ -23,8 +24,7 @@ def _make_org_profile(**overrides):
         relay_host="https://o123.ingest.us.sentry.io",
         auth_token="test-token",
         api_host="https://us.sentry.io",
-        projects=[{"id": 100, "key": "aabbcc"}],
-        project_slugs=["web-app"],
+        projects=[{"id": 100, "key": "aabbcc", "slug": "web-app"}],
         user_tasks=["TransactionEvents"],
     )
     defaults.update(overrides)
@@ -64,8 +64,20 @@ class TestLoadOrgProfiles:
             load_org_profiles()
 
     @patch("infrastructure.config.locust_config")
-    def test_parses_single_org(self, mock_config, monkeypatch):
+    def test_raises_when_org_missing_slug(self, mock_config):
+        mock_config.return_value = {
+            "organizations": [
+                {"projects": [{"slug": "p"}], "user_tasks": []},
+            ]
+        }
+        with pytest.raises(ValueError, match="missing required 'slug' field"):
+            load_org_profiles()
+
+    @patch("infrastructure.config._resolve_projects")
+    @patch("infrastructure.config.locust_config")
+    def test_parses_single_org(self, mock_config, mock_resolve, monkeypatch):
         monkeypatch.setenv("ACME_TOKEN", "tok123")
+        mock_resolve.return_value = [{"id": 1, "key": "abc", "slug": "web"}]
         mock_config.return_value = {
             "organizations": [
                 {
@@ -75,8 +87,7 @@ class TestLoadOrgProfiles:
                     "relay_host": "https://o123.ingest.sentry.io",
                     "auth_token_env_var": "ACME_TOKEN",
                     "api_host": "https://sentry.io",
-                    "projects": [{"id": 1, "key": "abc"}],
-                    "project_slugs": ["web"],
+                    "projects": [{"slug": "web"}],
                     "user_tasks": ["TransactionEvents", "LogEvents"],
                 }
             ]
@@ -90,16 +101,35 @@ class TestLoadOrgProfiles:
         assert org.relay_host == "https://o123.ingest.sentry.io"
         assert org.auth_token == "tok123"
         assert org.api_host == "https://sentry.io"
-        assert org.projects == [{"id": 1, "key": "abc"}]
-        assert org.project_slugs == ["web"]
+        assert org.projects == [{"id": 1, "key": "abc", "slug": "web"}]
         assert org.user_tasks == ["TransactionEvents", "LogEvents"]
 
+    @patch("infrastructure.config._resolve_projects")
     @patch("infrastructure.config.locust_config")
-    def test_parses_multiple_orgs(self, mock_config):
+    def test_parses_multiple_orgs(self, mock_config, mock_resolve, monkeypatch):
+        monkeypatch.setenv("TOK", "t")
+        mock_resolve.side_effect = [
+            [{"id": 1, "key": "k", "slug": "p"}],
+            [{"id": 2, "key": "k", "slug": "p"}],
+        ]
         mock_config.return_value = {
             "organizations": [
-                {"slug": "org-a", "weight": 3, "user_tasks": ["TaskA"]},
-                {"slug": "org-b", "weight": 1, "user_tasks": ["TaskB"]},
+                {
+                    "slug": "org-a",
+                    "weight": 3,
+                    "auth_token_env_var": "TOK",
+                    "api_host": "https://a.io",
+                    "projects": [{"slug": "p"}],
+                    "user_tasks": ["TaskA"],
+                },
+                {
+                    "slug": "org-b",
+                    "weight": 1,
+                    "auth_token_env_var": "TOK",
+                    "api_host": "https://b.io",
+                    "projects": [{"slug": "p"}],
+                    "user_tasks": ["TaskB"],
+                },
             ]
         }
         profiles = load_org_profiles()
@@ -110,70 +140,117 @@ class TestLoadOrgProfiles:
         assert profiles[1].weight == 1
 
     @patch("infrastructure.config.locust_config")
-    def test_defaults_for_optional_fields(self, mock_config):
+    def test_raises_when_no_projects(self, mock_config):
         mock_config.return_value = {
             "organizations": [
-                {"slug": "minimal", "user_tasks": ["SomeTask"]},
+                {"slug": "no-projects", "user_tasks": ["SomeTask"]},
             ]
         }
-        profiles = load_org_profiles()
-        org = profiles[0]
-        assert org.weight == 1
-        assert org.org_id is None
-        assert org.relay_host is None
-        assert org.auth_token is None
-        assert org.api_host is None
-        assert org.projects == []
-        assert org.project_slugs == []
+        with pytest.raises(ValueError, match="missing required 'projects'"):
+            load_org_profiles()
 
     @patch("infrastructure.config.locust_config")
-    def test_resolves_auth_token_from_env_var(self, mock_config, monkeypatch):
-        monkeypatch.setenv("ORG_TOKEN", "secret")
+    def test_raises_when_empty_projects(self, mock_config):
+        mock_config.return_value = {
+            "organizations": [
+                {"slug": "empty", "projects": [], "user_tasks": ["SomeTask"]},
+            ]
+        }
+        with pytest.raises(ValueError, match="missing required 'projects'"):
+            load_org_profiles()
+
+    @patch("infrastructure.config.locust_config")
+    def test_raises_when_project_missing_slug(self, mock_config):
         mock_config.return_value = {
             "organizations": [
                 {
-                    "slug": "envorg",
-                    "auth_token_env_var": "ORG_TOKEN",
+                    "slug": "bad-proj",
+                    "auth_token_env_var": "TOK",
+                    "api_host": "https://sentry.io",
+                    "projects": [{"id": 1}],
+                    "user_tasks": ["SomeTask"],
+                },
+            ]
+        }
+        with pytest.raises(ValueError, match="missing required 'slug' field"):
+            load_org_profiles()
+
+    @patch("infrastructure.config.locust_config")
+    def test_raises_when_missing_api_host(self, mock_config):
+        mock_config.return_value = {
+            "organizations": [
+                {
+                    "slug": "myorg",
+                    "auth_token_env_var": "TOK",
+                    "projects": [{"slug": "web"}],
                     "user_tasks": [],
                 },
             ]
         }
-        profiles = load_org_profiles()
-        assert profiles[0].auth_token == "secret"
+        with pytest.raises(ValueError, match="missing required 'api_host'"):
+            load_org_profiles()
 
     @patch("infrastructure.config.locust_config")
-    def test_auth_token_none_when_env_var_missing(self, mock_config, monkeypatch):
-        monkeypatch.delenv("NONEXISTENT_TOKEN", raising=False)
+    def test_raises_when_missing_auth_token_env_var(self, mock_config):
         mock_config.return_value = {
             "organizations": [
                 {
-                    "slug": "envorg",
-                    "auth_token_env_var": "NONEXISTENT_TOKEN",
+                    "slug": "myorg",
+                    "api_host": "https://sentry.io",
+                    "projects": [{"slug": "web"}],
                     "user_tasks": [],
                 },
             ]
         }
-        profiles = load_org_profiles()
-        assert profiles[0].auth_token is None
+        with pytest.raises(ValueError, match="missing required 'auth_token_env_var'"):
+            load_org_profiles()
 
     @patch("infrastructure.config.locust_config")
-    def test_auth_token_none_when_no_env_var_key(self, mock_config):
+    def test_raises_when_env_var_not_set(self, mock_config, monkeypatch):
+        monkeypatch.delenv("MISSING_TOKEN", raising=False)
         mock_config.return_value = {
             "organizations": [
                 {
-                    "slug": "envorg",
+                    "slug": "myorg",
+                    "api_host": "https://sentry.io",
+                    "auth_token_env_var": "MISSING_TOKEN",
+                    "projects": [{"slug": "web"}],
                     "user_tasks": [],
                 },
             ]
         }
+        with pytest.raises(
+            ValueError, match="environment variable 'MISSING_TOKEN' is not set"
+        ):
+            load_org_profiles()
+
+    @patch("infrastructure.config._resolve_projects")
+    @patch("infrastructure.config.locust_config")
+    def test_resolves_projects_via_api(self, mock_config, mock_resolve, monkeypatch):
+        monkeypatch.setenv("TOK", "secret")
+        mock_config.return_value = {
+            "organizations": [
+                {
+                    "slug": "myorg",
+                    "auth_token_env_var": "TOK",
+                    "api_host": "https://sentry.io",
+                    "projects": [{"slug": "web"}],
+                    "user_tasks": ["TaskA"],
+                },
+            ]
+        }
+        mock_resolve.return_value = [{"id": 42, "key": "abc", "slug": "web"}]
         profiles = load_org_profiles()
-        assert profiles[0].auth_token is None
+        assert profiles[0].projects == [{"id": 42, "key": "abc", "slug": "web"}]
+        mock_resolve.assert_called_once_with(
+            "myorg", [{"slug": "web"}], "https://sentry.io", "secret"
+        )
 
 
 class TestGenerateProjectInfoForOrg:
     def test_selects_from_org_projects(self):
         org = _make_org_profile(
-            projects=[{"id": 42, "key": "mykey"}],
+            projects=[{"id": 42, "key": "mykey", "slug": "proj"}],
             relay_host="https://o123.ingest.sentry.io",
             org_id=123,
         )
@@ -200,14 +277,12 @@ class TestGenerateProjectInfoForOrg:
         info = generate_project_info(1, org_profile=org)
         assert info.org_id == "456"
 
-    def test_no_projects_raises(self):
-        org = _make_org_profile(projects=[])
-        with pytest.raises(ValueError, match="no projects configured"):
-            generate_project_info(1, org_profile=org)
-
     def test_num_projects_capped_at_available(self):
         org = _make_org_profile(
-            projects=[{"id": 1, "key": "k1"}, {"id": 2, "key": "k2"}],
+            projects=[
+                {"id": 1, "key": "k1", "slug": "p1"},
+                {"id": 2, "key": "k2", "slug": "p2"},
+            ],
         )
         info = generate_project_info(100, org_profile=org)
         assert info.id in (1, 2)
@@ -225,8 +300,7 @@ class TestInjectOrgParams:
             slug="sentry",
             auth_token="tok",
             api_host="https://sentry.io",
-            projects=[{"id": 1, "key": "k"}],
-            project_slugs=["web"],
+            projects=[{"id": 1, "key": "k", "slug": "web"}],
         )
         locust_info = {
             "weight": 1,
@@ -268,8 +342,10 @@ class TestInjectOrgParams:
 
     def test_project_fields_use_setdefault(self):
         org = _make_org_profile(
-            projects=[{"id": 1, "key": "k"}, {"id": 2, "key": "k2"}],
-            project_slugs=["web", "mobile"],
+            projects=[
+                {"id": 1, "key": "k", "slug": "web"},
+                {"id": 2, "key": "k2", "slug": "mobile"},
+            ],
         )
         locust_info = {
             "tasks": {
@@ -418,3 +494,40 @@ class TestCreateOrgUserClasses:
         assert "TaskA_org_a" in names
         assert "TaskB_org_a" in names
         assert "TaskA_org_b" in names
+
+
+class TestResolveProjects:
+    @patch("infrastructure.config._fetch_project_key", return_value="resolved-key")
+    @patch("infrastructure.config._fetch_org_projects")
+    def test_resolves_id_and_key_from_api(self, mock_fetch_projects, mock_fetch_key):
+        mock_fetch_projects.return_value = [
+            {"id": 42, "slug": "web"},
+        ]
+        result = _resolve_projects("org", [{"slug": "web"}], "https://sentry.io", "tok")
+        assert result == [{"slug": "web", "id": 42, "key": "resolved-key"}]
+        mock_fetch_key.assert_called_once_with("org", "web", "https://sentry.io", "tok")
+
+    @patch("infrastructure.config._fetch_project_key", return_value="k")
+    @patch("infrastructure.config._fetch_org_projects")
+    def test_resolves_multiple_projects(self, mock_fetch_projects, mock_fetch_key):
+        mock_fetch_projects.return_value = [
+            {"id": 1, "slug": "web"},
+            {"id": 2, "slug": "mobile"},
+        ]
+        result = _resolve_projects(
+            "org",
+            [{"slug": "web"}, {"slug": "mobile"}],
+            "https://sentry.io",
+            "tok",
+        )
+        assert len(result) == 2
+        assert result[0]["slug"] == "web"
+        assert result[1]["slug"] == "mobile"
+
+    @patch("infrastructure.config._fetch_org_projects")
+    def test_raises_when_project_not_found(self, mock_fetch_projects):
+        mock_fetch_projects.return_value = [
+            {"id": 99, "slug": "other"},
+        ]
+        with pytest.raises(ValueError, match="not found via API"):
+            _resolve_projects("org", [{"slug": "missing"}], "https://sentry.io", "tok")

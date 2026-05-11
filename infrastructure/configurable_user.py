@@ -192,10 +192,8 @@ def _inject_org_params(locust_info, org_profile):
         task_info["org_slug"] = org_profile.slug
         task_info["auth_token"] = org_profile.auth_token
         task_info["host"] = org_profile.api_host
-        if org_profile.projects:
-            task_info.setdefault("project_ids", [p["id"] for p in org_profile.projects])
-        if org_profile.project_slugs:
-            task_info.setdefault("project_slugs", org_profile.project_slugs)
+        task_info.setdefault("project_ids", [p["id"] for p in org_profile.projects])
+        task_info.setdefault("project_slugs", [p["slug"] for p in org_profile.projects])
 
     return locust_info
 
