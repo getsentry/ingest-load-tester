@@ -4,13 +4,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from infrastructure.util import resolve_env_var
 from tasks.read_api_tasks import (
     _build_query_url,
     _choice,
     _fetch_issue_ids,
     _get_auth_token,
     _read_headers,
-    _resolve_env_var,
     group_details_task_factory,
     group_event_details_task_factory,
     group_events_task_factory,
@@ -26,15 +26,15 @@ from tasks.read_api_tasks import (
 
 class TestHelpers:
     def test_resolve_env_var_plain_string(self):
-        assert _resolve_env_var("my-token") == "my-token"
+        assert resolve_env_var("my-token") == "my-token"
 
     def test_resolve_env_var_from_env(self, monkeypatch):
         monkeypatch.setenv("MY_TOKEN", "secret123")
-        assert _resolve_env_var("${MY_TOKEN}") == "secret123"
+        assert resolve_env_var("${MY_TOKEN}") == "secret123"
 
     def test_resolve_env_var_missing(self, monkeypatch):
         monkeypatch.delenv("MISSING_VAR", raising=False)
-        assert _resolve_env_var("${MISSING_VAR}") is None
+        assert resolve_env_var("${MISSING_VAR}") is None
 
     def test_get_auth_token_from_params(self):
         assert _get_auth_token({"auth_token": "tok123"}) == "tok123"

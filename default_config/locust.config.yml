@@ -14,6 +14,34 @@ kafka:
     attachments: ingest-attachments
     sessions: ingest-sessions
 
+# Multi-org mode: define organizations here to generate load across multiple orgs.
+# Each org references user task names from test YAMLs (simple.test.yml, read_api.test.yml).
+# When present, replaces the top-level `projects` list for project selection.
+#organizations:
+#  - slug: sentry
+#    org_id: 1
+#    weight: 5
+#    relay_host: https://o123.ingest.us.sentry.io
+#    auth_token: ${SENTRY_AUTH_TOKEN}
+#    api_host: https://us.sentry.io
+#    projects:
+#      - id: 1
+#        key: "31a5a894b4524f74a9a8d0e27e21ba91"
+#    project_slugs: ["test"]
+#    user_tasks:
+#      - TransactionEvents
+#      - OrganizationGroupIndex
+#
+# Simplified version if you are only testing the read_apis:
+# organizations:
+#     - slug: sentry
+#       weight: 3
+#       auth_token: ${AUTH_TOKEN}
+#       api_host: http://localhost:8000
+#       project_slugs: ["test"]
+#       user_tasks:
+#         - OrganizationGroupIndex
+
 #fake_projects:
 #  enable_metrics_extraction: false
 projects:

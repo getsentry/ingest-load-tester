@@ -10,7 +10,37 @@ try:
 except ImportError:
     from yaml import Loader, Dumper, FullLoader
 
-from .util import full_path_from_module_relative_path, memoize
+from .util import full_path_from_module_relative_path, memoize, resolve_env_var
+
+
+OrgProfile = namedtuple(
+    "OrgProfile",
+    "slug, org_id, weight, relay_host, auth_token, api_host, projects, project_slugs, user_tasks",
+)
+
+
+def load_org_profiles():
+    config = locust_config()
+    orgs_raw = config.get("organizations")
+    if not orgs_raw:
+        return None
+
+    profiles = []
+    for org in orgs_raw:
+        profiles.append(
+            OrgProfile(
+                slug=org["slug"],
+                org_id=org.get("org_id"),
+                weight=org.get("weight", 1),
+                relay_host=resolve_env_var(org.get("relay_host")),
+                auth_token=resolve_env_var(org.get("auth_token")),
+                api_host=resolve_env_var(org.get("api_host")),
+                projects=org.get("projects", []),
+                project_slugs=org.get("project_slugs", []),
+                user_tasks=org.get("user_tasks", []),
+            )
+        )
+    return profiles
 
 
 def relay_address():
@@ -65,7 +95,10 @@ def locust_config():
 ProjectInfo = namedtuple("ProjectInfo", "id, key, org_id, dsn")
 
 
-def generate_project_info(num_projects) -> ProjectInfo:
+def generate_project_info(num_projects, org_profile=None) -> ProjectInfo:
+    if org_profile is not None:
+        return _generate_project_info_for_org(num_projects, org_profile)
+
     config = locust_config()
 
     use_fake_projects = config["use_fake_projects"]
@@ -94,6 +127,38 @@ def generate_project_info(num_projects) -> ProjectInfo:
     dsn = f"{parsed.scheme}://{project_key}:@{parsed.netloc}/{project_id}"
     org_id = None
     if parsed.netloc.startswith("o"):
+        org_domain = parsed.netloc.split(".")[0]
+        org_id = org_domain[1:]
+
+    return ProjectInfo(id=project_id, key=project_key, org_id=org_id, dsn=dsn)
+
+
+def _generate_project_info_for_org(num_projects, org_profile):
+    org_projects = org_profile.projects
+    if not org_projects:
+        raise ValueError(
+            f"Organization '{org_profile.slug}' has no projects configured"
+        )
+
+    # handles the case where an org has less projects than is designated in the user config
+    num_available_from_org = len(org_projects)
+    if num_projects > num_available_from_org:
+        num_projects = num_available_from_org
+
+    project_idx = 0
+    if num_projects > 1:
+        project_idx = floor(random() * num_projects)
+
+    project_config = org_projects[project_idx]
+    project_id = project_config["id"]
+    project_key = project_config["key"]
+
+    host = org_profile.relay_host or relay_address()
+    parsed = urllib.parse.urlsplit(host)
+
+    dsn = f"{parsed.scheme}://{project_key}:@{parsed.netloc}/{project_id}"
+    org_id = org_profile.org_id
+    if org_id is None and parsed.netloc.startswith("o"):
         org_domain = parsed.netloc.split(".")[0]
         org_id = org_domain[1:]
 

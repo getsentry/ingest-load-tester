@@ -1,0 +1,6 @@
+#!/bin/sh
+# Reject commits if any Python files aren't formatted with black.
+if ! make style 2>/dev/null; then
+    echo "Pre-commit: Python files are not formatted. Run 'make format' and re-stage."
+    exit 1
+fi

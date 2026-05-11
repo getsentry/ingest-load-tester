@@ -9,17 +9,13 @@ from urllib.parse import urlencode
 
 import requests
 
+from infrastructure.util import resolve_env_var
+
 logger = logging.getLogger(__name__)
 
 
-def _resolve_env_var(value):
-    if isinstance(value, str) and value.startswith("${") and value.endswith("}"):
-        return os.environ.get(value[2:-1])
-    return value
-
-
 def _get_auth_token(task_params):
-    token = _resolve_env_var(task_params.get("auth_token", ""))
+    token = resolve_env_var(task_params.get("auth_token", ""))
     if not token:
         token = os.environ.get("AUTH_TOKEN")
     if not token:
@@ -236,7 +232,7 @@ def group_details_task_factory(task_params=None):
     org_slug = task_params.get("organization_slug", "sentry")
     # host is needed to pre-fetch issue IDs outside of Locust's client.
     # Prefer setting it in the YAML task params; API_HOST is a fallback.
-    host = _resolve_env_var(task_params.get("host", "")) or os.environ.get("API_HOST")
+    host = resolve_env_var(task_params.get("host", "")) or os.environ.get("API_HOST")
     fetch_limit = task_params.get("fetch_limit", 100)
     detail_weight = task_params.get("detail_weight", 1)
     latest_event_weight = task_params.get("latest_event_weight", 0)
@@ -292,7 +288,7 @@ def group_event_details_task_factory(task_params=None):
 
     auth_token = _get_auth_token(task_params)
     org_slug = task_params.get("organization_slug", "sentry")
-    host = _resolve_env_var(task_params.get("host", "")) or os.environ.get("API_HOST")
+    host = resolve_env_var(task_params.get("host", "")) or os.environ.get("API_HOST")
     fetch_limit = task_params.get("fetch_limit", 100)
     event_id_types = task_params.get(
         "event_id_types", ["latest", "oldest", "recommended"]
@@ -366,7 +362,7 @@ def group_events_task_factory(task_params=None):
 
     auth_token = _get_auth_token(task_params)
     org_slug = task_params.get("organization_slug", "sentry")
-    host = _resolve_env_var(task_params.get("host", "")) or os.environ.get("API_HOST")
+    host = resolve_env_var(task_params.get("host", "")) or os.environ.get("API_HOST")
     fetch_limit = task_params.get("fetch_limit", 100)
     queries = task_params.get("queries", [""])
     full_options = task_params.get("full_options", [True, False])
@@ -529,7 +525,7 @@ def organization_group_index_stats_task_factory(task_params=None):
 
     auth_token = _get_auth_token(task_params)
     org_slug = task_params.get("organization_slug", "sentry")
-    host = _resolve_env_var(task_params.get("host", "")) or os.environ.get("API_HOST")
+    host = resolve_env_var(task_params.get("host", "")) or os.environ.get("API_HOST")
     fetch_limit = task_params.get("fetch_limit", 100)
     batch_size = task_params.get("batch_size", 25)
     project_ids = task_params.get("project_ids", [])
