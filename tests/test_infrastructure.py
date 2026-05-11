@@ -1,5 +1,4 @@
 import copy
-import os
 from unittest.mock import patch, MagicMock
 
 import pytest
@@ -70,7 +69,7 @@ class TestLoadOrgProfiles:
         mock_config.return_value = {
             "organizations": [
                 {
-                    "slug": "acme",
+                    "slug": "sentry",
                     "org_id": 123,
                     "weight": 5,
                     "relay_host": "https://o123.ingest.sentry.io",
@@ -85,7 +84,7 @@ class TestLoadOrgProfiles:
         profiles = load_org_profiles()
         assert len(profiles) == 1
         org = profiles[0]
-        assert org.slug == "acme"
+        assert org.slug == "sentry"
         assert org.org_id == 123
         assert org.weight == 5
         assert org.relay_host == "https://o123.ingest.sentry.io"
@@ -223,7 +222,7 @@ class TestGenerateProjectInfoForOrg:
 class TestInjectOrgParams:
     def test_injects_into_task_info(self):
         org = _make_org_profile(
-            slug="acme",
+            slug="sentry",
             auth_token="tok",
             api_host="https://sentry.io",
             projects=[{"id": 1, "key": "k"}],
@@ -239,7 +238,7 @@ class TestInjectOrgParams:
         }
         result = _inject_org_params(locust_info, org)
         task_info = result["tasks"]["some_task_factory"]
-        assert task_info["organization_slug"] == "acme"
+        assert task_info["org_slug"] == "sentry"
         assert task_info["auth_token"] == "tok"
         assert task_info["host"] == "https://sentry.io"
         assert task_info["project_ids"] == [1]
@@ -247,7 +246,7 @@ class TestInjectOrgParams:
 
     def test_org_identity_fields_override_yaml_defaults(self):
         org = _make_org_profile(
-            slug="acme",
+            slug="sentry",
             auth_token="org-tok",
             api_host="https://acme.sentry.io",
         )
@@ -255,7 +254,7 @@ class TestInjectOrgParams:
             "tasks": {
                 "some_task_factory": {
                     "weight": 1,
-                    "organization_slug": "yaml-slug",
+                    "org_slug": "yaml-slug",
                     "auth_token": "yaml-tok",
                     "host": "http://localhost:8000",
                 }
@@ -263,7 +262,7 @@ class TestInjectOrgParams:
         }
         result = _inject_org_params(locust_info, org)
         task_info = result["tasks"]["some_task_factory"]
-        assert task_info["organization_slug"] == "acme"
+        assert task_info["org_slug"] == "sentry"
         assert task_info["auth_token"] == "org-tok"
         assert task_info["host"] == "https://acme.sentry.io"
 
@@ -287,7 +286,7 @@ class TestInjectOrgParams:
         assert task_info["project_slugs"] == ["custom"]
 
     def test_does_not_mutate_original(self):
-        org = _make_org_profile(slug="acme")
+        org = _make_org_profile(slug="sentry")
         locust_info = {"tasks": {"some_task_factory": {"weight": 1}}}
         original_tasks = copy.deepcopy(locust_info)
         _inject_org_params(locust_info, org)
@@ -301,11 +300,11 @@ class TestInjectOrgParams:
         result = _inject_org_params(locust_info, org)
         assert result["tasks"] == ["task_a", "task_b"]
 
-    def test_skips_none_auth_token(self):
+    def test_injects_none_auth_token(self):
         org = _make_org_profile(auth_token=None)
         locust_info = {"tasks": {"some_task_factory": {"weight": 1}}}
         result = _inject_org_params(locust_info, org)
-        assert "auth_token" not in result["tasks"]["some_task_factory"]
+        assert result["tasks"]["some_task_factory"]["auth_token"] is None
 
 
 class TestCreateOrgUserClasses:

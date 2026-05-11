@@ -189,11 +189,9 @@ def _inject_org_params(locust_info, org_profile):
         # multi-org mode is that each org brings its own slug, credentials,
         # and host.  Per-project fields use setdefault so YAML can still
         # narrow to specific projects within an org
-        task_info["organization_slug"] = org_profile.slug
-        if org_profile.auth_token:
-            task_info["auth_token"] = org_profile.auth_token
-        if org_profile.api_host:
-            task_info["host"] = org_profile.api_host
+        task_info["org_slug"] = org_profile.slug
+        task_info["auth_token"] = org_profile.auth_token
+        task_info["host"] = org_profile.api_host
         if org_profile.projects:
             task_info.setdefault("project_ids", [p["id"] for p in org_profile.projects])
         if org_profile.project_slugs:

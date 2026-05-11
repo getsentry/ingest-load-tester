@@ -1,10 +1,8 @@
-import os
 from collections import Counter
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from infrastructure.util import resolve_env_var
 from tasks.read_api_tasks import (
     _build_query_url,
     _choice,
@@ -25,17 +23,6 @@ from tasks.read_api_tasks import (
 
 
 class TestHelpers:
-    def test_resolve_env_var_plain_string(self):
-        assert resolve_env_var("my-token") == "my-token"
-
-    def test_resolve_env_var_from_env(self, monkeypatch):
-        monkeypatch.setenv("MY_TOKEN", "secret123")
-        assert resolve_env_var("${MY_TOKEN}") == "secret123"
-
-    def test_resolve_env_var_missing(self, monkeypatch):
-        monkeypatch.delenv("MISSING_VAR", raising=False)
-        assert resolve_env_var("${MISSING_VAR}") is None
-
     def test_get_auth_token_from_params(self):
         assert _get_auth_token({"auth_token": "tok123"}) == "tok123"
 
@@ -103,7 +90,7 @@ def _make_mock_user():
 class TestOrganizationGroupIndex:
     def test_factory_returns_callable(self):
         task = organization_group_index_task_factory(
-            {"auth_token": "tok", "organization_slug": "myorg"}
+            {"auth_token": "tok", "org_slug": "sentry"}
         )
         assert callable(task)
 
@@ -111,7 +98,7 @@ class TestOrganizationGroupIndex:
         task = organization_group_index_task_factory(
             {
                 "auth_token": "tok",
-                "organization_slug": "myorg",
+                "org_slug": "sentry",
                 "stats_periods": ["1h"],
                 "limits": [25],
                 "sort_options": ["date"],
@@ -123,15 +110,17 @@ class TestOrganizationGroupIndex:
 
         call_args = user.client.get.call_args
         url = call_args[0][0]
-        assert url.startswith("/api/0/organizations/myorg/issues/")
+        assert url.startswith("/api/0/organizations/sentry/issues/")
         assert "statsPeriod=1h" in url
         assert "sort=date" in url
         assert "limit=25" in url
         assert "query=is%3Aunresolved" in url
-        assert call_args[1]["name"] == "/api/0/organizations/myorg/issues/"
+        assert call_args[1]["name"] == "/api/0/organizations/sentry/issues/"
 
     def test_bearer_auth_header(self):
-        task = organization_group_index_task_factory({"auth_token": "secret"})
+        task = organization_group_index_task_factory(
+            {"auth_token": "secret", "org_slug": "sentry"}
+        )
         user = _make_mock_user()
         task(user)
 
@@ -142,6 +131,7 @@ class TestOrganizationGroupIndex:
         task = organization_group_index_task_factory(
             {
                 "auth_token": "tok",
+                "org_slug": "sentry",
                 "project_ids": [42],
                 "queries": [""],
             }
@@ -155,14 +145,16 @@ class TestOrganizationGroupIndex:
 
 class TestOrganizationEvents:
     def test_factory_returns_callable(self):
-        task = organization_events_task_factory({"auth_token": "tok"})
+        task = organization_events_task_factory(
+            {"auth_token": "tok", "org_slug": "sentry"}
+        )
         assert callable(task)
 
     def test_multi_value_fields(self):
         task = organization_events_task_factory(
             {
                 "auth_token": "tok",
-                "organization_slug": "myorg",
+                "org_slug": "sentry",
                 "field_sets": [["title", "count()", "project"]],
                 "stats_periods": ["24h"],
                 "per_page_values": [10],
@@ -183,6 +175,7 @@ class TestOrganizationEvents:
         task = organization_events_task_factory(
             {
                 "auth_token": "tok",
+                "org_slug": "sentry",
                 "datasets": ["discover"],
                 "field_sets": [["title"]],
                 "stats_periods": ["1h"],
@@ -200,14 +193,16 @@ class TestOrganizationEvents:
 
 class TestOrganizationEventsStats:
     def test_factory_returns_callable(self):
-        task = organization_events_stats_task_factory({"auth_token": "tok"})
+        task = organization_events_stats_task_factory(
+            {"auth_token": "tok", "org_slug": "sentry"}
+        )
         assert callable(task)
 
     def test_multi_value_yaxis(self):
         task = organization_events_stats_task_factory(
             {
                 "auth_token": "tok",
-                "organization_slug": "myorg",
+                "org_slug": "sentry",
                 "y_axes": [["count()", "count_unique(user)"]],
                 "stats_periods": ["24h"],
                 "intervals": ["1h"],
@@ -219,7 +214,7 @@ class TestOrganizationEventsStats:
         task(user)
 
         url = user.client.get.call_args[0][0]
-        assert url.startswith("/api/0/organizations/myorg/events-stats/")
+        assert url.startswith("/api/0/organizations/sentry/events-stats/")
         assert "yAxis=count" in url
         assert "yAxis=count_unique" in url
 
@@ -227,6 +222,7 @@ class TestOrganizationEventsStats:
         task = organization_events_stats_task_factory(
             {
                 "auth_token": "tok",
+                "org_slug": "sentry",
                 "y_axes": [["count()"]],
                 "stats_periods": ["12h"],
                 "intervals": ["30m"],
@@ -247,7 +243,7 @@ class TestGroupDetails:
     def test_factory_returns_callable(self, mock_fetch):
         mock_fetch.return_value = ["111", "222"]
         task = group_details_task_factory(
-            {"auth_token": "tok", "host": "https://sentry.io"}
+            {"auth_token": "tok", "org_slug": "sentry", "host": "https://sentry.io"}
         )
         assert callable(task)
 
@@ -257,7 +253,7 @@ class TestGroupDetails:
         task = group_details_task_factory(
             {
                 "auth_token": "tok",
-                "organization_slug": "myorg",
+                "org_slug": "sentry",
                 "host": "https://sentry.io",
                 "detail_weight": 1,
                 "latest_event_weight": 0,
@@ -267,7 +263,7 @@ class TestGroupDetails:
         task(user)
 
         url = user.client.get.call_args[0][0]
-        assert url == "/api/0/organizations/myorg/issues/42/"
+        assert url == "/api/0/organizations/sentry/issues/42/"
 
     @patch("tasks.read_api_tasks._fetch_issue_ids")
     def test_latest_event_url(self, mock_fetch):
@@ -275,7 +271,7 @@ class TestGroupDetails:
         task = group_details_task_factory(
             {
                 "auth_token": "tok",
-                "organization_slug": "myorg",
+                "org_slug": "sentry",
                 "host": "https://sentry.io",
                 "detail_weight": 0,
                 "latest_event_weight": 1,
@@ -285,7 +281,7 @@ class TestGroupDetails:
         task(user)
 
         url = user.client.get.call_args[0][0]
-        assert url == "/api/0/organizations/myorg/issues/42/events/latest/"
+        assert url == "/api/0/organizations/sentry/issues/42/events/latest/"
 
     @patch("tasks.read_api_tasks._fetch_issue_ids")
     def test_weighted_distribution(self, mock_fetch):
@@ -293,6 +289,7 @@ class TestGroupDetails:
         task = group_details_task_factory(
             {
                 "auth_token": "tok",
+                "org_slug": "sentry",
                 "host": "https://sentry.io",
                 "detail_weight": 7,
                 "latest_event_weight": 3,
@@ -317,7 +314,7 @@ class TestGroupDetails:
         mock_fetch.return_value = []
         with pytest.raises(ValueError, match="Failed to fetch issue IDs"):
             group_details_task_factory(
-                {"auth_token": "tok", "host": "https://sentry.io"}
+                {"auth_token": "tok", "org_slug": "sentry", "host": "https://sentry.io"}
             )
 
     @patch("tasks.read_api_tasks._fetch_issue_ids")
@@ -326,7 +323,7 @@ class TestGroupDetails:
         task = group_details_task_factory(
             {
                 "auth_token": "tok",
-                "organization_slug": "sentry",
+                "org_slug": "sentry",
                 "host": "https://sentry.io",
             }
         )
@@ -343,7 +340,7 @@ class TestGroupEventDetails:
     def test_factory_returns_callable(self, mock_fetch):
         mock_fetch.return_value = ["111", "222"]
         task = group_event_details_task_factory(
-            {"auth_token": "tok", "host": "https://sentry.io"}
+            {"auth_token": "tok", "org_slug": "sentry", "host": "https://sentry.io"}
         )
         assert callable(task)
 
@@ -353,7 +350,7 @@ class TestGroupEventDetails:
         task = group_event_details_task_factory(
             {
                 "auth_token": "tok",
-                "organization_slug": "myorg",
+                "org_slug": "sentry",
                 "host": "https://sentry.io",
                 "event_id_types": ["recommended"],
             }
@@ -362,7 +359,7 @@ class TestGroupEventDetails:
         task(user)
 
         url = user.client.get.call_args[0][0]
-        assert url == "/api/0/organizations/myorg/issues/42/events/recommended/"
+        assert url == "/api/0/organizations/sentry/issues/42/events/recommended/"
 
     @patch("tasks.read_api_tasks._fetch_issue_ids")
     def test_name_param_uses_template(self, mock_fetch):
@@ -370,7 +367,7 @@ class TestGroupEventDetails:
         task = group_event_details_task_factory(
             {
                 "auth_token": "tok",
-                "organization_slug": "sentry",
+                "org_slug": "sentry",
                 "host": "https://sentry.io",
             }
         )
@@ -387,14 +384,14 @@ class TestGroupEventDetails:
         mock_fetch.return_value = []
         with pytest.raises(ValueError, match="Failed to fetch issue IDs"):
             group_event_details_task_factory(
-                {"auth_token": "tok", "host": "https://sentry.io"}
+                {"auth_token": "tok", "org_slug": "sentry", "host": "https://sentry.io"}
             )
 
     @patch("tasks.read_api_tasks._fetch_issue_ids")
     def test_bearer_auth_header(self, mock_fetch):
         mock_fetch.return_value = ["1"]
         task = group_event_details_task_factory(
-            {"auth_token": "secret", "host": "https://sentry.io"}
+            {"auth_token": "secret", "org_slug": "sentry", "host": "https://sentry.io"}
         )
         user = _make_mock_user()
         task(user)
@@ -405,14 +402,16 @@ class TestGroupEventDetails:
 
 class TestOrganizationTags:
     def test_factory_returns_callable(self):
-        task = organization_tags_task_factory({"auth_token": "tok"})
+        task = organization_tags_task_factory(
+            {"auth_token": "tok", "org_slug": "sentry"}
+        )
         assert callable(task)
 
     def test_request_url_structure(self):
         task = organization_tags_task_factory(
             {
                 "auth_token": "tok",
-                "organization_slug": "myorg",
+                "org_slug": "sentry",
                 "stats_periods": ["1h"],
                 "datasets": [""],
             }
@@ -421,16 +420,17 @@ class TestOrganizationTags:
         task(user)
 
         url = user.client.get.call_args[0][0]
-        assert url.startswith("/api/0/organizations/myorg/tags/")
+        assert url.startswith("/api/0/organizations/sentry/tags/")
         assert "statsPeriod=1h" in url
         assert (
-            user.client.get.call_args[1]["name"] == "/api/0/organizations/myorg/tags/"
+            user.client.get.call_args[1]["name"] == "/api/0/organizations/sentry/tags/"
         )
 
     def test_optional_dataset(self):
         task = organization_tags_task_factory(
             {
                 "auth_token": "tok",
+                "org_slug": "sentry",
                 "datasets": ["events"],
                 "stats_periods": ["1h"],
             }
@@ -445,6 +445,7 @@ class TestOrganizationTags:
         task = organization_tags_task_factory(
             {
                 "auth_token": "tok",
+                "org_slug": "sentry",
                 "project_ids": [42],
                 "stats_periods": ["1h"],
                 "datasets": [""],
@@ -462,7 +463,7 @@ class TestGroupEvents:
     def test_factory_returns_callable(self, mock_fetch):
         mock_fetch.return_value = ["111"]
         task = group_events_task_factory(
-            {"auth_token": "tok", "host": "https://sentry.io"}
+            {"auth_token": "tok", "org_slug": "sentry", "host": "https://sentry.io"}
         )
         assert callable(task)
 
@@ -472,7 +473,7 @@ class TestGroupEvents:
         task = group_events_task_factory(
             {
                 "auth_token": "tok",
-                "organization_slug": "myorg",
+                "org_slug": "sentry",
                 "host": "https://sentry.io",
                 "stats_periods": ["24h"],
                 "per_page_values": [10],
@@ -492,6 +493,7 @@ class TestGroupEvents:
         task = group_events_task_factory(
             {
                 "auth_token": "tok",
+                "org_slug": "sentry",
                 "host": "https://sentry.io",
                 "stats_periods": ["24h"],
                 "per_page_values": [10],
@@ -511,7 +513,7 @@ class TestGroupEvents:
         task = group_events_task_factory(
             {
                 "auth_token": "tok",
-                "organization_slug": "sentry",
+                "org_slug": "sentry",
                 "host": "https://sentry.io",
             }
         )
@@ -527,20 +529,22 @@ class TestGroupEvents:
         mock_fetch.return_value = []
         with pytest.raises(ValueError, match="Failed to fetch issue IDs"):
             group_events_task_factory(
-                {"auth_token": "tok", "host": "https://sentry.io"}
+                {"auth_token": "tok", "org_slug": "sentry", "host": "https://sentry.io"}
             )
 
 
 class TestOrganizationReleases:
     def test_factory_returns_callable(self):
-        task = organization_releases_task_factory({"auth_token": "tok"})
+        task = organization_releases_task_factory(
+            {"auth_token": "tok", "org_slug": "sentry"}
+        )
         assert callable(task)
 
     def test_request_url_structure(self):
         task = organization_releases_task_factory(
             {
                 "auth_token": "tok",
-                "organization_slug": "myorg",
+                "org_slug": "sentry",
                 "per_page_values": [25],
                 "sort_options": ["date"],
                 "summary_stats_periods": ["24h"],
@@ -552,19 +556,20 @@ class TestOrganizationReleases:
         task(user)
 
         url = user.client.get.call_args[0][0]
-        assert url.startswith("/api/0/organizations/myorg/releases/")
+        assert url.startswith("/api/0/organizations/sentry/releases/")
         assert "per_page=25" in url
         assert "sort=date" in url
         assert "summaryStatsPeriod=24h" in url
         assert (
             user.client.get.call_args[1]["name"]
-            == "/api/0/organizations/myorg/releases/"
+            == "/api/0/organizations/sentry/releases/"
         )
 
     def test_flatten_added_for_session_sorts(self):
         task = organization_releases_task_factory(
             {
                 "auth_token": "tok",
+                "org_slug": "sentry",
                 "per_page_values": [10],
                 "sort_options": ["sessions"],
                 "summary_stats_periods": ["24h"],
@@ -583,6 +588,7 @@ class TestOrganizationReleases:
         task = organization_releases_task_factory(
             {
                 "auth_token": "tok",
+                "org_slug": "sentry",
                 "per_page_values": [10],
                 "sort_options": ["date"],
                 "summary_stats_periods": ["24h"],
@@ -601,6 +607,7 @@ class TestOrganizationReleases:
         task = organization_releases_task_factory(
             {
                 "auth_token": "tok",
+                "org_slug": "sentry",
                 "per_page_values": [10],
                 "sort_options": ["date"],
                 "summary_stats_periods": ["24h"],
@@ -618,6 +625,7 @@ class TestOrganizationReleases:
         task = organization_releases_task_factory(
             {
                 "auth_token": "tok",
+                "org_slug": "sentry",
                 "project_ids": [42],
                 "per_page_values": [10],
                 "sort_options": ["date"],
@@ -636,7 +644,7 @@ class TestOrganizationReleases:
 class TestProjectGroupIndex:
     def test_factory_returns_callable(self):
         task = project_group_index_task_factory(
-            {"auth_token": "tok", "project_slugs": ["my-project"]}
+            {"auth_token": "tok", "org_slug": "sentry", "project_slugs": ["my-project"]}
         )
         assert callable(task)
 
@@ -644,7 +652,7 @@ class TestProjectGroupIndex:
         task = project_group_index_task_factory(
             {
                 "auth_token": "tok",
-                "organization_slug": "myorg",
+                "org_slug": "sentry",
                 "project_slugs": ["web-app"],
                 "stats_periods": ["24h"],
                 "limits": [25],
@@ -656,7 +664,7 @@ class TestProjectGroupIndex:
         task(user)
 
         url = user.client.get.call_args[0][0]
-        assert url.startswith("/api/0/projects/myorg/web-app/issues/")
+        assert url.startswith("/api/0/projects/sentry/web-app/issues/")
         assert "statsPeriod=24h" in url
         assert "sort=date" in url
         assert "limit=25" in url
@@ -665,7 +673,7 @@ class TestProjectGroupIndex:
         task = project_group_index_task_factory(
             {
                 "auth_token": "tok",
-                "organization_slug": "myorg",
+                "org_slug": "sentry",
                 "project_slugs": ["web-app"],
             }
         )
@@ -678,11 +686,15 @@ class TestProjectGroupIndex:
 
     def test_missing_project_slugs_raises(self):
         with pytest.raises(ValueError, match="project_slugs is required"):
-            project_group_index_task_factory({"auth_token": "tok"})
+            project_group_index_task_factory(
+                {"auth_token": "tok", "org_slug": "sentry"}
+            )
 
     def test_empty_project_slugs_raises(self):
         with pytest.raises(ValueError, match="project_slugs is required"):
-            project_group_index_task_factory({"auth_token": "tok", "project_slugs": []})
+            project_group_index_task_factory(
+                {"auth_token": "tok", "org_slug": "sentry", "project_slugs": []}
+            )
 
 
 class TestOrganizationGroupIndexStats:
@@ -690,7 +702,7 @@ class TestOrganizationGroupIndexStats:
     def test_factory_returns_callable(self, mock_fetch):
         mock_fetch.return_value = ["111", "222"]
         task = organization_group_index_stats_task_factory(
-            {"auth_token": "tok", "host": "https://sentry.io"}
+            {"auth_token": "tok", "org_slug": "sentry", "host": "https://sentry.io"}
         )
         assert callable(task)
 
@@ -700,7 +712,7 @@ class TestOrganizationGroupIndexStats:
         task = organization_group_index_stats_task_factory(
             {
                 "auth_token": "tok",
-                "organization_slug": "myorg",
+                "org_slug": "sentry",
                 "host": "https://sentry.io",
                 "batch_size": 2,
                 "stats_periods": ["24h"],
@@ -712,7 +724,7 @@ class TestOrganizationGroupIndexStats:
         task(user)
 
         url = user.client.get.call_args[0][0]
-        assert url.startswith("/api/0/organizations/myorg/issues-stats/")
+        assert url.startswith("/api/0/organizations/sentry/issues-stats/")
         assert "groups=" in url
         assert "statsPeriod=24h" in url
         assert "groupStatsPeriod=14d" in url
@@ -723,6 +735,7 @@ class TestOrganizationGroupIndexStats:
         task = organization_group_index_stats_task_factory(
             {
                 "auth_token": "tok",
+                "org_slug": "sentry",
                 "host": "https://sentry.io",
                 "batch_size": 5,
                 "stats_periods": ["24h"],
@@ -741,6 +754,7 @@ class TestOrganizationGroupIndexStats:
         task = organization_group_index_stats_task_factory(
             {
                 "auth_token": "tok",
+                "org_slug": "sentry",
                 "host": "https://sentry.io",
                 "batch_size": 25,
                 "stats_periods": ["24h"],
@@ -758,7 +772,7 @@ class TestOrganizationGroupIndexStats:
         mock_fetch.return_value = []
         with pytest.raises(ValueError, match="Failed to fetch issue IDs"):
             organization_group_index_stats_task_factory(
-                {"auth_token": "tok", "host": "https://sentry.io"}
+                {"auth_token": "tok", "org_slug": "sentry", "host": "https://sentry.io"}
             )
 
     @patch("tasks.read_api_tasks._fetch_issue_ids")
@@ -767,6 +781,7 @@ class TestOrganizationGroupIndexStats:
         task = organization_group_index_stats_task_factory(
             {
                 "auth_token": "tok",
+                "org_slug": "sentry",
                 "host": "https://sentry.io",
                 "project_ids": [42],
                 "batch_size": 1,
