@@ -316,7 +316,7 @@ dependencies = [
     { name = "influxdb-client", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "locust", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "msgpack", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
-    { name = "mywsgi", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "pyuwsgi", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "pyyaml", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "sentry-relay", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "sentry-sdk", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
@@ -335,10 +335,10 @@ requires-dist = [
     { name = "influxdb-client", specifier = "==1.24.0" },
     { name = "locust", specifier = "==2.20.0" },
     { name = "msgpack", specifier = ">=1.0.0" },
-    { name = "mywsgi", specifier = "==1.0.3" },
+    { name = "pyuwsgi", specifier = "==2.0.30" },
     { name = "pyyaml" },
     { name = "sentry-relay", specifier = "==0.9.0" },
-    { name = "sentry-sdk", specifier = "==1.5.8" },
+    { name = "sentry-sdk", specifier = "==2.58.0" },
     { name = "werkzeug", specifier = "==2.2.2" },
 ]
 
@@ -485,14 +485,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl", hash = "sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505", size = 4963, upload-time = "2025-04-22T14:54:22.983Z" },
 ]
 
-[[package]]
-name = "mywsgi"
-version = "1.0.3"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a3/15/6a80b7694311b07163a743bd4aec34444396e56bc4d90e19bfcf9ff91432/mywsgi-1.0.3.tar.gz", hash = "sha256:16720914209c9191e0d1ad34f2ffa6c9959fb9a7ce899d12ad23ac3eab2c2e3b", size = 3201, upload-time = "2019-07-08T03:50:59.825Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/15/10/22b0b74b3b3021d5a94804eb9155c98c0d41101f7745548dc7af58a1a144/mywsgi-1.0.3-py2.py3-none-any.whl", hash = "sha256:846158e938f3ca3f6ad59ced34fd9dcf34c4ab059a60ff365bd3900d7878edcf", size = 4185, upload-time = "2019-07-08T03:50:57.92Z" },
-]
 
 [[package]]
 name = "packaging"
@@ -607,6 +599,22 @@ wheels = [
 ]
 
 [[package]]
+name = "pyuwsgi"
+version = "2.0.30"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/91/1c/f7b48d3c0587c1e70737f2d40c26b98b5b52e9b4179bc6507bc4b7ea7d04/pyuwsgi-2.0.30.tar.gz", hash = "sha256:1c9f226a9278f8a2ecc08d4445a7eb776bda53f44721c565c499131ebe5ff0ce", size = 877731, upload-time = "2025-07-22T21:12:50.378Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a9/04/ff24d82e418148e30043305c2e17252ace4578c588bb39338c559387418a/pyuwsgi-2.0.30-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:ed7574812ead2bb6f9d150c4e3d0b57c514a65a9905145dbfabd3e0189a71887", size = 658121, upload-time = "2025-07-22T21:12:00.236Z" },
+    { url = "https://files.pythonhosted.org/packages/83/da/a372334b95c7992d71bfb78cc6fa548ec31555576bfa07497d752cdd2ff3/pyuwsgi-2.0.30-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:8444c80c693f7949beea14d5ddaba39c8983d50b3f5c84868fbec65dc2233ef5", size = 589545, upload-time = "2025-07-22T21:12:01.617Z" },
+    { url = "https://files.pythonhosted.org/packages/dd/e9/8f0c2f3055bd00979d9f826037d082dee1c7e83d1e91c9d6d32a84d9cc6b/pyuwsgi-2.0.30-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f1fe142fd163c4e03a1f415180cffdc444fd7b912b065bb10517ca44e923ba7e", size = 881781, upload-time = "2025-07-22T21:12:03.413Z" },
+    { url = "https://files.pythonhosted.org/packages/46/a8/31ff97b1bf95f35dba735d6c5efa701455e6ab75b2effddc068260d0e065/pyuwsgi-2.0.30-cp313-cp313-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:92ca2ee6d2463ecdab9e1d548b28afab23c2222349d79520b071ef58431526fd", size = 940438, upload-time = "2025-07-22T21:12:05.246Z" },
+    { url = "https://files.pythonhosted.org/packages/16/75/77cc52a9d1e130ec75ed62330c2c2001d92be4673590ad89052d6ab29f73/pyuwsgi-2.0.30-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3b8dfe829bdd5c1a2a8c7571fd4bec0575e335d340a84ec7c039a97c1f41d9a7", size = 889580, upload-time = "2025-07-22T21:12:07.131Z" },
+    { url = "https://files.pythonhosted.org/packages/8b/86/f9f62cb6bfb320500de1b6b38fa8181013e18361906f29680b2dbf100e0e/pyuwsgi-2.0.30-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:79a0c37b66c9e4bdde920f016548ae536b1e3c144639bd9e0b65ab5509d27b9f", size = 862031, upload-time = "2025-07-22T21:12:09.078Z" },
+    { url = "https://files.pythonhosted.org/packages/fe/21/ad6f8b9ef59c49a476d39e8321efdf1dd58ab96852785800a5c5b94aee5e/pyuwsgi-2.0.30-cp313-cp313-musllinux_1_2_i686.whl", hash = "sha256:842cdae10afccf7bc43b61800be2127f1ba1f4a340e29a9b756ed623f0079c62", size = 933329, upload-time = "2025-07-22T21:12:11.033Z" },
+    { url = "https://files.pythonhosted.org/packages/d7/98/f844cbb84303d3110a291f205b0befa854c2fa904ffeacd46d2f6f2c899e/pyuwsgi-2.0.30-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:36cc5e86ee31aee0feb1e2f493f14623beb38df194dc74a5cd9634e4ccf0a7bb", size = 871160, upload-time = "2025-07-22T21:12:12.986Z" },
+]
+
+[[package]]
 name = "pyyaml"
 version = "6.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -717,15 +725,15 @@ wheels = [
 
 [[package]]
 name = "sentry-sdk"
-version = "1.5.8"
+version = "2.58.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "certifi", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "urllib3", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/74/74/82f06055ccbcb05ba84b942346acf39f342fdf3937f2638cb780dac3f125/sentry-sdk-1.5.8.tar.gz", hash = "sha256:38fd16a92b5ef94203db3ece10e03bdaa291481dd7e00e77a148aa0302267d47", size = 111791, upload-time = "2022-03-18T12:42:48.583Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/26/b3/fb8291170d0e844173164709fc0fa0c221ed75a5da740c8746f2a83b4eb1/sentry_sdk-2.58.0.tar.gz", hash = "sha256:c1144d947352d54e5b7daa63596d9f848adf684989c06c4f5a659f0c85a18f6f", size = 438764, upload-time = "2026-04-13T17:23:26.265Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/87/54/0a04c906c97073119e4030c9f4d86e8fe70c93aee1b3bc5670257b76eab0/sentry_sdk-1.5.8-py2.py3-none-any.whl", hash = "sha256:32af1a57954576709242beb8c373b3dbde346ac6bd616921def29d68846fb8c3", size = 144758, upload-time = "2022-03-18T12:42:48.567Z" },
+    { url = "https://files.pythonhosted.org/packages/fa/eb/d875669993b762556ae8b2efd86219943b4c0864d22204d622a9aee3052b/sentry_sdk-2.58.0-py2.py3-none-any.whl", hash = "sha256:688d1c704ddecf382ea3326f21a67453d4caa95592d722b7c780a36a9d23109e", size = 460919, upload-time = "2026-04-13T17:23:24.675Z" },
 ]
 
 [[package]]

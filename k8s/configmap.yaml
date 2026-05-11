@@ -1,0 +1,149 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: locust-config
+data:
+  locust.config.yml: |
+    # Config file for the load tester
+    use_fake_projects: true
+    relay:
+      host: http://127.0.0.1
+      port: 3000
+    kafka:
+      broker:
+        bootstrap.servers: "127.0.0.1:9092"
+      topics:
+        outcomes: outcomes
+        events: ingest-events
+        transactions: ingest-transactions
+        attachments: ingest-attachments
+        sessions: ingest-sessions
+
+    projects:
+      - id: 1
+        key: "31a5a894b4524f74a9a8d0e27e21ba91"
+    metrics:
+      enabled: true
+
+      influxdb:
+        url: "http://localhost:8086"
+        token: "48NlqRlitvNL1k322be_mPHru-qqjcmqjPLqOzOeVJwwep8bnpne2hOu6-NUY_FmxHKcU786QCUrEy0rFxPXFA=="
+        org: "sentry"
+        bucket: "locust"
+
+      default_tags: {}
+
+  ingest.yml: |
+    users:
+      SimpleLoadTest:
+        wait_time: constant(1)
+        num_projects: 10
+        weight: 0
+        tasks:
+          file_event_task_factory:
+            weight: 0
+            filename: test-events/small.json
+
+          file_envelope_event_task_factory:
+            weight: 0
+            filename: path/to/custom/file.json
+
+          session_event_task_factory:
+            weight: 0
+            started_range: 2m
+            duration_range: 1m
+            num_releases: 1
+            num_environments: 1
+            num_users: 1000
+            ok_weight: 2
+            exited_weight: 10
+            errored_weight: 1
+            crashed_weight: 1
+            abnormal_weight: 1
+
+      TransactionEvents:
+        wait_time: constant(0.5)
+        num_projects: 10
+        weight: 1
+        tasks:
+          transaction_event_task_factory:
+            weight: 1
+            num_releases: 10
+            max_users: 10
+            min_spans: 2
+            max_spans: 20
+            transaction_duration_max: 10m
+            transaction_duration_min: 10ms
+            transaction_timestamp_spread: 4h
+            min_breadcrumbs: 0
+            max_breadcrumbs: 50
+            breadcrumb_categories: ~
+            breadcrumb_levels: ~
+            breadcrumb_types: ~
+            breadcrumb_messages: ~
+            measurements:
+              - fp
+              - fcp
+              - lcp
+              - fid
+              - cls
+              - ttfb
+              - ttfb.requesttime
+              - app_start_cold
+              - app_start_warm
+              - frames_total
+              - frames_slow
+              - frames_frozen
+              - frames_slow_rate
+              - frames_frozen_rate
+              - stall_count
+              - stall_total_time
+              - stall_longest_time
+              - stall_percentage
+            operations:
+              - browser
+              - http
+              - db
+              - resource.script
+              - resource.link
+              - resource.css
+              - resource.img
+              - resource.other
+
+      RandomEvents:
+        wait_time: constant(1)
+        num_projects: 10
+        weight: 0
+        tasks:
+          random_envelope_event_task_factory:
+            weight: 1
+            num_event_groups: 10
+            trace_user_id: "user"
+            trace_user_segment: ["vip", "paid", "free"]
+            trace_environment: ["debug", "prod"]
+            release: ["sampling@1.0", "sampling@2.0"]
+            with_level: true
+            num_releases: 10
+            with_javascript_stacktrace: false
+            num_stacktraces: 5
+            min_frames: 5
+            max_frames: 30
+
+          random_event_task_factory:
+            weight: 0
+            with_level: true
+            num_event_groups: 10
+            max_users: ~
+            min_breadcrumbs: 0
+            max_breadcrumbs: 50
+            breadcrumb_categories: ~
+            breadcrumb_levels: ~
+            breadcrumb_types: ~
+            breadcrumb_messages: ~
+            with_native_stacktrace: false
+            with_javascript_stacktrace: false
+            num_stacktraces: 5
+            min_frames: 5
+            max_frames: 30
+            num_releases: 10
+            release: ~
