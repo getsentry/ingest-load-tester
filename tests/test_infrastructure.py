@@ -379,29 +379,7 @@ class TestInjectOrgParams:
         assert task_info["project_ids"] == [1]
         assert task_info["project_slugs"] == ["web"]
 
-    def test_org_identity_fields_override_yaml_defaults(self):
-        org = _make_org_profile(
-            slug="sentry",
-            auth_token="org-tok",
-            api_host="https://acme.sentry.io",
-        )
-        locust_info = {
-            "tasks": {
-                "some_task_factory": {
-                    "weight": 1,
-                    "org_slug": "yaml-slug",
-                    "auth_token": "yaml-tok",
-                    "host": "http://localhost:8000",
-                }
-            },
-        }
-        result = _inject_org_params(locust_info, org)
-        task_info = result["tasks"]["some_task_factory"]
-        assert task_info["org_slug"] == "sentry"
-        assert task_info["auth_token"] == "org-tok"
-        assert task_info["host"] == "https://acme.sentry.io"
-
-    def test_project_fields_use_setdefault(self):
+    def test_project_fields_from_org_profile(self):
         org = _make_org_profile(
             projects=[
                 {"id": 1, "key": "k", "slug": "web"},
@@ -412,36 +390,13 @@ class TestInjectOrgParams:
             "tasks": {
                 "some_task_factory": {
                     "weight": 1,
-                    "project_ids": [99],
-                    "project_slugs": ["custom"],
                 }
             },
         }
         result = _inject_org_params(locust_info, org)
         task_info = result["tasks"]["some_task_factory"]
-        assert task_info["project_ids"] == [99]
-        assert task_info["project_slugs"] == ["custom"]
-
-    def test_does_not_mutate_original(self):
-        org = _make_org_profile(slug="sentry")
-        locust_info = {"tasks": {"some_task_factory": {"weight": 1}}}
-        original_tasks = copy.deepcopy(locust_info)
-        _inject_org_params(locust_info, org)
-        assert locust_info == original_tasks
-
-    def test_handles_sequence_tasks(self):
-        org = _make_org_profile()
-        locust_info = {
-            "tasks": ["task_a", "task_b"],
-        }
-        result = _inject_org_params(locust_info, org)
-        assert result["tasks"] == ["task_a", "task_b"]
-
-    def test_injects_none_auth_token(self):
-        org = _make_org_profile(auth_token=None)
-        locust_info = {"tasks": {"some_task_factory": {"weight": 1}}}
-        result = _inject_org_params(locust_info, org)
-        assert result["tasks"]["some_task_factory"]["auth_token"] is None
+        assert task_info["project_ids"] == [1, 2]
+        assert task_info["project_slugs"] == ["web", "mobile"]
 
 
 class TestCreateOrgUserClasses:

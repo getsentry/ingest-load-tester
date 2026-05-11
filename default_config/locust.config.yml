@@ -13,9 +13,8 @@ kafka:
     attachments: ingest-attachments
     sessions: ingest-sessions
 
-# Organizations define which orgs to generate load for.
-# Each org references user task names from http.test.yml.
-# At least one organization is required.
+# Organizations define which orgs to generate load for; at least one org is required
+# user_tasks references user task names from http.test.yml
 organizations:
   - slug: sentry
     # org_id is only used for ingest tasks to build the DSN. If omitted, it is
@@ -25,12 +24,11 @@ organizations:
     # relay_host is only used for ingest tasks that send events to Relay.
     # relay_host: https://o123.ingest.us.sentry.io
     auth_token_env_var: SENTRY_AUTH_TOKEN
-    api_host: https://us.sentry.io
+    api_host: http://localhost:8000
     projects:
-      - slug: my-project
+      - slug: test
     # Each user_task entry specifies a task name and its weight for this org.
-    # Weight controls how many Locust users are spawned for this task
-    # relative to other tasks (multiplied by the org-level weight above).
+    # Weight controls how many Locust users are spawned for this task relative to other tasks
     user_tasks:
       - name: TransactionEvents
         weight: 1

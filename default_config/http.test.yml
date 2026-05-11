@@ -1,8 +1,7 @@
-# Unified load test configuration for all HTTP-based tests (ingest + read API).
-# User class weights are configured per-organization in locust.config.yml.
+# Config for all HTTP-based tests (ingest + read API)
 
 # ─── Ingest tasks ────────────────────────────────────────────────────────────
-# (see "Read API tasks" for read-based operations)
+# (see lower section "Read tasks" for read operations)
 
 users:
   # A task that sends a couple events from files.
@@ -192,13 +191,9 @@ users:
         # Single specific hardcoded release.
         release: ~
 
-# ─── Read API tasks ──────────────────────────────────────────────────────────
-# Organization-specific fields (auth_token via auth_token_env_var, org_slug, host,
-# project_ids, project_slugs) are injected from organization profiles
-# in locust.config.yml and do not need to be set here.
-#
+# ─── Read tasks ──────────────────────────────────────────────────────────
 # Each read API user class uses org_host_field: api_host so that the host
-# is resolved from the org profile's api_host instead of relay_host.
+# is resolved from the org profile's api_host instead of relay_host
 
   OrganizationGroupIndex:
     org_host_field: api_host

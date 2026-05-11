@@ -49,15 +49,18 @@ def load_org_profiles():
         _require(org, "projects", ctx)
         if not org["projects"]:
             raise ValueError("{}: 'projects' must not be empty".format(ctx))
+
         for j, p in enumerate(org["projects"]):
             _require(p, "slug", "{}, project {}".format(ctx, j))
 
         api_host = resolve_env_var(_require(org, "api_host", ctx))
-        env_var = _require(org, "auth_token_env_var", ctx)
-        auth_token = os.environ.get(env_var)
+        auth_token_env_var = _require(org, "auth_token_env_var", ctx)
+        auth_token = os.environ.get(auth_token_env_var)
         if not auth_token:
             raise ValueError(
-                "{}: environment variable '{}' is not set".format(ctx, env_var)
+                "{}: environment variable '{}' is not set".format(
+                    ctx, auth_token_env_var
+                )
             )
 
         profiles.append(
@@ -118,6 +121,8 @@ def _resolve_projects(org_slug, projects, api_host, auth_token):
 
 
 def _fetch_org_projects(org_slug, api_host, auth_token):
+    # At the moment we do not handle API pagination; this limits us to orgs
+    # with <= 100 projects, we can extend this if need be
     url = "{}/api/0/organizations/{}/projects/".format(api_host.rstrip("/"), org_slug)
     headers = {"Authorization": "Bearer {}".format(auth_token)}
     try:
