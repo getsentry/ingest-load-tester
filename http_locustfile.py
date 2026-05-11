@@ -11,10 +11,8 @@ resource.setrlimit(resource.RLIMIT_NOFILE, (new_limit, new_limit))
 
 from infrastructure import (
     full_path_from_module_relative_path,
-    create_user_class,
     create_org_user_classes,
 )
-from infrastructure.configurable_user import _load_locust_config
 from tasks import event_tasks, read_api_tasks
 
 # Register all task factories from both task modules into this module's namespace.
@@ -26,25 +24,19 @@ for _mod in (event_tasks, read_api_tasks):
             globals()[_name] = getattr(_mod, _name)
 
 # --- Load user classes ---
-# In multi-org mode, create per-org user classes from the config.
-# In single-org mode, fall back to creating one user class per entry in the YAML.
+# Creates per-org user classes from config/http.test.yml, one per
+# (org, task) pair defined in the organization profiles.
 
 _config_path = full_path_from_module_relative_path(__file__, "config/http.test.yml")
 
 
 def _load_user_classes():
-    org_classes = create_org_user_classes(
-        _config_path, __name__, org_host_field="relay_host"
-    )
-    if org_classes:
-        return {cls.__name__: cls for cls in org_classes}
-
-    classes = {}
-    for user_name in _load_locust_config(_config_path):
-        cls = create_user_class(user_name, _config_path, __name__)
-        if cls is not None:
-            classes[user_name] = cls
-    return classes
+    return {
+        cls.__name__: cls
+        for cls in create_org_user_classes(
+            _config_path, __name__, org_host_field="relay_host"
+        )
+    }
 
 
 globals().update(_load_user_classes())

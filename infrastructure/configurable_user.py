@@ -147,9 +147,6 @@ def create_org_user_classes(
     config_file_name, module_name, base_classes=None, org_host_field=None
 ):
     org_profiles = load_org_profiles()
-    if not org_profiles:
-        return None
-
     config = _load_locust_config(config_file_name)
     classes = []
 
@@ -176,7 +173,7 @@ def create_org_user_classes(
                 cls.__qualname__ = class_name
                 classes.append(cls)
 
-    return classes if classes else None
+    return classes
 
 
 def _inject_org_params(locust_info, org_profile):

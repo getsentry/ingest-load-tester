@@ -53,14 +53,16 @@ class TestResolveEnvVar:
 
 class TestLoadOrgProfiles:
     @patch("infrastructure.config.locust_config")
-    def test_returns_none_when_no_organizations(self, mock_config):
+    def test_raises_when_no_organizations(self, mock_config):
         mock_config.return_value = {"relay": {"host": "http://localhost"}}
-        assert load_org_profiles() is None
+        with pytest.raises(ValueError, match="No 'organizations' defined"):
+            load_org_profiles()
 
     @patch("infrastructure.config.locust_config")
-    def test_returns_none_for_empty_organizations(self, mock_config):
+    def test_raises_for_empty_organizations(self, mock_config):
         mock_config.return_value = {"organizations": []}
-        assert load_org_profiles() is None
+        with pytest.raises(ValueError, match="No 'organizations' defined"):
+            load_org_profiles()
 
     @patch("infrastructure.config.locust_config")
     def test_parses_single_org(self, mock_config):
@@ -279,11 +281,6 @@ class TestInjectOrgParams:
 
 class TestCreateOrgUserClasses:
     @patch("infrastructure.configurable_user.load_org_profiles")
-    def test_returns_none_when_no_orgs(self, mock_load):
-        mock_load.return_value = None
-        assert create_org_user_classes("/fake/path.yml", "__main__") is None
-
-    @patch("infrastructure.configurable_user.load_org_profiles")
     @patch("infrastructure.configurable_user._load_locust_config")
     @patch("infrastructure.configurable_user.create_user_class")
     def test_creates_classes_for_matching_tasks(
@@ -352,7 +349,7 @@ class TestCreateOrgUserClasses:
     @patch("infrastructure.configurable_user.load_org_profiles")
     @patch("infrastructure.configurable_user._load_locust_config")
     @patch("infrastructure.configurable_user.create_user_class")
-    def test_returns_none_when_all_classes_disabled(
+    def test_returns_empty_list_when_all_classes_disabled(
         self, mock_create, mock_load_config, mock_load_orgs
     ):
         mock_load_orgs.return_value = [
@@ -364,7 +361,7 @@ class TestCreateOrgUserClasses:
         mock_create.return_value = None
 
         result = create_org_user_classes("/fake/path.yml", "__main__")
-        assert result is None
+        assert result == []
 
     @patch("infrastructure.configurable_user.load_org_profiles")
     @patch("infrastructure.configurable_user._load_locust_config")

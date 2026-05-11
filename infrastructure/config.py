@@ -23,7 +23,10 @@ def load_org_profiles():
     config = locust_config()
     orgs_raw = config.get("organizations")
     if not orgs_raw:
-        return None
+        raise ValueError(
+            "No 'organizations' defined in {}. "
+            "At least one organization is required.".format(_config_file_path())
+        )
 
     profiles = []
     for org in orgs_raw:
