@@ -18,8 +18,11 @@ kafka:
 # At least one organization is required.
 organizations:
   - slug: sentry
+    # org_id is only used for ingest tasks to build the DSN. If omitted, it is
+    # inferred from relay_host (e.g. o123.ingest.us.sentry.io → 123)
     # org_id: 1
     weight: 1
+    # relay_host is only used for ingest tasks that send events to Relay.
     # relay_host: https://o123.ingest.us.sentry.io
     auth_token_env_var: SENTRY_AUTH_TOKEN
     api_host: https://us.sentry.io
