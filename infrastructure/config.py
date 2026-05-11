@@ -24,6 +24,12 @@ OrgProfile = namedtuple(
 )
 
 
+def _require(mapping, field, context):
+    if field not in mapping:
+        raise ValueError("{}: missing required '{}' field".format(context, field))
+    return mapping[field]
+
+
 def load_org_profiles():
     config = locust_config()
     orgs_raw = config.get("organizations")
@@ -35,59 +41,32 @@ def load_org_profiles():
 
     profiles = []
     for i, org in enumerate(orgs_raw):
-        if "slug" not in org:
-            raise ValueError(
-                "Organization at index {} is missing required 'slug' field.".format(i)
-            )
-        org_slug = org["slug"]
+        org_slug = _require(org, "slug", "Organization at index {}".format(i))
+        ctx = "Organization '{}'".format(org_slug)
 
-        if "projects" not in org or not org["projects"]:
-            raise ValueError(
-                "Organization '{}': missing required 'projects' field".format(org_slug)
-            )
-        project_configs = org["projects"]
+        _require(org, "projects", ctx)
+        if not org["projects"]:
+            raise ValueError("{}: 'projects' must not be empty".format(ctx))
+        for j, p in enumerate(org["projects"]):
+            _require(p, "slug", "{}, project {}".format(ctx, j))
 
-        for j, p in enumerate(project_configs):
-            if "slug" not in p:
-                raise ValueError(
-                    "Organization '{}', project {}: missing required 'slug' field".format(
-                        org_slug, j
-                    )
-                )
-
-        if "api_host" not in org:
-            raise ValueError(
-                "Organization '{}': missing required 'api_host' field".format(org_slug)
-            )
-        api_host = resolve_env_var(org["api_host"])
-
-        if "auth_token_env_var" not in org:
-            raise ValueError(
-                "Organization '{}': missing required 'auth_token_env_var' field".format(
-                    org_slug
-                )
-            )
-        auth_token = os.environ.get(org["auth_token_env_var"])
+        api_host = resolve_env_var(_require(org, "api_host", ctx))
+        env_var = _require(org, "auth_token_env_var", ctx)
+        auth_token = os.environ.get(env_var)
         if not auth_token:
             raise ValueError(
-                "Organization '{}': environment variable '{}' is not set".format(
-                    org_slug, org["auth_token_env_var"]
-                )
+                "{}: environment variable '{}' is not set".format(ctx, env_var)
             )
-
-        resolved_projects = _resolve_projects(
-            org_slug, project_configs, api_host, auth_token
-        )
 
         profiles.append(
             OrgProfile(
-                slug=org["slug"],
+                slug=org_slug,
                 org_id=org.get("org_id"),
                 weight=org.get("weight", 1),
                 relay_host=resolve_env_var(org.get("relay_host")),
                 auth_token=auth_token,
                 api_host=api_host,
-                projects=resolved_projects,
+                projects=_resolve_projects(org_slug, org["projects"], api_host, auth_token),
                 user_tasks=org.get("user_tasks", []),
             )
         )

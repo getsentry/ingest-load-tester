@@ -156,7 +156,7 @@ class TestLoadOrgProfiles:
                 {"slug": "empty", "projects": [], "user_tasks": ["SomeTask"]},
             ]
         }
-        with pytest.raises(ValueError, match="missing required 'projects'"):
+        with pytest.raises(ValueError, match="'projects' must not be empty"):
             load_org_profiles()
 
     @patch("infrastructure.config.locust_config")
