@@ -98,7 +98,11 @@ def create_user_class(
 
     _wait_time = _get_wait_time(locust_info)
     if host is None:
-        _host = relay_address()
+        # different user classes can point at different hosts, especially important for
+        # read APIs which target a different service than Relay
+        _host = locust_info.get("host")
+        if _host is None:
+            _host = relay_address()
     else:
         _host = host
 

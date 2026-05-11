@@ -17,6 +17,11 @@ dependencies =[
     "influxdb-client==1.24.0"  #29.11.2021 send metrics to influxdb
 ]
 
+[dependency-groups]
+dev = [
+    "pytest",
+]
+
 [tool.uv]
 environments = ["sys_platform == 'darwin' or sys_platform == 'linux'"]
 

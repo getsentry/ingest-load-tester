@@ -1,26 +1,6 @@
 # ingest-load-tester
 
-> ### IMPORTANT NOTE: This is our legacy load tester, new tests should preferably be developed in [go-load-tester](https://github.com/getsentry/go-load-tester).
-
-
-The project contains two tools: a load tester based on Locust (see https://locust.io/) and a
-fake Sentry server that contains just enough functionality to get relay working with an upstream.
-
-## Component: Fake Sentry Server
-
-The FakeSentryServer runs a Flask server that responds to the security challenge messages from Relay and
-is able to provide project configurations for any project (it responds with a canned project configuration)
-
-The FakeSentryServer can be configured via the `config/fake.sentry.config.yml` file (situated in the top level directory).
-
-To start the Fake Sentry Server run:
-
-    make fake-sentry
-
-`uwsgi` is used under the hood, and its parameters can be tweaked by providing environment variables.
-For example, to achieve higher throughput, one can raise the number of workers and the size of listen queue:
-
-    UWSGI_LISTEN=10000 UWSGI_PROCESSES=16 make fake-sentry
+The project contains a load tester based on Locust (see https://locust.io/).
 
 ## Component: Load tester
 
@@ -72,8 +52,9 @@ Presuming that you are in the load-tests directory you can run:
 
     make TEST=simple load-test
     make TEST=kafka_consumers load-test
+    make TEST=read_api load-test
 
-These tests will run with the configuration files `config/simple.test.yml` and `config/kafka_consumers.test.yml` respectively.
+These tests will run with the configuration files `config/simple.test.yml`, `config/kafka_consumers.test.yml`, and `config/read_api.test.yml` respectively.
 
 Which will ensure that the virtual environment is installed and set up and will call:
 `.venv/bin/locust -f simple_locustfile.py`
@@ -269,3 +250,26 @@ The following parameters can be configured:
 
 Each replay_event is accompanied by the configured number of replay_recording segments, which contain
 synthetic RRWeb recording data (mouse movements, clicks, scrolls, etc.).
+
+## Read API
+
+Load tests for Sentry's highest-traffic read API endpoints. Unlike the envelope/kafka tasks above which
+test the ingest (write) path, these tasks issue authenticated GET requests against Sentry's REST API.
+
+Requires an `AUTH_TOKEN` environment variable (or `auth_token` in the task config) with org-level
+read access.
+
+| Task | Endpoint | Description | Key Config |
+|---|---|---|---|
+| Organization Group Index | `GET /api/0/organizations/{org}/issues/` | Issues list — highest-volume read endpoint | stats_periods, limits, sort_options, queries |
+| Organization Events | `GET /api/0/organizations/{org}/events/` | Discover events query with heavy Snuba fan-out | field_sets, datasets, per_page_values, sort_by |
+| Group Details | `GET /api/0/organizations/{org}/issues/{id}/` | Issue detail with optional latest-event sub-path; pre-fetches real issue IDs at startup | host (required), fetch_limit, detail_weight, latest_event_weight |
+| Organization Events Stats | `GET /api/0/organizations/{org}/events-stats/` | Time-series charting with expensive Snuba aggregations | y_axes, intervals, datasets |
+| Group Event Details | `GET /api/0/organizations/{org}/issues/{id}/events/{event_id}/` | Issue event detail view; pre-fetches issue IDs, uses latest/oldest/recommended | host (required), fetch_limit, event_id_types |
+| Organization Tags | `GET /api/0/organizations/{org}/tags/` | Filter dropdown tags — called on nearly every page | stats_periods, datasets |
+| Group Events | `GET /api/0/organizations/{org}/issues/{id}/events/` | Issue events list — 2nd highest latency endpoint; pre-fetches issue IDs | host (required), fetch_limit, full_options, per_page_values |
+| Organization Releases | `GET /api/0/organizations/{org}/releases/` | Release listing with health stats | per_page_values, sort_options, health_stat_options |
+| Project Group Index | `GET /api/0/projects/{org}/{project_slug}/issues/` | Project-scoped issue list — same Snuba search path | project_slugs (required), limits, sort_options |
+| Organization Group Index Stats | `GET /api/0/organizations/{org}/issues-stats/` | Companion to issue list — fetches sparkline stats in batches | host (required), fetch_limit, batch_size |
+
+All tasks also accept: organization_slug, project_ids, and queries.
