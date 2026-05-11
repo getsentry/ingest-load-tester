@@ -66,7 +66,9 @@ def load_org_profiles():
                 relay_host=resolve_env_var(org.get("relay_host")),
                 auth_token=auth_token,
                 api_host=api_host,
-                projects=_resolve_projects(org_slug, org["projects"], api_host, auth_token),
+                projects=_resolve_projects(
+                    org_slug, org["projects"], api_host, auth_token
+                ),
                 user_tasks=org.get("user_tasks", []),
             )
         )
