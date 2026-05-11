@@ -25,8 +25,12 @@ organizations:
     api_host: https://us.sentry.io
     projects:
       - slug: my-project
+    # Each user_task entry specifies a task name and its weight for this org.
+    # Weight controls how many Locust users are spawned for this task
+    # relative to other tasks (multiplied by the org-level weight above).
     user_tasks:
-      - TransactionEvents
+      - name: TransactionEvents
+        weight: 1
 
 metrics:
   enabled: true

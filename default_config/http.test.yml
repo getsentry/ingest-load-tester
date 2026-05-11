@@ -1,5 +1,5 @@
 # Unified load test configuration for all HTTP-based tests (ingest + read API).
-# Adjust `weight` to enable/disable individual user classes.
+# User class weights are configured per-organization in locust.config.yml.
 
 # ─── Ingest tasks ────────────────────────────────────────────────────────────
 # (see "Read API tasks" for read-based operations)
@@ -9,7 +9,6 @@ users:
   SimpleLoadTest:
     wait_time: constant(1)
     num_projects: 10
-    weight: 0
     tasks:
       file_event_task_factory:
         weight: 0
@@ -41,7 +40,6 @@ users:
   TransactionEvents:
     wait_time: constant(0.5)
     num_projects: 10
-    weight: 1
     tasks:
       transaction_event_task_factory:
         weight: 1
@@ -102,7 +100,6 @@ users:
   RandomEvents:
     wait_time: constant(1)
     num_projects: 10
-    weight: 0
     tasks:
 #      NOT IMPLEMENTED YET
 #      random_envelope_transaction_task_factory:
@@ -206,7 +203,6 @@ users:
   OrganizationGroupIndex:
     org_host_field: api_host
     wait_time: constant(1)
-    weight: 3
     tasks:
       organization_group_index_task_factory:
         weight: 1
@@ -218,7 +214,6 @@ users:
   OrganizationEvents:
     org_host_field: api_host
     wait_time: constant(1)
-    weight: 3
     tasks:
       organization_events_task_factory:
         weight: 1
@@ -234,7 +229,6 @@ users:
   GroupDetails:
     org_host_field: api_host
     wait_time: constant(1)
-    weight: 2
     tasks:
       group_details_task_factory:
         weight: 1
@@ -245,7 +239,6 @@ users:
   OrganizationEventsStats:
     org_host_field: api_host
     wait_time: constant(1)
-    weight: 1
     tasks:
       organization_events_stats_task_factory:
         weight: 1
@@ -261,7 +254,6 @@ users:
   GroupEventDetails:
     org_host_field: api_host
     wait_time: constant(1)
-    weight: 1
     tasks:
       group_event_details_task_factory:
         weight: 1
@@ -271,7 +263,6 @@ users:
   OrganizationTags:
     org_host_field: api_host
     wait_time: constant(1)
-    weight: 1
     tasks:
       organization_tags_task_factory:
         weight: 1
@@ -281,7 +272,6 @@ users:
   GroupEvents:
     org_host_field: api_host
     wait_time: constant(1)
-    weight: 1
     tasks:
       group_events_task_factory:
         weight: 1
@@ -293,7 +283,6 @@ users:
   OrganizationReleases:
     org_host_field: api_host
     wait_time: constant(1)
-    weight: 1
     tasks:
       organization_releases_task_factory:
         weight: 1
@@ -306,7 +295,6 @@ users:
   ProjectGroupIndex:
     org_host_field: api_host
     wait_time: constant(1)
-    weight: 1
     tasks:
       project_group_index_task_factory:
         weight: 1
@@ -318,7 +306,6 @@ users:
   OrganizationGroupIndexStats:
     org_host_field: api_host
     wait_time: constant(1)
-    weight: 1
     tasks:
       organization_group_index_stats_task_factory:
         weight: 1

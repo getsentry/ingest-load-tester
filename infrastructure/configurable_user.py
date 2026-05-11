@@ -86,6 +86,7 @@ def create_user_class(
     base_classes=None,
     org_profile=None,
     org_host_field=None,
+    task_weight=None,
 ):
     if base_classes is None:
         base_classes = (FastHttpUser,)
@@ -99,7 +100,9 @@ def create_user_class(
     if org_profile is not None:
         locust_info = _inject_org_params(locust_info, org_profile)
 
-    _weight = locust_info.get("weight", 1)
+    # Org-based callers pass task_weight from locust.config.yml; the YAML
+    # fallback covers direct callers like the kafka locustfile.
+    _weight = task_weight if task_weight is not None else locust_info.get("weight", 1)
     if org_profile is not None:
         _weight = _weight * org_profile.weight
 
@@ -151,22 +154,23 @@ def create_org_user_classes(
     classes = []
 
     for org in org_profiles:
-        for task_name in org.user_tasks:
-            if task_name not in config:
+        for task_entry in org.user_tasks:
+            if task_entry.name not in config:
                 continue
 
-            per_user_host_field = config[task_name].get(
+            per_user_host_field = config[task_entry.name].get(
                 "org_host_field", org_host_field
             )
 
-            class_name = f"{task_name}_{org.slug.replace('-', '_')}"
+            class_name = f"{task_entry.name}_{org.slug.replace('-', '_')}"
             cls = create_user_class(
-                task_name,
+                task_entry.name,
                 config_file_name,
                 module_name,
                 base_classes=base_classes,
                 org_profile=org,
                 org_host_field=per_user_host_field,
+                task_weight=task_entry.weight,
             )
             if cls is not None:
                 cls.__name__ = class_name

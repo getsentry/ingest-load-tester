@@ -5,9 +5,11 @@ import pytest
 
 from infrastructure.config import (
     OrgProfile,
+    UserTaskConfig,
     load_org_profiles,
     generate_project_info,
     _resolve_projects,
+    _parse_user_tasks,
 )
 from infrastructure.util import resolve_env_var
 from infrastructure.configurable_user import (
@@ -25,9 +27,14 @@ def _make_org_profile(**overrides):
         auth_token="test-token",
         api_host="https://us.sentry.io",
         projects=[{"id": 100, "key": "aabbcc", "slug": "web-app"}],
-        user_tasks=["TransactionEvents"],
+        user_tasks=[UserTaskConfig("TransactionEvents", 1)],
     )
     defaults.update(overrides)
+    if "user_tasks" in overrides:
+        defaults["user_tasks"] = [
+            UserTaskConfig(t, 1) if isinstance(t, str) else t
+            for t in defaults["user_tasks"]
+        ]
     return OrgProfile(**defaults)
 
 
@@ -88,7 +95,10 @@ class TestLoadOrgProfiles:
                     "auth_token_env_var": "ACME_TOKEN",
                     "api_host": "https://sentry.io",
                     "projects": [{"slug": "web"}],
-                    "user_tasks": ["TransactionEvents", "LogEvents"],
+                    "user_tasks": [
+                        {"name": "TransactionEvents", "weight": 2},
+                        {"name": "LogEvents", "weight": 5},
+                    ],
                 }
             ]
         }
@@ -102,7 +112,31 @@ class TestLoadOrgProfiles:
         assert org.auth_token == "tok123"
         assert org.api_host == "https://sentry.io"
         assert org.projects == [{"id": 1, "key": "abc", "slug": "web"}]
-        assert org.user_tasks == ["TransactionEvents", "LogEvents"]
+        assert org.user_tasks == [
+            UserTaskConfig("TransactionEvents", 2),
+            UserTaskConfig("LogEvents", 5),
+        ]
+
+    @patch("infrastructure.config._resolve_projects")
+    @patch("infrastructure.config.locust_config")
+    def test_user_task_weight_defaults_to_one(
+        self, mock_config, mock_resolve, monkeypatch
+    ):
+        monkeypatch.setenv("TOK", "t")
+        mock_resolve.return_value = [{"id": 1, "key": "k", "slug": "p"}]
+        mock_config.return_value = {
+            "organizations": [
+                {
+                    "slug": "org-a",
+                    "auth_token_env_var": "TOK",
+                    "api_host": "https://a.io",
+                    "projects": [{"slug": "p"}],
+                    "user_tasks": [{"name": "TaskA"}],
+                },
+            ]
+        }
+        profiles = load_org_profiles()
+        assert profiles[0].user_tasks == [UserTaskConfig("TaskA", 1)]
 
     @patch("infrastructure.config._resolve_projects")
     @patch("infrastructure.config.locust_config")
@@ -120,7 +154,7 @@ class TestLoadOrgProfiles:
                     "auth_token_env_var": "TOK",
                     "api_host": "https://a.io",
                     "projects": [{"slug": "p"}],
-                    "user_tasks": ["TaskA"],
+                    "user_tasks": [{"name": "TaskA"}],
                 },
                 {
                     "slug": "org-b",
@@ -128,7 +162,7 @@ class TestLoadOrgProfiles:
                     "auth_token_env_var": "TOK",
                     "api_host": "https://b.io",
                     "projects": [{"slug": "p"}],
-                    "user_tasks": ["TaskB"],
+                    "user_tasks": [{"name": "TaskB"}],
                 },
             ]
         }
@@ -226,6 +260,33 @@ class TestLoadOrgProfiles:
 
     @patch("infrastructure.config._resolve_projects")
     @patch("infrastructure.config.locust_config")
+    def test_parses_user_tasks_with_weight_overrides(
+        self, mock_config, mock_resolve, monkeypatch
+    ):
+        monkeypatch.setenv("TOK", "t")
+        mock_resolve.return_value = [{"id": 1, "key": "k", "slug": "p"}]
+        mock_config.return_value = {
+            "organizations": [
+                {
+                    "slug": "org-a",
+                    "auth_token_env_var": "TOK",
+                    "api_host": "https://a.io",
+                    "projects": [{"slug": "p"}],
+                    "user_tasks": [
+                        {"name": "PlainTask"},
+                        {"name": "WeightedTask", "weight": 7},
+                    ],
+                },
+            ]
+        }
+        profiles = load_org_profiles()
+        assert profiles[0].user_tasks == [
+            UserTaskConfig("PlainTask", 1),
+            UserTaskConfig("WeightedTask", 7),
+        ]
+
+    @patch("infrastructure.config._resolve_projects")
+    @patch("infrastructure.config.locust_config")
     def test_resolves_projects_via_api(self, mock_config, mock_resolve, monkeypatch):
         monkeypatch.setenv("TOK", "secret")
         mock_config.return_value = {
@@ -235,7 +296,7 @@ class TestLoadOrgProfiles:
                     "auth_token_env_var": "TOK",
                     "api_host": "https://sentry.io",
                     "projects": [{"slug": "web"}],
-                    "user_tasks": ["TaskA"],
+                    "user_tasks": [{"name": "TaskA"}],
                 },
             ]
         }
@@ -494,6 +555,83 @@ class TestCreateOrgUserClasses:
         assert "TaskA_org_a" in names
         assert "TaskB_org_a" in names
         assert "TaskA_org_b" in names
+
+
+class TestParseUserTasks:
+    def test_dict_with_weight(self):
+        result = _parse_user_tasks([{"name": "TaskA", "weight": 5}], "test")
+        assert result == [UserTaskConfig("TaskA", 5)]
+
+    def test_weight_defaults_to_one(self):
+        result = _parse_user_tasks([{"name": "TaskA"}], "test")
+        assert result == [UserTaskConfig("TaskA", 1)]
+
+    def test_multiple_entries(self):
+        result = _parse_user_tasks(
+            [{"name": "TaskA", "weight": 3}, {"name": "TaskB", "weight": 7}],
+            "test",
+        )
+        assert result == [
+            UserTaskConfig("TaskA", 3),
+            UserTaskConfig("TaskB", 7),
+        ]
+
+    def test_dict_missing_name_raises(self):
+        with pytest.raises(ValueError, match="missing required 'name'"):
+            _parse_user_tasks([{"weight": 5}], "test")
+
+    def test_plain_string_raises(self):
+        with pytest.raises(ValueError, match="expected a mapping"):
+            _parse_user_tasks(["TaskA"], "test")
+
+    def test_empty_list(self):
+        assert _parse_user_tasks([], "test") == []
+
+
+class TestCreateOrgUserClassesWeightOverride:
+    @patch("infrastructure.configurable_user.load_org_profiles")
+    @patch("infrastructure.configurable_user._load_locust_config")
+    @patch("infrastructure.configurable_user.create_user_class")
+    def test_passes_task_weight_from_user_task_config(
+        self, mock_create, mock_load_config, mock_load_orgs
+    ):
+        mock_load_orgs.return_value = [
+            _make_org_profile(
+                slug="org-a",
+                user_tasks=[UserTaskConfig("TaskA", 10)],
+            ),
+        ]
+        mock_load_config.return_value = {
+            "TaskA": {"tasks": {}},
+        }
+        mock_cls = MagicMock()
+        mock_cls.__name__ = "TaskA"
+        mock_create.return_value = mock_cls
+
+        create_org_user_classes("/fake/path.yml", "__main__")
+        call_kwargs = mock_create.call_args[1]
+        assert call_kwargs["task_weight"] == 10
+
+    @patch("infrastructure.configurable_user.load_org_profiles")
+    @patch("infrastructure.configurable_user._load_locust_config")
+    @patch("infrastructure.configurable_user.create_user_class")
+    def test_default_weight_is_one(self, mock_create, mock_load_config, mock_load_orgs):
+        mock_load_orgs.return_value = [
+            _make_org_profile(
+                slug="org-a",
+                user_tasks=[UserTaskConfig("TaskA", 1)],
+            ),
+        ]
+        mock_load_config.return_value = {
+            "TaskA": {"tasks": {}},
+        }
+        mock_cls = MagicMock()
+        mock_cls.__name__ = "TaskA"
+        mock_create.return_value = mock_cls
+
+        create_org_user_classes("/fake/path.yml", "__main__")
+        call_kwargs = mock_create.call_args[1]
+        assert call_kwargs["task_weight"] == 1
 
 
 class TestResolveProjects:

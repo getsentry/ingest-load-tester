@@ -23,6 +23,8 @@ OrgProfile = namedtuple(
     "slug, org_id, weight, relay_host, auth_token, api_host, projects, user_tasks",
 )
 
+UserTaskConfig = namedtuple("UserTaskConfig", "name, weight")
+
 
 def _require(mapping, field, context):
     if field not in mapping:
@@ -69,10 +71,25 @@ def load_org_profiles():
                 projects=_resolve_projects(
                     org_slug, org["projects"], api_host, auth_token
                 ),
-                user_tasks=org.get("user_tasks", []),
+                user_tasks=_parse_user_tasks(org.get("user_tasks", []), ctx),
             )
         )
     return profiles
+
+
+def _parse_user_tasks(raw_tasks, context):
+    parsed = []
+    for i, entry in enumerate(raw_tasks):
+        if not isinstance(entry, dict):
+            raise ValueError(
+                "{}, user_tasks[{}]: expected a mapping with 'name' and 'weight', got {}".format(
+                    context, i, type(entry).__name__
+                )
+            )
+        name = _require(entry, "name", "{}, user_tasks[{}]".format(context, i))
+        weight = entry.get("weight", 1)
+        parsed.append(UserTaskConfig(name=name, weight=weight))
+    return parsed
 
 
 def _resolve_projects(org_slug, projects, api_host, auth_token):

@@ -10,6 +10,7 @@ from .config import (
     generate_project_info,
     load_org_profiles,
     OrgProfile,
+    UserTaskConfig,
 )
 from .configurable_user import (
     create_tasks,
