@@ -58,7 +58,7 @@ class TestHelpers:
 
 class TestFetchIssueIds:
     def test_missing_host_raises(self):
-        with pytest.raises(ValueError, match="host is required"):
+        with pytest.raises(ValueError, match="api_host is required"):
             _fetch_issue_ids(None, "tok", "sentry", 100)
 
     @patch("tasks.read_api_tasks.requests.get")
@@ -243,7 +243,7 @@ class TestGroupDetails:
     def test_factory_returns_callable(self, mock_fetch):
         mock_fetch.return_value = ["111", "222"]
         task = group_details_task_factory(
-            {"auth_token": "tok", "org_slug": "sentry", "host": "https://sentry.io"}
+            {"auth_token": "tok", "org_slug": "sentry", "api_host": "https://sentry.io"}
         )
         assert callable(task)
 
@@ -254,7 +254,7 @@ class TestGroupDetails:
             {
                 "auth_token": "tok",
                 "org_slug": "sentry",
-                "host": "https://sentry.io",
+                "api_host": "https://sentry.io",
                 "detail_weight": 1,
                 "latest_event_weight": 0,
             }
@@ -272,7 +272,7 @@ class TestGroupDetails:
             {
                 "auth_token": "tok",
                 "org_slug": "sentry",
-                "host": "https://sentry.io",
+                "api_host": "https://sentry.io",
                 "detail_weight": 0,
                 "latest_event_weight": 1,
             }
@@ -290,7 +290,7 @@ class TestGroupDetails:
             {
                 "auth_token": "tok",
                 "org_slug": "sentry",
-                "host": "https://sentry.io",
+                "api_host": "https://sentry.io",
                 "detail_weight": 7,
                 "latest_event_weight": 3,
             }
@@ -314,7 +314,11 @@ class TestGroupDetails:
         mock_fetch.return_value = []
         with pytest.raises(ValueError, match="Failed to fetch issue IDs"):
             group_details_task_factory(
-                {"auth_token": "tok", "org_slug": "sentry", "host": "https://sentry.io"}
+                {
+                    "auth_token": "tok",
+                    "org_slug": "sentry",
+                    "api_host": "https://sentry.io",
+                }
             )
 
     @patch("tasks.read_api_tasks._fetch_issue_ids")
@@ -324,7 +328,7 @@ class TestGroupDetails:
             {
                 "auth_token": "tok",
                 "org_slug": "sentry",
-                "host": "https://sentry.io",
+                "api_host": "https://sentry.io",
             }
         )
         user = _make_mock_user()
@@ -340,7 +344,7 @@ class TestGroupEventDetails:
     def test_factory_returns_callable(self, mock_fetch):
         mock_fetch.return_value = ["111", "222"]
         task = group_event_details_task_factory(
-            {"auth_token": "tok", "org_slug": "sentry", "host": "https://sentry.io"}
+            {"auth_token": "tok", "org_slug": "sentry", "api_host": "https://sentry.io"}
         )
         assert callable(task)
 
@@ -351,7 +355,7 @@ class TestGroupEventDetails:
             {
                 "auth_token": "tok",
                 "org_slug": "sentry",
-                "host": "https://sentry.io",
+                "api_host": "https://sentry.io",
                 "event_id_types": ["recommended"],
             }
         )
@@ -368,7 +372,7 @@ class TestGroupEventDetails:
             {
                 "auth_token": "tok",
                 "org_slug": "sentry",
-                "host": "https://sentry.io",
+                "api_host": "https://sentry.io",
             }
         )
         user = _make_mock_user()
@@ -384,14 +388,22 @@ class TestGroupEventDetails:
         mock_fetch.return_value = []
         with pytest.raises(ValueError, match="Failed to fetch issue IDs"):
             group_event_details_task_factory(
-                {"auth_token": "tok", "org_slug": "sentry", "host": "https://sentry.io"}
+                {
+                    "auth_token": "tok",
+                    "org_slug": "sentry",
+                    "api_host": "https://sentry.io",
+                }
             )
 
     @patch("tasks.read_api_tasks._fetch_issue_ids")
     def test_bearer_auth_header(self, mock_fetch):
         mock_fetch.return_value = ["1"]
         task = group_event_details_task_factory(
-            {"auth_token": "secret", "org_slug": "sentry", "host": "https://sentry.io"}
+            {
+                "auth_token": "secret",
+                "org_slug": "sentry",
+                "api_host": "https://sentry.io",
+            }
         )
         user = _make_mock_user()
         task(user)
@@ -463,7 +475,7 @@ class TestGroupEvents:
     def test_factory_returns_callable(self, mock_fetch):
         mock_fetch.return_value = ["111"]
         task = group_events_task_factory(
-            {"auth_token": "tok", "org_slug": "sentry", "host": "https://sentry.io"}
+            {"auth_token": "tok", "org_slug": "sentry", "api_host": "https://sentry.io"}
         )
         assert callable(task)
 
@@ -474,7 +486,7 @@ class TestGroupEvents:
             {
                 "auth_token": "tok",
                 "org_slug": "sentry",
-                "host": "https://sentry.io",
+                "api_host": "https://sentry.io",
                 "stats_periods": ["24h"],
                 "per_page_values": [10],
                 "queries": [""],
@@ -494,7 +506,7 @@ class TestGroupEvents:
             {
                 "auth_token": "tok",
                 "org_slug": "sentry",
-                "host": "https://sentry.io",
+                "api_host": "https://sentry.io",
                 "stats_periods": ["24h"],
                 "per_page_values": [10],
                 "queries": [""],
@@ -514,7 +526,7 @@ class TestGroupEvents:
             {
                 "auth_token": "tok",
                 "org_slug": "sentry",
-                "host": "https://sentry.io",
+                "api_host": "https://sentry.io",
             }
         )
         user = _make_mock_user()
@@ -529,7 +541,11 @@ class TestGroupEvents:
         mock_fetch.return_value = []
         with pytest.raises(ValueError, match="Failed to fetch issue IDs"):
             group_events_task_factory(
-                {"auth_token": "tok", "org_slug": "sentry", "host": "https://sentry.io"}
+                {
+                    "auth_token": "tok",
+                    "org_slug": "sentry",
+                    "api_host": "https://sentry.io",
+                }
             )
 
 
@@ -702,7 +718,7 @@ class TestOrganizationGroupIndexStats:
     def test_factory_returns_callable(self, mock_fetch):
         mock_fetch.return_value = ["111", "222"]
         task = organization_group_index_stats_task_factory(
-            {"auth_token": "tok", "org_slug": "sentry", "host": "https://sentry.io"}
+            {"auth_token": "tok", "org_slug": "sentry", "api_host": "https://sentry.io"}
         )
         assert callable(task)
 
@@ -713,7 +729,7 @@ class TestOrganizationGroupIndexStats:
             {
                 "auth_token": "tok",
                 "org_slug": "sentry",
-                "host": "https://sentry.io",
+                "api_host": "https://sentry.io",
                 "batch_size": 2,
                 "stats_periods": ["24h"],
                 "group_stats_periods": ["14d"],
@@ -736,7 +752,7 @@ class TestOrganizationGroupIndexStats:
             {
                 "auth_token": "tok",
                 "org_slug": "sentry",
-                "host": "https://sentry.io",
+                "api_host": "https://sentry.io",
                 "batch_size": 5,
                 "stats_periods": ["24h"],
                 "queries": [""],
@@ -755,7 +771,7 @@ class TestOrganizationGroupIndexStats:
             {
                 "auth_token": "tok",
                 "org_slug": "sentry",
-                "host": "https://sentry.io",
+                "api_host": "https://sentry.io",
                 "batch_size": 25,
                 "stats_periods": ["24h"],
                 "queries": [""],
@@ -772,7 +788,11 @@ class TestOrganizationGroupIndexStats:
         mock_fetch.return_value = []
         with pytest.raises(ValueError, match="Failed to fetch issue IDs"):
             organization_group_index_stats_task_factory(
-                {"auth_token": "tok", "org_slug": "sentry", "host": "https://sentry.io"}
+                {
+                    "auth_token": "tok",
+                    "org_slug": "sentry",
+                    "api_host": "https://sentry.io",
+                }
             )
 
     @patch("tasks.read_api_tasks._fetch_issue_ids")
@@ -782,7 +802,7 @@ class TestOrganizationGroupIndexStats:
             {
                 "auth_token": "tok",
                 "org_slug": "sentry",
-                "host": "https://sentry.io",
+                "api_host": "https://sentry.io",
                 "project_ids": [42],
                 "batch_size": 1,
                 "stats_periods": ["24h"],

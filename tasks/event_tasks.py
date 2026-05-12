@@ -11,6 +11,7 @@ from typing import Tuple, Callable, Any, Mapping, Optional, Sequence
 from sentry_sdk.envelope import Envelope, Item, PayloadRef
 
 from infrastructure import (
+    host,
     send_message,
     send_envelope,
     send_session,
@@ -38,6 +39,7 @@ from infrastructure.generators.util import schema_generator
 from infrastructure.util import parse_timedelta
 
 
+@host("relay_host")
 def file_event_task_factory(task_params=None):
     filename = task_params.pop("filename")
 
@@ -56,6 +58,7 @@ def file_event_task_factory(task_params=None):
     return inner
 
 
+@host("relay_host")
 def file_envelope_event_task_factory(task_params=None):
     filename = task_params.pop("filename")
 
@@ -142,6 +145,7 @@ def _convert_params(
     return ret_val
 
 
+@host("relay_host")
 def session_event_task_factory(task_params=None):
     params = get_session_event_params(task_params)
 
@@ -223,6 +227,7 @@ def session_event_task_factory(task_params=None):
     return inner
 
 
+@host("relay_host")
 def random_event_task_factory(task_params=None):
     if task_params is None:
         task_params = {}
@@ -238,6 +243,7 @@ def random_event_task_factory(task_params=None):
     return inner
 
 
+@host("relay_host")
 def random_envelope_event_task_factory(task_params=None):
     if task_params is None:
         task_params = {}
@@ -253,6 +259,7 @@ def random_envelope_event_task_factory(task_params=None):
     return inner
 
 
+@host("relay_host")
 def transaction_event_task_factory(task_params=None):
     task_params = _get_transaction_event_params(task_params)
 
@@ -378,6 +385,7 @@ def _get_transaction_event_params(task_params):
     return _convert_params(params_converter=conv, task_params=task_params)
 
 
+@host("relay_host")
 def log_envelope_task_factory(task_params=None):
     """
     Create a generator for log type envelopes
@@ -419,6 +427,7 @@ def _log_task_params(task_params):
     return _convert_params(params_converter=conv, task_params=task_params)
 
 
+@host("relay_host")
 def profile_chunk_envelope_task_factory(task_params=None):
     task_params = _profile_chunk_task_params(task_params)
     generator = profile_chunk_item_generator(**task_params)
@@ -453,6 +462,7 @@ def _profile_chunk_task_params(task_params):
     return _convert_params(params_converter=conv, task_params=task_params)
 
 
+@host("relay_host")
 def span_envelope_task_factory(task_params=None):
     """
     Create a generator for span type envelopes using the span v2 protocol.
@@ -500,6 +510,7 @@ def span_envelope_task_factory(task_params=None):
     return inner
 
 
+@host("relay_host")
 def replay_envelope_task_factory(task_params=None):
     """
     Create a generator for replay_event and replay_recording envelopes.

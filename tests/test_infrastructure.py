@@ -14,7 +14,9 @@ from infrastructure.config import (
 from infrastructure.util import resolve_env_var
 from infrastructure.configurable_user import (
     create_org_user_classes,
+    create_user_class,
     _inject_org_params,
+    _detect_host_field,
 )
 
 
@@ -375,7 +377,8 @@ class TestInjectOrgParams:
         task_info = result["tasks"]["some_task_factory"]
         assert task_info["org_slug"] == "sentry"
         assert task_info["auth_token"] == "tok"
-        assert task_info["host"] == "https://sentry.io"
+        assert task_info["api_host"] == "https://sentry.io"
+        assert task_info["relay_host"] == "https://o123.ingest.us.sentry.io"
         assert task_info["project_ids"] == [1]
         assert task_info["project_slugs"] == ["web"]
 
@@ -624,3 +627,85 @@ class TestResolveProjects:
         ]
         with pytest.raises(ValueError, match="not found via API"):
             _resolve_projects("org", [{"slug": "missing"}], "https://sentry.io", "tok")
+
+
+class TestDetectHostField:
+    def test_returns_none_for_empty_tasks(self):
+        assert _detect_host_field({}) is None
+
+    def test_returns_none_when_no_host_field(self):
+        def task_a():
+            pass
+
+        assert _detect_host_field({task_a: 1}) is None
+
+    def test_detects_api_host(self):
+        from tasks.read_api_tasks import organization_group_index_task_factory
+
+        assert (
+            _detect_host_field({organization_group_index_task_factory: 1}) == "api_host"
+        )
+
+    def test_detects_relay_host(self):
+        from tasks.event_tasks import transaction_event_task_factory
+
+        assert _detect_host_field({transaction_event_task_factory: 1}) == "relay_host"
+
+    def test_consistent_host_fields_ok(self):
+        from tasks.read_api_tasks import (
+            organization_group_index_task_factory,
+            organization_events_task_factory,
+        )
+
+        tasks = {
+            organization_group_index_task_factory: 1,
+            organization_events_task_factory: 1,
+        }
+        assert _detect_host_field(tasks) == "api_host"
+
+    def test_conflicting_host_fields_raises(self):
+        from tasks.read_api_tasks import organization_group_index_task_factory
+        from tasks.event_tasks import transaction_event_task_factory
+
+        tasks = {
+            organization_group_index_task_factory: 1,
+            transaction_event_task_factory: 1,
+        }
+        with pytest.raises(ValueError, match="conflicting host_field"):
+            _detect_host_field(tasks)
+
+    def test_works_with_list_tasks(self):
+        from tasks.read_api_tasks import organization_group_index_task_factory
+
+        assert _detect_host_field([organization_group_index_task_factory]) == "api_host"
+
+    def test_mixed_with_and_without_host_field(self):
+        from tasks.read_api_tasks import organization_group_index_task_factory
+
+        def plain_task():
+            pass
+
+        tasks = {organization_group_index_task_factory: 1, plain_task: 1}
+        assert _detect_host_field(tasks) == "api_host"
+
+
+class TestCreateUserClassHostValidation:
+    @patch("infrastructure.configurable_user._load_locust_config")
+    @patch("infrastructure.configurable_user.create_tasks")
+    def test_raises_when_org_tasks_lack_host_field(
+        self, mock_create_tasks, mock_load_config
+    ):
+        mock_load_config.return_value = {
+            "TestUser": {"weight": 1, "tasks": {}},
+        }
+
+        def plain_task():
+            pass
+
+        mock_create_tasks.return_value = {plain_task: 1}
+
+        org = _make_org_profile(slug="org-a")
+        with pytest.raises(
+            ValueError, match="No tasks in 'TestUser' declare a host_field"
+        ):
+            create_user_class("TestUser", "/fake/path.yml", "__main__", org_profile=org)

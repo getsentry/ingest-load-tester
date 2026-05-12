@@ -192,11 +192,11 @@ users:
         release: ~
 
 # ─── Read tasks ──────────────────────────────────────────────────────────
-# Each read API user class uses org_host_field: api_host so that the host
-# is resolved from the org profile's api_host instead of relay_host
+# Organization-specific fields (auth_token, org_slug, api_host, relay_host,
+# project_ids, project_slugs) are injected from organization profiles.
+# Each task factory declares its host via a .host_field attribute.
 
   OrganizationGroupIndex:
-    org_host_field: api_host
     wait_time: constant(1)
     tasks:
       organization_group_index_task_factory:
@@ -206,7 +206,6 @@ users:
         queries: ["is:unresolved", ""]
 
   OrganizationEvents:
-    org_host_field: api_host
     wait_time: constant(1)
     tasks:
       organization_events_task_factory:
@@ -220,7 +219,6 @@ users:
         sort_by: ["-timestamp", "-count()"]
 
   GroupDetails:
-    org_host_field: api_host
     wait_time: constant(1)
     tasks:
       group_details_task_factory:
@@ -229,7 +227,6 @@ users:
         latest_event_weight: 3
 
   OrganizationEventsStats:
-    org_host_field: api_host
     wait_time: constant(1)
     tasks:
       organization_events_stats_task_factory:
@@ -243,7 +240,6 @@ users:
         datasets: ["discover", "errors"]
 
   GroupEventDetails:
-    org_host_field: api_host
     wait_time: constant(1)
     tasks:
       group_event_details_task_factory:
@@ -251,7 +247,6 @@ users:
         event_id_types: ["latest", "oldest", "recommended"]
 
   OrganizationTags:
-    org_host_field: api_host
     wait_time: constant(1)
     tasks:
       organization_tags_task_factory:
@@ -259,7 +254,6 @@ users:
         datasets: ["events", "discover"]
 
   GroupEvents:
-    org_host_field: api_host
     wait_time: constant(1)
     tasks:
       group_events_task_factory:
@@ -269,7 +263,6 @@ users:
         per_page_values: [10, 25, 50]
 
   OrganizationReleases:
-    org_host_field: api_host
     wait_time: constant(1)
     tasks:
       organization_releases_task_factory:
@@ -280,7 +273,6 @@ users:
         summary_stats_periods: ["24h", "48h", "7d", "14d"]
 
   ProjectGroupIndex:
-    org_host_field: api_host
     wait_time: constant(1)
     tasks:
       project_group_index_task_factory:
@@ -290,7 +282,6 @@ users:
         queries: ["is:unresolved", ""]
 
   OrganizationGroupIndexStats:
-    org_host_field: api_host
     wait_time: constant(1)
     tasks:
       organization_group_index_stats_task_factory:

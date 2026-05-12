@@ -32,10 +32,7 @@ _config_path = full_path_from_module_relative_path(__file__, "config/http.test.y
 
 def _load_user_classes():
     return {
-        cls.__name__: cls
-        for cls in create_org_user_classes(
-            _config_path, __name__, org_host_field="relay_host"
-        )
+        cls.__name__: cls for cls in create_org_user_classes(_config_path, __name__)
     }
 
 
