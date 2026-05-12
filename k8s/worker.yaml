@@ -20,9 +20,9 @@ spec:
           args: ["run-worker"]
           env:
             - name: LOCUST_FILE
-              value: ingest_locustfile.py
+              value: http_locustfile.py
             - name: LOCUST_CONFIG
-              value: "/app/config/ingest.yml"
+              value: "/app/config/http.yml"
             - name: MASTER_HOST
               value: locust-master
             - name: WORKER_PROCESSES

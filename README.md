@@ -68,6 +68,9 @@ example below (that starts 4 users, with a spawn rate of 2 per second and runs f
 
 Please consult the locust documentation for details: https://docs.locust.io/en/1.4.3/running-locust-without-web-ui.html
 
+Once you have your tests working correctly locally, you can deploy a load
+generator using the provided Kubernetes resource examples. See [the k8s readme](./k8s/README.md).
+
 
 ### Test Configuration
 
