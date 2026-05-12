@@ -3,24 +3,21 @@ Task factories for load-testing Sentry's highest-traffic read API endpoints.
 """
 
 import logging
-import os
 import random
 from urllib.parse import urlencode
 
 import requests
 
-from infrastructure.util import resolve_env_var
+from infrastructure import host
 
 logger = logging.getLogger(__name__)
 
 
 def _get_auth_token(task_params):
-    token = resolve_env_var(task_params.get("auth_token", ""))
-    if not token:
-        token = os.environ.get("AUTH_TOKEN")
+    token = task_params.get("auth_token")
     if not token:
         raise ValueError(
-            "auth_token is required. Set it in task params or AUTH_TOKEN env var."
+            "auth_token is required. Set auth_token_env_var on the organization profile."
         )
     return token
 
@@ -44,6 +41,7 @@ def _choice(choices, fallback):
     return fallback
 
 
+@host("api_host")
 def organization_group_index_task_factory(task_params=None):
     """
     Issues list endpoint: GET /api/0/organizations/{org}/issues/
@@ -54,7 +52,7 @@ def organization_group_index_task_factory(task_params=None):
         task_params = {}
 
     auth_token = _get_auth_token(task_params)
-    org_slug = task_params.get("organization_slug", "sentry")
+    org_slug = task_params["org_slug"]
     project_ids = task_params.get("project_ids", [])
     stats_periods = task_params.get("stats_periods", ["24h", "12h", "1h"])
     limits = task_params.get("limits", [25, 50, 100])
@@ -89,6 +87,7 @@ def _is_sort_in_fields(sort_key, fields):
     return bare in fields
 
 
+@host("api_host")
 def organization_events_task_factory(task_params=None):
     """
     Discover events endpoint: GET /api/0/organizations/{org}/events/
@@ -100,7 +99,7 @@ def organization_events_task_factory(task_params=None):
         task_params = {}
 
     auth_token = _get_auth_token(task_params)
-    org_slug = task_params.get("organization_slug", "sentry")
+    org_slug = task_params["org_slug"]
     project_ids = task_params.get("project_ids", [])
     stats_periods = task_params.get("stats_periods", ["24h", "12h", "1h"])
     per_page_values = task_params.get("per_page_values", [10, 25, 50])
@@ -148,6 +147,7 @@ def organization_events_task_factory(task_params=None):
     return inner
 
 
+@host("api_host")
 def organization_events_stats_task_factory(task_params=None):
     """
     Time-series charting endpoint: GET /api/0/organizations/{org}/events-stats/
@@ -159,7 +159,7 @@ def organization_events_stats_task_factory(task_params=None):
         task_params = {}
 
     auth_token = _get_auth_token(task_params)
-    org_slug = task_params.get("organization_slug", "sentry")
+    org_slug = task_params["org_slug"]
     project_ids = task_params.get("project_ids", [])
     stats_periods = task_params.get("stats_periods", ["24h", "12h", "1h"])
     y_axes = task_params.get(
@@ -215,6 +215,7 @@ def organization_events_stats_task_factory(task_params=None):
     return inner
 
 
+@host("api_host")
 def group_details_task_factory(task_params=None):
     """
     Issue detail endpoint with two sub-paths:
@@ -229,10 +230,8 @@ def group_details_task_factory(task_params=None):
         task_params = {}
 
     auth_token = _get_auth_token(task_params)
-    org_slug = task_params.get("organization_slug", "sentry")
-    # host is needed to pre-fetch issue IDs outside of Locust's client.
-    # Prefer setting it in the YAML task params; API_HOST is a fallback.
-    host = resolve_env_var(task_params.get("host", "")) or os.environ.get("API_HOST")
+    org_slug = task_params["org_slug"]
+    host = task_params.get("api_host")
     fetch_limit = task_params.get("fetch_limit", 100)
     detail_weight = task_params.get("detail_weight", 1)
     latest_event_weight = task_params.get("latest_event_weight", 0)
@@ -241,7 +240,7 @@ def group_details_task_factory(task_params=None):
     if not issue_ids:
         raise ValueError(
             f"Failed to fetch issue IDs for org '{org_slug}'. "
-            f"Ensure host (got: {host!r}) and auth_token are correct."
+            f"Ensure api_host (got: {host!r}) and auth_token are correct."
         )
 
     logger.info("Fetched %d issue IDs for group_details", len(issue_ids))
@@ -275,6 +274,7 @@ def group_details_task_factory(task_params=None):
     return inner
 
 
+@host("api_host")
 def group_event_details_task_factory(task_params=None):
     """
     Issue event detail endpoint:
@@ -287,8 +287,8 @@ def group_event_details_task_factory(task_params=None):
         task_params = {}
 
     auth_token = _get_auth_token(task_params)
-    org_slug = task_params.get("organization_slug", "sentry")
-    host = resolve_env_var(task_params.get("host", "")) or os.environ.get("API_HOST")
+    org_slug = task_params["org_slug"]
+    host = task_params.get("api_host")
     fetch_limit = task_params.get("fetch_limit", 100)
     event_id_types = task_params.get(
         "event_id_types", ["latest", "oldest", "recommended"]
@@ -298,7 +298,7 @@ def group_event_details_task_factory(task_params=None):
     if not issue_ids:
         raise ValueError(
             f"Failed to fetch issue IDs for org '{org_slug}'. "
-            f"Ensure host (got: {host!r}) and auth_token are correct."
+            f"Ensure api_host (got: {host!r}) and auth_token are correct."
         )
 
     logger.info("Fetched %d issue IDs for group_event_details", len(issue_ids))
@@ -315,6 +315,7 @@ def group_event_details_task_factory(task_params=None):
     return inner
 
 
+@host("api_host")
 def organization_tags_task_factory(task_params=None):
     """
     Organization tags endpoint: GET /api/0/organizations/{org}/tags/
@@ -326,7 +327,7 @@ def organization_tags_task_factory(task_params=None):
         task_params = {}
 
     auth_token = _get_auth_token(task_params)
-    org_slug = task_params.get("organization_slug", "sentry")
+    org_slug = task_params["org_slug"]
     project_ids = task_params.get("project_ids", [])
     stats_periods = task_params.get("stats_periods", ["24h", "12h", "1h"])
     datasets = task_params.get("datasets", ["events", "discover"])
@@ -350,6 +351,7 @@ def organization_tags_task_factory(task_params=None):
     return inner
 
 
+@host("api_host")
 def group_events_task_factory(task_params=None):
     """
     Issue events list endpoint: GET /api/0/organizations/{org}/issues/{id}/events/
@@ -361,8 +363,8 @@ def group_events_task_factory(task_params=None):
         task_params = {}
 
     auth_token = _get_auth_token(task_params)
-    org_slug = task_params.get("organization_slug", "sentry")
-    host = resolve_env_var(task_params.get("host", "")) or os.environ.get("API_HOST")
+    org_slug = task_params["org_slug"]
+    host = task_params.get("api_host")
     fetch_limit = task_params.get("fetch_limit", 100)
     queries = task_params.get("queries", [""])
     full_options = task_params.get("full_options", [True, False])
@@ -373,7 +375,7 @@ def group_events_task_factory(task_params=None):
     if not issue_ids:
         raise ValueError(
             f"Failed to fetch issue IDs for org '{org_slug}'. "
-            f"Ensure host (got: {host!r}) and auth_token are correct."
+            f"Ensure api_host (got: {host!r}) and auth_token are correct."
         )
 
     logger.info("Fetched %d issue IDs for group_events", len(issue_ids))
@@ -402,6 +404,7 @@ def group_events_task_factory(task_params=None):
     return inner
 
 
+@host("api_host")
 def organization_releases_task_factory(task_params=None):
     """
     Release listing endpoint: GET /api/0/organizations/{org}/releases/
@@ -413,7 +416,7 @@ def organization_releases_task_factory(task_params=None):
         task_params = {}
 
     auth_token = _get_auth_token(task_params)
-    org_slug = task_params.get("organization_slug", "sentry")
+    org_slug = task_params["org_slug"]
     project_ids = task_params.get("project_ids", [])
     per_page_values = task_params.get("per_page_values", [10, 25, 50])
     sort_options = task_params.get(
@@ -467,6 +470,7 @@ def organization_releases_task_factory(task_params=None):
     return inner
 
 
+@host("api_host")
 def project_group_index_task_factory(task_params=None):
     """
     Project-scoped issue list: GET /api/0/projects/{org}/{project_slug}/issues/
@@ -478,7 +482,7 @@ def project_group_index_task_factory(task_params=None):
         task_params = {}
 
     auth_token = _get_auth_token(task_params)
-    org_slug = task_params.get("organization_slug", "sentry")
+    org_slug = task_params["org_slug"]
     project_slugs = task_params.get("project_slugs", [])
     if not project_slugs:
         raise ValueError(
@@ -513,6 +517,7 @@ def project_group_index_task_factory(task_params=None):
     return inner
 
 
+@host("api_host")
 def organization_group_index_stats_task_factory(task_params=None):
     """
     Issues stats companion endpoint: GET /api/0/organizations/{org}/issues-stats/
@@ -524,8 +529,8 @@ def organization_group_index_stats_task_factory(task_params=None):
         task_params = {}
 
     auth_token = _get_auth_token(task_params)
-    org_slug = task_params.get("organization_slug", "sentry")
-    host = resolve_env_var(task_params.get("host", "")) or os.environ.get("API_HOST")
+    org_slug = task_params["org_slug"]
+    host = task_params.get("api_host")
     fetch_limit = task_params.get("fetch_limit", 100)
     batch_size = task_params.get("batch_size", 25)
     project_ids = task_params.get("project_ids", [])
@@ -571,8 +576,8 @@ def organization_group_index_stats_task_factory(task_params=None):
 def _fetch_issue_ids(host, auth_token, org_slug, limit):
     if not host:
         raise ValueError(
-            "host is required for group_details to fetch issue IDs. "
-            "Set it in task params or API_HOST env var."
+            "api_host is required to fetch issue IDs. "
+            "Set api_host on the organization profile."
         )
 
     url = f"{host.rstrip('/')}/api/0/organizations/{org_slug}/issues/"

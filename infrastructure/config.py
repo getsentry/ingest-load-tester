@@ -1,8 +1,11 @@
+import logging
 from collections import namedtuple
 from math import floor
+import os
 from random import random
 import urllib.parse
 
+import requests
 from yaml import load
 
 try:
@@ -12,35 +15,150 @@ except ImportError:
 
 from .util import full_path_from_module_relative_path, memoize, resolve_env_var
 
+logger = logging.getLogger(__name__)
+
 
 OrgProfile = namedtuple(
     "OrgProfile",
-    "slug, org_id, weight, relay_host, auth_token, api_host, projects, project_slugs, user_tasks",
+    "slug, org_id, weight, relay_host, auth_token, api_host, projects, user_tasks",
 )
+
+UserTaskConfig = namedtuple("UserTaskConfig", "name, weight")
+
+
+def _require(mapping, field, context):
+    if field not in mapping:
+        raise ValueError("{}: missing required '{}' field".format(context, field))
+    return mapping[field]
 
 
 def load_org_profiles():
     config = locust_config()
     orgs_raw = config.get("organizations")
     if not orgs_raw:
-        return None
+        raise ValueError(
+            "No 'organizations' defined in {}. "
+            "At least one organization is required.".format(_config_file_path())
+        )
 
     profiles = []
-    for org in orgs_raw:
+    for i, org in enumerate(orgs_raw):
+        org_slug = _require(org, "slug", "Organization at index {}".format(i))
+        ctx = "Organization '{}'".format(org_slug)
+
+        _require(org, "projects", ctx)
+        if not org["projects"]:
+            raise ValueError("{}: 'projects' must not be empty".format(ctx))
+
+        for j, p in enumerate(org["projects"]):
+            _require(p, "slug", "{}, project {}".format(ctx, j))
+
+        api_host = resolve_env_var(_require(org, "api_host", ctx))
+        auth_token_env_var = _require(org, "auth_token_env_var", ctx)
+        auth_token = os.environ.get(auth_token_env_var)
+        if not auth_token:
+            raise ValueError(
+                "{}: environment variable '{}' is not set".format(
+                    ctx, auth_token_env_var
+                )
+            )
+
         profiles.append(
             OrgProfile(
-                slug=org["slug"],
+                slug=org_slug,
                 org_id=org.get("org_id"),
                 weight=org.get("weight", 1),
                 relay_host=resolve_env_var(org.get("relay_host")),
-                auth_token=resolve_env_var(org.get("auth_token")),
-                api_host=resolve_env_var(org.get("api_host")),
-                projects=org.get("projects", []),
-                project_slugs=org.get("project_slugs", []),
-                user_tasks=org.get("user_tasks", []),
+                auth_token=auth_token,
+                api_host=api_host,
+                projects=_resolve_projects(
+                    org_slug, org["projects"], api_host, auth_token
+                ),
+                user_tasks=_parse_user_tasks(org.get("user_tasks", []), ctx),
             )
         )
     return profiles
+
+
+def _parse_user_tasks(raw_tasks, context):
+    parsed = []
+    for i, entry in enumerate(raw_tasks):
+        if not isinstance(entry, dict):
+            raise ValueError(
+                "{}, user_tasks[{}]: expected a mapping with 'name' and 'weight', got {}".format(
+                    context, i, type(entry).__name__
+                )
+            )
+        name = _require(entry, "name", "{}, user_tasks[{}]".format(context, i))
+        weight = entry.get("weight", 1)
+        parsed.append(UserTaskConfig(name=name, weight=weight))
+    return parsed
+
+
+def _resolve_projects(org_slug, projects, api_host, auth_token):
+    """
+    Resolve project id and key from the Sentry API for each project slug.
+    """
+    api_projects = _fetch_org_projects(org_slug, api_host, auth_token)
+    by_slug = {p["slug"]: p for p in api_projects}
+
+    resolved = []
+    for proj in projects:
+        slug = proj["slug"]
+        api_proj = by_slug.get(slug)
+        if api_proj is None:
+            raise ValueError(
+                "Organization '{}': project '{}' not found via API".format(
+                    org_slug, slug
+                )
+            )
+
+        key = _fetch_project_key(org_slug, slug, api_host, auth_token)
+        resolved.append({"slug": slug, "id": api_proj["id"], "key": key})
+
+    logger.info("Resolved %d project(s) for org '%s' from API", len(resolved), org_slug)
+    return resolved
+
+
+def _fetch_org_projects(org_slug, api_host, auth_token):
+    # At the moment we do not handle API pagination; this limits us to orgs
+    # with <= 100 projects, we can extend this if need be
+    url = "{}/api/0/organizations/{}/projects/".format(api_host.rstrip("/"), org_slug)
+    headers = {"Authorization": "Bearer {}".format(auth_token)}
+    try:
+        resp = requests.get(url, headers=headers, timeout=30)
+        resp.raise_for_status()
+        return resp.json()
+    except Exception as e:
+        raise ValueError(
+            "Failed to fetch projects for org '{}' from {}: {}".format(org_slug, url, e)
+        )
+
+
+def _fetch_project_key(org_slug, project_slug, api_host, auth_token):
+    url = "{}/api/0/projects/{}/{}/keys/".format(
+        api_host.rstrip("/"), org_slug, project_slug
+    )
+    headers = {"Authorization": "Bearer {}".format(auth_token)}
+    try:
+        resp = requests.get(url, headers=headers, timeout=30)
+        resp.raise_for_status()
+        keys = resp.json()
+        if not keys:
+            raise ValueError(
+                "No client keys found for project '{}/{}'".format(
+                    org_slug, project_slug
+                )
+            )
+        return keys[0]["public"]
+    except ValueError:
+        raise
+    except Exception as e:
+        raise ValueError(
+            "Failed to fetch keys for project '{}/{}' from {}: {}".format(
+                org_slug, project_slug, url, e
+            )
+        )
 
 
 def relay_address():
@@ -99,27 +217,15 @@ def generate_project_info(num_projects, org_profile=None) -> ProjectInfo:
     if org_profile is not None:
         return _generate_project_info_for_org(num_projects, org_profile)
 
+    # Non-org path (kafka consumers only) — always uses fake projects.
     config = locust_config()
-
-    use_fake_projects = config["use_fake_projects"]
-
-    if not use_fake_projects:
-        projects = config["projects"]
-        num_available_projects = len(projects)
-        if num_projects > num_available_projects:
-            num_projects = num_available_projects
 
     project_idx = 0
     if num_projects > 1:
         project_idx = floor(random() * num_projects)
 
-    if use_fake_projects:
-        project_id = project_idx + 1
-        project_key = project_id_to_fake_project_key(project_id)
-    else:
-        project_cfg = config["projects"][project_idx]
-        project_id = project_cfg["id"]
-        project_key = project_cfg["key"]
+    project_id = project_idx + 1
+    project_key = project_id_to_fake_project_key(project_id)
 
     host = config["relay"]["host"]
     parsed = urllib.parse.urlsplit(host)
@@ -135,12 +241,6 @@ def generate_project_info(num_projects, org_profile=None) -> ProjectInfo:
 
 def _generate_project_info_for_org(num_projects, org_profile):
     org_projects = org_profile.projects
-    if not org_projects:
-        raise ValueError(
-            f"Organization '{org_profile.slug}' has no projects configured"
-        )
-
-    # handles the case where an org has less projects than is designated in the user config
     num_available_from_org = len(org_projects)
     if num_projects > num_available_from_org:
         num_projects = num_available_from_org

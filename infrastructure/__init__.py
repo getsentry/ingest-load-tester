@@ -10,11 +10,13 @@ from .config import (
     generate_project_info,
     load_org_profiles,
     OrgProfile,
+    UserTaskConfig,
 )
 from .configurable_user import (
     create_tasks,
     create_user_class,
     create_org_user_classes,
+    host,
 )
 
 from .influxdb_metric_sink import timed_operation

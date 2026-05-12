@@ -38,6 +38,8 @@ def create_tasks(user_name, config, module_name):
                 # we have other attributes besides frequency, the tasks are actually task factory functions
                 task_factory = load_object(task_func_name, module_name)
                 task = task_factory(task_info)
+                if hasattr(task_factory, "host_field"):
+                    task.host_field = task_factory.host_field
                 tasks[task] = weight
             else:
                 task = load_object(task_func_name, module_name)
@@ -51,6 +53,40 @@ def create_tasks(user_name, config, module_name):
         raise ("User with 0 tasks enabled", user_name)
 
     return tasks
+
+
+_VALID_HOST_FIELDS = frozenset({"api_host", "relay_host"})
+
+
+def host(field):
+    if field not in _VALID_HOST_FIELDS:
+        raise ValueError(
+            f"Invalid host field {field!r}; expected one of {_VALID_HOST_FIELDS}"
+        )
+
+    def decorator(func):
+        func.host_field = field
+        return func
+
+    return decorator
+
+
+def _detect_host_field(tasks):
+    host_fields = set()
+    items = tasks.keys() if isinstance(tasks, dict) else tasks
+    for task in items:
+        host_field = getattr(task, "host_field", None)
+        if host_field is not None:
+            host_fields.add(host_field)
+    # A user class with tasks from different modules (e.g. a read_api_tasks
+    # factory and an event_tasks factory) would require two different hosts,
+    # which Locust's FastHttpUser cannot support.
+    if len(host_fields) > 1:
+        raise ValueError(
+            f"Tasks declare conflicting host_field values: {host_fields}. "
+            f"All tasks in a user class must target the same host."
+        )
+    return host_fields.pop() if host_fields else None
 
 
 def _get_wait_time(locust_info):
@@ -85,7 +121,7 @@ def create_user_class(
     host=None,
     base_classes=None,
     org_profile=None,
-    org_host_field=None,
+    task_weight=None,
 ):
     if base_classes is None:
         base_classes = (FastHttpUser,)
@@ -99,7 +135,9 @@ def create_user_class(
     if org_profile is not None:
         locust_info = _inject_org_params(locust_info, org_profile)
 
-    _weight = locust_info.get("weight", 1)
+    # Org-based callers pass task_weight from locust.config.yml; the YAML
+    # fallback covers direct callers like the kafka locustfile.
+    _weight = task_weight if task_weight is not None else locust_info.get("weight", 1)
     if org_profile is not None:
         _weight = _weight * org_profile.weight
 
@@ -111,11 +149,15 @@ def create_user_class(
     _wait_time = _get_wait_time(locust_info)
     if host is None:
         _host = None
-        if org_profile is not None and org_host_field is not None:
-            _host = getattr(org_profile, org_host_field, None)
-        if _host is None:
-            _host = locust_info.get("host")
-        if _host is None:
+        if org_profile is not None:
+            detected = _detect_host_field(_tasks)
+            if detected is None:
+                raise ValueError(
+                    f"No tasks in {name!r} declare a host_field. "
+                    f"Use @host('api_host') or @host('relay_host') on each task factory."
+                )
+            _host = getattr(org_profile, detected, None)
+        if _host is None:  # Non-org callers (e.g. kafka locustfile)
             _host = relay_address()
     else:
         _host = host
@@ -143,36 +185,31 @@ def create_user_class(
     return ConfigurableUser
 
 
-def create_org_user_classes(
-    config_file_name, module_name, base_classes=None, org_host_field=None
-):
+def create_org_user_classes(config_file_name, module_name, base_classes=None):
     org_profiles = load_org_profiles()
-    if not org_profiles:
-        return None
-
     config = _load_locust_config(config_file_name)
     classes = []
 
     for org in org_profiles:
-        for task_name in org.user_tasks:
-            if task_name not in config:
+        for task_entry in org.user_tasks:
+            if task_entry.name not in config:
                 continue
 
-            class_name = f"{task_name}_{org.slug.replace('-', '_')}"
+            class_name = f"{task_entry.name}_{org.slug.replace('-', '_')}"
             cls = create_user_class(
-                task_name,
+                task_entry.name,
                 config_file_name,
                 module_name,
                 base_classes=base_classes,
                 org_profile=org,
-                org_host_field=org_host_field,
+                task_weight=task_entry.weight,
             )
             if cls is not None:
                 cls.__name__ = class_name
                 cls.__qualname__ = class_name
                 classes.append(cls)
 
-    return classes if classes else None
+    return classes
 
 
 def _inject_org_params(locust_info, org_profile):
@@ -184,19 +221,12 @@ def _inject_org_params(locust_info, org_profile):
     for _task_name, task_info in tasks_info.items():
         if not isinstance(task_info, abc.Mapping):
             continue
-        # Org-identity fields override YAML defaults — the whole point of
-        # multi-org mode is that each org brings its own slug, credentials,
-        # and host.  Per-project fields use setdefault so YAML can still
-        # narrow to specific projects within an org
-        task_info["organization_slug"] = org_profile.slug
-        if org_profile.auth_token:
-            task_info["auth_token"] = org_profile.auth_token
-        if org_profile.api_host:
-            task_info["host"] = org_profile.api_host
-        if org_profile.projects:
-            task_info.setdefault("project_ids", [p["id"] for p in org_profile.projects])
-        if org_profile.project_slugs:
-            task_info.setdefault("project_slugs", org_profile.project_slugs)
+        task_info["org_slug"] = org_profile.slug
+        task_info["auth_token"] = org_profile.auth_token
+        task_info["api_host"] = org_profile.api_host
+        task_info["relay_host"] = org_profile.relay_host
+        task_info["project_ids"] = [p["id"] for p in org_profile.projects]
+        task_info["project_slugs"] = [p["slug"] for p in org_profile.projects]
 
     return locust_info
 

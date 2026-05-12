@@ -21,43 +21,36 @@ local enviroment.
 
 The load tester can be run both against the Fake Sentry Server and against a full Relay-Sentry chain.
 
-In general the load tester does not care (or see) if it is running against the Fake Sentry Server or against
-the a full Relay-Sentry chain. The only difference in running against a real sentry server is that the tests
-should provide real project IDs and DSNs (otherwise the real Sentry will reject the requests).
+Configuration is split across two files:
 
-There is a flag in `locust.config.yml` that controls how the load test uses project ids.
+- **`locust.config.yml`** — Defines relay/kafka settings and organization profiles for HTTP
+  load tests. Organizations are required for HTTP tests (ingest and read API) but do not apply
+  to kafka consumer tests. Each organization specifies a `slug`, `api_host`,
+  `auth_token_env_var` (the name of an environment variable containing a Sentry auth token),
+  `projects` (by slug — IDs and keys are resolved from the API at startup), and `user_tasks`
+  (each with a `name` and `weight`).
+- **`http.test.yml`** / **`kafka_consumers.test.yml`** — Define the user classes and their task
+  parameters (query params, wait times, etc.). Weights for HTTP tasks are controlled by the
+  org profile in `locust.config.yml`, not in the test YAML.
 
-If the flag is `use_fake_projects: true` then it expects to run against a Fake Sentry server and it will use as
-many projects as it wants with ids starting at 1 and going all the way to `max_num_projects` (specified by
-each individual test). For all projects it will use the same DSN key specified under `fake_projects.key` which
-will be safely ignored by FakeSentry.
+Under the `relay` key in `locust.config.yml` one configures the upstream which is either the url of the
+FakeSentry or the url of a running `relay` server.
 
-If the flag is `use_fake_projects: false` then the tests will use the project Ids and Keys listed under
-the `projects` field in `locust.config.yml` and, of course, it will use up to the number of projects listed in
-the config file.
-
-Besides configuring how the load tests use projects `locust.config.yml` also contains configurations about the
-Relay server and the kafka broker.
-
-Under the `relay` key one configures the upstream which is either the url of the FakeSentry or the url of a running
-`relay` server
-
-Under the `kafka` key one configures the address of the broker and the names of the ingest and outcome topics (which
-normally should be left to their default values).
+Under the `kafka` key one configures the address of the broker and the names of the ingest and outcome
+topics (which normally should be left to their default values).
 
 ### Running
 
 In order to load test you need to invoke locust and pass it the locust file that needs to be executed.
 Presuming that you are in the load-tests directory you can run:
 
-    make TEST=simple load-test
+    make TEST=http load-test
     make TEST=kafka_consumers load-test
-    make TEST=read_api load-test
 
-These tests will run with the configuration files `config/simple.test.yml`, `config/kafka_consumers.test.yml`, and `config/read_api.test.yml` respectively.
+These tests will run with the configuration files `config/http.test.yml` and `config/kafka_consumers.test.yml` respectively.
 
 Which will ensure that the virtual environment is installed and set up and will call:
-`.venv/bin/locust -f simple_locustfile.py`
+`.venv/bin/locust -f http_locustfile.py`
 or
 `.venv/bin/locust -f kafka_consumers_locustfile.py`
 
@@ -85,7 +78,7 @@ creates locust tests classes that are derived from `ConfigurableUser` class whic
 
 The `ConfigurableUser` class adds functionality that allows the tests to be configured from a yaml file.
 
-Two locust files are provided ([simple_locustfile.py](https://github.com/getsentry/ingest-load-tester/blob/master/simple_locustfile.py) and [kafka_consumers_locustfile.py](https://github.com/getsentry/ingest-load-tester/blob/master/kafka_consumers_locustfile.py)) and , and others can be easily added. The files have the following structure:
+Two locust files are provided ([http_locustfile.py](https://github.com/getsentry/ingest-load-tester/blob/master/http_locustfile.py) for HTTP-based ingest and read API tests, and [kafka_consumers_locustfile.py](https://github.com/getsentry/ingest-load-tester/blob/master/kafka_consumers_locustfile.py) for Kafka consumer tests). The files have the following structure:
 * import all the task factories that you intend ot use in your user classes in the file
 * define the user classes
 * in the user class configuration use one or more of the imported task factories to define tests.
@@ -256,20 +249,20 @@ synthetic RRWeb recording data (mouse movements, clicks, scrolls, etc.).
 Load tests for Sentry's highest-traffic read API endpoints. Unlike the envelope/kafka tasks above which
 test the ingest (write) path, these tasks issue authenticated GET requests against Sentry's REST API.
 
-Requires an `AUTH_TOKEN` environment variable (or `auth_token` in the task config) with org-level
-read access.
+Auth tokens and org slugs are configured via organization profiles in `locust.config.yml`
+(`auth_token_env_var` names the env var to read).
 
 | Task | Endpoint | Description | Key Config |
 |---|---|---|---|
 | Organization Group Index | `GET /api/0/organizations/{org}/issues/` | Issues list — highest-volume read endpoint | stats_periods, limits, sort_options, queries |
 | Organization Events | `GET /api/0/organizations/{org}/events/` | Discover events query with heavy Snuba fan-out | field_sets, datasets, per_page_values, sort_by |
-| Group Details | `GET /api/0/organizations/{org}/issues/{id}/` | Issue detail with optional latest-event sub-path; pre-fetches real issue IDs at startup | host (required), fetch_limit, detail_weight, latest_event_weight |
+| Group Details | `GET /api/0/organizations/{org}/issues/{id}/` | Issue detail with optional latest-event sub-path; pre-fetches real issue IDs at startup | fetch_limit, detail_weight, latest_event_weight |
 | Organization Events Stats | `GET /api/0/organizations/{org}/events-stats/` | Time-series charting with expensive Snuba aggregations | y_axes, intervals, datasets |
-| Group Event Details | `GET /api/0/organizations/{org}/issues/{id}/events/{event_id}/` | Issue event detail view; pre-fetches issue IDs, uses latest/oldest/recommended | host (required), fetch_limit, event_id_types |
+| Group Event Details | `GET /api/0/organizations/{org}/issues/{id}/events/{event_id}/` | Issue event detail view; pre-fetches issue IDs, uses latest/oldest/recommended | fetch_limit, event_id_types |
 | Organization Tags | `GET /api/0/organizations/{org}/tags/` | Filter dropdown tags — called on nearly every page | stats_periods, datasets |
-| Group Events | `GET /api/0/organizations/{org}/issues/{id}/events/` | Issue events list — 2nd highest latency endpoint; pre-fetches issue IDs | host (required), fetch_limit, full_options, per_page_values |
+| Group Events | `GET /api/0/organizations/{org}/issues/{id}/events/` | Issue events list — 2nd highest latency endpoint; pre-fetches issue IDs | fetch_limit, full_options, per_page_values |
 | Organization Releases | `GET /api/0/organizations/{org}/releases/` | Release listing with health stats | per_page_values, sort_options, health_stat_options |
-| Project Group Index | `GET /api/0/projects/{org}/{project_slug}/issues/` | Project-scoped issue list — same Snuba search path | project_slugs (required), limits, sort_options |
-| Organization Group Index Stats | `GET /api/0/organizations/{org}/issues-stats/` | Companion to issue list — fetches sparkline stats in batches | host (required), fetch_limit, batch_size |
+| Project Group Index | `GET /api/0/projects/{org}/{project_slug}/issues/` | Project-scoped issue list — same Snuba search path | limits, sort_options |
+| Organization Group Index Stats | `GET /api/0/organizations/{org}/issues-stats/` | Companion to issue list — fetches sparkline stats in batches | fetch_limit, batch_size |
 
-All tasks also accept: organization_slug, project_ids, and queries.
+All tasks also receive org_slug, project_ids, and project_slugs from the organization profile.
