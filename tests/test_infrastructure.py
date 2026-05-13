@@ -690,10 +690,14 @@ class TestDetectHostField:
 
 
 class TestCreateUserClassHostValidation:
+    @patch(
+        "infrastructure.configurable_user.relay_address",
+        return_value="http://localhost:3000",
+    )
     @patch("infrastructure.configurable_user._load_locust_config")
     @patch("infrastructure.configurable_user.create_tasks")
-    def test_raises_when_org_tasks_lack_host_field(
-        self, mock_create_tasks, mock_load_config
+    def test_falls_back_to_relay_address_when_no_host_field(
+        self, mock_create_tasks, mock_load_config, mock_relay
     ):
         mock_load_config.return_value = {
             "TestUser": {"weight": 1, "tasks": {}},
@@ -705,7 +709,8 @@ class TestCreateUserClassHostValidation:
         mock_create_tasks.return_value = {plain_task: 1}
 
         org = _make_org_profile(slug="org-a")
-        with pytest.raises(
-            ValueError, match="No tasks in 'TestUser' declare a host_field"
-        ):
-            create_user_class("TestUser", "/fake/path.yml", "__main__", org_profile=org)
+        cls = create_user_class(
+            "TestUser", "/fake/path.yml", "__main__", org_profile=org
+        )
+        assert cls is not None
+        assert cls.host == "http://localhost:3000"

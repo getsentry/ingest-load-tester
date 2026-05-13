@@ -32,6 +32,10 @@ def _require(mapping, field, context):
     return mapping[field]
 
 
+def _normalize_host(value):
+    return value.rstrip("/") if value else value
+
+
 def load_org_profiles():
     config = locust_config()
     orgs_raw = config.get("organizations")
@@ -53,7 +57,7 @@ def load_org_profiles():
         for j, p in enumerate(org["projects"]):
             _require(p, "slug", "{}, project {}".format(ctx, j))
 
-        api_host = resolve_env_var(_require(org, "api_host", ctx))
+        api_host = _normalize_host(resolve_env_var(_require(org, "api_host", ctx)))
         auth_token_env_var = _require(org, "auth_token_env_var", ctx)
         auth_token = os.environ.get(auth_token_env_var)
         if not auth_token:
@@ -68,7 +72,7 @@ def load_org_profiles():
                 slug=org_slug,
                 org_id=org.get("org_id"),
                 weight=org.get("weight", 1),
-                relay_host=resolve_env_var(org.get("relay_host")),
+                relay_host=_normalize_host(resolve_env_var(org.get("relay_host"))),
                 auth_token=auth_token,
                 api_host=api_host,
                 projects=_resolve_projects(
@@ -123,7 +127,7 @@ def _resolve_projects(org_slug, projects, api_host, auth_token):
 def _fetch_org_projects(org_slug, api_host, auth_token):
     # At the moment we do not handle API pagination; this limits us to orgs
     # with <= 100 projects, we can extend this if need be
-    url = "{}/api/0/organizations/{}/projects/".format(api_host.rstrip("/"), org_slug)
+    url = "{}/api/0/organizations/{}/projects/".format(api_host, org_slug)
     headers = {"Authorization": "Bearer {}".format(auth_token)}
     try:
         resp = requests.get(url, headers=headers, timeout=30)
@@ -136,9 +140,7 @@ def _fetch_org_projects(org_slug, api_host, auth_token):
 
 
 def _fetch_project_key(org_slug, project_slug, api_host, auth_token):
-    url = "{}/api/0/projects/{}/{}/keys/".format(
-        api_host.rstrip("/"), org_slug, project_slug
-    )
+    url = "{}/api/0/projects/{}/{}/keys/".format(api_host, org_slug, project_slug)
     headers = {"Authorization": "Bearer {}".format(auth_token)}
     try:
         resp = requests.get(url, headers=headers, timeout=30)
@@ -213,37 +215,11 @@ def locust_config():
 ProjectInfo = namedtuple("ProjectInfo", "id, key, org_id, dsn")
 
 
-def generate_project_info(num_projects, org_profile=None) -> ProjectInfo:
-    if org_profile is not None:
-        return _generate_project_info_for_org(num_projects, org_profile)
-
-    # Non-org path (kafka consumers only) — always uses fake projects.
-    config = locust_config()
-
-    project_idx = 0
-    if num_projects > 1:
-        project_idx = floor(random() * num_projects)
-
-    project_id = project_idx + 1
-    project_key = project_id_to_fake_project_key(project_id)
-
-    host = config["relay"]["host"]
-    parsed = urllib.parse.urlsplit(host)
-
-    dsn = f"{parsed.scheme}://{project_key}:@{parsed.netloc}/{project_id}"
-    org_id = None
-    if parsed.netloc.startswith("o"):
-        org_domain = parsed.netloc.split(".")[0]
-        org_id = org_domain[1:]
-
-    return ProjectInfo(id=project_id, key=project_key, org_id=org_id, dsn=dsn)
-
-
-def _generate_project_info_for_org(num_projects, org_profile):
+def generate_project_info(num_projects, org_profile) -> ProjectInfo:
     org_projects = org_profile.projects
-    num_available_from_org = len(org_projects)
-    if num_projects > num_available_from_org:
-        num_projects = num_available_from_org
+    num_available = len(org_projects)
+    if num_projects > num_available:
+        num_projects = num_available
 
     project_idx = 0
     if num_projects > 1:
@@ -263,22 +239,6 @@ def _generate_project_info_for_org(num_projects, org_profile):
         org_id = org_domain[1:]
 
     return ProjectInfo(id=project_id, key=project_key, org_id=org_id, dsn=dsn)
-
-
-def project_id_to_fake_project_key(proj_id: int) -> str:
-    """
-    Creates a fake project key from a project id ( with a simple
-    convention that can be easily reversed by the fake sentry to obtain
-    the project id ( the project id is at the end of the string and
-    is preceded by at least one non numeric char).
-
-    >>> project_id_to_fake_project_key(123)
-    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaa123'
-    >>> project_id_to_fake_project_key(1)
-    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1'
-    """
-    proj_key_len = 32  # this is the length of our project keys
-    return str(proj_id)[:proj_key_len].rjust(proj_key_len, "a")
 
 
 def _config_file_path():

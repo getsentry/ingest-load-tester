@@ -5,7 +5,6 @@ metadata:
 data:
   locust.config.yml: |
     # Config file for the load tester
-    use_fake_projects: true
     relay:
       host: http://127.0.0.1
       port: 3000
@@ -39,12 +38,22 @@ data:
           - name: TransactionEvents
             weight: 1
 
+    metrics:
+      enabled: true
+
+      influxdb:
+        url: "http://localhost:8086"
+        token: "${INFLUX_DB_API_TOKEN}"
+        org: "sentry"
+        bucket: "locust"
+
+      default_tags: {}
+
   http.test.yml: |
     users:
       SimpleLoadTest:
         wait_time: constant(1)
         num_projects: 10
-        weight: 0
         tasks:
           file_event_task_factory:
             weight: 0
@@ -70,7 +79,6 @@ data:
       TransactionEvents:
         wait_time: constant(0.5)
         num_projects: 10
-        weight: 1
         tasks:
           transaction_event_task_factory:
             weight: 1
@@ -119,16 +127,15 @@ data:
       RandomEvents:
         wait_time: constant(1)
         num_projects: 10
-        weight: 0
         tasks:
           random_envelope_event_task_factory:
             weight: 1
-            num_event_groups: 10
             trace_user_id: "user"
             trace_user_segment: ["vip", "paid", "free"]
             trace_environment: ["debug", "prod"]
             release: ["sampling@1.0", "sampling@2.0"]
             with_level: true
+            num_event_groups: 1
             num_releases: 10
             with_javascript_stacktrace: false
             num_stacktraces: 5
@@ -136,7 +143,7 @@ data:
             max_frames: 30
 
           random_event_task_factory:
-            weight: 0
+            weight: 1
             with_level: true
             num_event_groups: 10
             max_users: ~
@@ -153,3 +160,98 @@ data:
             max_frames: 30
             num_releases: 10
             release: ~
+
+      OrganizationGroupIndex:
+        wait_time: constant(1)
+        tasks:
+          organization_group_index_task_factory:
+            stats_periods: ["90d", "24h", "12h", "1h"]
+            limits: [25, 50, 100]
+            sort_options: ["date", "freq", "new", "trends"]
+            queries: ["is:unresolved", ""]
+
+      OrganizationEvents:
+        wait_time: constant(1)
+        tasks:
+          organization_events_task_factory:
+            stats_periods: ["90d", "24h", "12h", "1h"]
+            per_page_values: [10, 25, 50]
+            field_sets:
+              - ["title", "event.type", "project", "user.display", "timestamp"]
+              - ["title", "count()", "project"]
+            datasets: ["discover", "errors"]
+            queries: ["", "event.type:error"]
+            sort_by: ["-timestamp", "-count()"]
+
+      GroupDetails:
+        wait_time: constant(1)
+        tasks:
+          group_details_task_factory:
+            fetch_limit: 100
+            detail_weight: 7
+            latest_event_weight: 3
+
+      OrganizationEventsStats:
+        wait_time: constant(1)
+        tasks:
+          organization_events_stats_task_factory:
+            stats_periods: ["90d", "24h", "12h", "1h"]
+            y_axes:
+              - ["count()"]
+              - ["count()", "count_unique(user)"]
+              - ["p50(transaction.duration)", "p95(transaction.duration)"]
+            intervals: ["1h", "30m", "5m"]
+            queries: ["", "event.type:error"]
+            datasets: ["discover", "errors"]
+
+      GroupEventDetails:
+        wait_time: constant(1)
+        tasks:
+          group_event_details_task_factory:
+            fetch_limit: 100
+            event_id_types: ["latest", "oldest", "recommended"]
+
+      OrganizationTags:
+        wait_time: constant(1)
+        tasks:
+          organization_tags_task_factory:
+            stats_periods: ["90d", "24h", "12h", "1h"]
+            datasets: ["events", "discover"]
+
+      GroupEvents:
+        wait_time: constant(1)
+        tasks:
+          group_events_task_factory:
+            fetch_limit: 100
+            full_options: [true, false]
+            stats_periods: ["90d", "24h", "12h", "1h"]
+            per_page_values: [10, 25, 50]
+
+      OrganizationReleases:
+        wait_time: constant(1)
+        tasks:
+          organization_releases_task_factory:
+            per_page_values: [10, 25, 50]
+            sort_options: ["date", "sessions", "crash_free_users"]
+            queries: [""]
+            health_stat_options: ["sessions", ""]
+            summary_stats_periods: ["24h", "48h", "7d", "14d"]
+
+      ProjectGroupIndex:
+        wait_time: constant(1)
+        tasks:
+          project_group_index_task_factory:
+            stats_periods: ["24h", "14d"]
+            limits: [25, 50, 100]
+            sort_options: ["date", "new"]
+            queries: ["is:unresolved", ""]
+
+      OrganizationGroupIndexStats:
+        wait_time: constant(1)
+        tasks:
+          organization_group_index_stats_task_factory:
+            fetch_limit: 100
+            batch_size: 25
+            stats_periods: ["90d", "24h", "12h", "1h"]
+            group_stats_periods: ["24h", "14d", "auto"]
+            queries: ["is:unresolved", ""]

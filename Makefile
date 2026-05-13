@@ -24,10 +24,6 @@ about:
 config: setup-venv setup-config setup-hooks
 .PHONY: config
 
-fake-sentry: setup-venv
-	.venv/bin/python -m fake_sentry.fake_sentry
-.PHONY: fake-sentry
-
 check-test:
 ifndef TEST
 	$(error TEST is undefined. Please specify a test name such as `make TEST=http load-test` or `make TEST=kafka_consumers load-test`)
