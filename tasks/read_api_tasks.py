@@ -580,7 +580,7 @@ def _fetch_issue_ids(host, auth_token, org_slug, limit):
             "Set api_host on the organization profile."
         )
 
-    url = f"{host.rstrip('/')}/api/0/organizations/{org_slug}/issues/"
+    url = f"{host}/api/0/organizations/{org_slug}/issues/"
     headers = _read_headers(auth_token)
 
     try:

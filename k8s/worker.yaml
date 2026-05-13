@@ -26,7 +26,15 @@ spec:
             - name: WORKER_PROCESSES
               value: "6"
             - name: SENTRY_AUTH_TOKEN
-              value: "TODO-add-a-token"
+              valueFrom:
+                secretKeyRef:
+                  name: load-tester-secrets
+                  key: sentry-auth-token
+            - name: INFLUX_DB_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: load-tester-secrets
+                  key: influxdb-api-token
           volumeMounts:
             - name: config
               mountPath: /app/config

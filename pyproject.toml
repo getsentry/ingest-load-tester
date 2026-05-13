@@ -5,14 +5,11 @@ description = "Locust based load generation tool for sentry ingestion."
 readme = "README.md"
 dependencies =[
     "locust==2.20.0",
-    "flask==2.2.0",
-    "werkzeug==2.2.2",
     "pyyaml",
     #confluent-kafka==1.6.0
     "msgpack>=1.0.0",
     "sentry-relay==0.9.0",
     "black==22.3.0",
-    "pyuwsgi==2.0.30",
     "sentry-sdk==2.58.0",
     "influxdb-client==1.24.0"  #29.11.2021 send metrics to influxdb
 ]

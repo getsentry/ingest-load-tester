@@ -13,8 +13,8 @@ kafka:
     attachments: ingest-attachments
     sessions: ingest-sessions
 
-# Organizations define which orgs to generate load for; at least one org is required
-# user_tasks references user task names from http.test.yml
+# Organizations define which orgs to generate load for; at least one org is required.
+# user_tasks references task names from the test YAML files (http.test.yml, kafka_consumers.test.yml, etc)
 organizations:
   - slug: sentry
     # org_id is only used for ingest tasks to build the DSN. If omitted, it is

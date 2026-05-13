@@ -6,11 +6,6 @@ export LOCUST_FILE=${LOCUST_FILE:-http_locustfile.py}
 
 if [[ "$COMMAND" == "bash" ]]; then
   exec /bin/bash
-elif [[ "$COMMAND" == "run-fake-sentry" ]]; then
-  export UWSGI_LISTEN=${UWSGI_LISTEN:-1024}
-  export UWSGI_PROCESSES=${UWSGI_PROCESSES:-8}
-  echo "Starting fake-sentry..."
-  exec python -m fake_sentry.fake_sentry
 elif [[ "$COMMAND" == "run-master" ]]; then
   echo "Starting locust-master..."
   exec /app/.venv/bin/locust -f "${LOCUST_FILE}" --master --web-host 0.0.0.0

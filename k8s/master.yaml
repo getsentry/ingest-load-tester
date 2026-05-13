@@ -22,7 +22,15 @@ spec:
             - name: LOCUST_FILE
               value: http_locustfile.py
             - name: SENTRY_AUTH_TOKEN
-              value: "lol-fake"
+              valueFrom:
+                secretKeyRef:
+                  name: load-tester-secrets
+                  key: sentry-auth-token
+            - name: INFLUX_DB_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: load-tester-secrets
+                  key: influxdb-api-token
           ports:
             - name: web-ui
               containerPort: 8089

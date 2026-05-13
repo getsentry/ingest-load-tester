@@ -151,13 +151,9 @@ def create_user_class(
         _host = None
         if org_profile is not None:
             detected = _detect_host_field(_tasks)
-            if detected is None:
-                raise ValueError(
-                    f"No tasks in {name!r} declare a host_field. "
-                    f"Use @host('api_host') or @host('relay_host') on each task factory."
-                )
-            _host = getattr(org_profile, detected, None)
-        if _host is None:  # Non-org callers (e.g. kafka locustfile)
+            if detected is not None:
+                _host = getattr(org_profile, detected, None)
+        if _host is None:
             _host = relay_address()
     else:
         _host = host
@@ -259,4 +255,9 @@ def get_project_info(user) -> ProjectInfo:
     locust_params = user.get_params()
     num_projects = locust_params.get("num_projects", 1)
     org_profile = getattr(user, "org_profile", None)
-    return generate_project_info(num_projects, org_profile=org_profile)
+    if org_profile is None:
+        raise ValueError(
+            "org_profile is required — all user classes must be created via "
+            "create_org_user_classes() with an organization profile."
+        )
+    return generate_project_info(num_projects, org_profile)
