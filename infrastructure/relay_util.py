@@ -1,6 +1,5 @@
 from sentry_relay.processing import StoreNormalizer
 
-from infrastructure.influxdb_metric_sink import timed_operation
 from infrastructure.util import _auth_header
 
 
@@ -35,8 +34,7 @@ def send_session(client, project_id, project_key, session_data, headers=None):
         "Content-Type": "text/plain; charset=UTF-8",
         **(headers or {}),
     }
-    with timed_operation("session_request"):
-        return client.post(url, headers=headers, data=session_data)
+    return client.post(url, headers=headers, data=session_data)
 
 
 def normalize_event(event, project_id):

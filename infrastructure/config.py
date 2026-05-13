@@ -184,18 +184,6 @@ def kafka_config():
 
 
 @memoize
-def get_metrics_config():
-    config = locust_config()
-    return config.get("metrics", {})
-
-
-@memoize
-def metrics_enabled():
-    metrics = get_metrics_config()
-    return metrics.get("enabled", False)
-
-
-@memoize
 def locust_config():
     """
     Returns the program settings located in the main directory (just above this file's directory)

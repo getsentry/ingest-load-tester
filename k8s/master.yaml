@@ -26,11 +26,6 @@ spec:
                 secretKeyRef:
                   name: load-tester-secrets
                   key: sentry-auth-token
-            - name: INFLUX_DB_API_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: load-tester-secrets
-                  key: influxdb-api-token
           ports:
             - name: web-ui
               containerPort: 8089
