@@ -23,6 +23,8 @@ spec:
               value: http_locustfile.py
             - name: LOCUST_CONFIG
               value: "/app/config/http.test.yml"
+            - name: SENTRY_AUTH_TOKEN
+              value: "lol-fake"
           ports:
             - name: web-ui
               containerPort: 8089
@@ -34,6 +36,8 @@ spec:
           readinessProbe:
             httpGet:
               path: /
+            - name: SENTRY_AUTH_TOKEN
+              value: "TODO-add-a-token"
               port: 8089
             initialDelaySeconds: 5
             periodSeconds: 10

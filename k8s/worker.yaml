@@ -27,6 +27,8 @@ spec:
               value: locust-master
             - name: WORKER_PROCESSES
               value: "6"
+            - name: SENTRY_AUTH_TOKEN
+              value: "TODO-add-a-token"
           volumeMounts:
             - name: config
               mountPath: /app/config
