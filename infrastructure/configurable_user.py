@@ -8,11 +8,11 @@ from .config import relay_address, generate_project_info, load_org_profiles, Pro
 from .util import memoize, load_object
 
 try:
-    from yaml import CLoader as Loader, CDumper as Dumper, CFullLoader as FullLoader
+    from yaml import CFullLoader as FullLoader
 except ImportError:
-    from yaml import Loader, Dumper, FullLoader
+    from yaml import FullLoader
 
-from locust import TaskSet, HttpUser, constant, between, constant_pacing, Locust, User
+from locust import constant, between, constant_pacing
 
 
 def create_tasks(user_name, config, module_name):

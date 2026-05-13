@@ -33,20 +33,4 @@ organizations:
       - name: TransactionEvents
         weight: 1
 
-metrics:
-  enabled: true
-
-  influxdb:
-    url: "http://localhost:8086"
-    # TODO replace with some valid API token
-    token: "48NlqRlitvNL1k322be_mPHru-qqjcmqjPLqOzOeVJwwep8bnpne2hOu6-NUY_FmxHKcU786QCUrEy0rFxPXFA=="
-    # or set the token in an env variable
-    # token: "${INFLUX_DB_API_TOKEN}"
-    org: "sentry"
-    bucket: "locust"
-
-  default_tags:
-#    some-tag: some-id
-#    another-tag: hello
-
 

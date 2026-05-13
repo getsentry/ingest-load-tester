@@ -12,17 +12,14 @@ the other resources:
 
 ```sh
 kubectl create secret generic load-tester-secrets \
-  --from-literal=sentry-auth-token='<your-sentry-auth-token>' \
-  --from-literal=influxdb-api-token='<your-influxdb-api-token>'
+  --from-literal=sentry-auth-token='<your-sentry-auth-token>'
 ```
 
 Alternatively, edit `secret.yaml` and replace the `REPLACE_ME` placeholder
 values, then apply it with `kubectl apply -f secret.yaml`.
 
 The `SENTRY_AUTH_TOKEN` env var is read by organization profiles in
-`locust.config.yml` (via `auth_token_env_var`). The `INFLUX_DB_API_TOKEN`
-env var is resolved by the InfluxDB metrics config (via `${INFLUX_DB_API_TOKEN}`
-syntax).
+`locust.config.yml` (via `auth_token_env_var`).
 
 ## Usage
 

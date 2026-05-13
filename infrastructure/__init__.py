@@ -18,5 +18,3 @@ from .configurable_user import (
     create_org_user_classes,
     host,
 )
-
-from .influxdb_metric_sink import timed_operation

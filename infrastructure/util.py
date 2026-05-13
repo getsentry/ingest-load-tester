@@ -90,8 +90,6 @@ def load_object(name: str, locust_module_name):
 
     if object is None:
         raise ValueError("Could not find object", name)
-    else:
-        print(f"The loaded object {object}")
     return object
 
 
@@ -99,31 +97,6 @@ def resolve_env_var(value):
     if isinstance(value, str) and value.startswith("${") and value.endswith("}"):
         return os.environ.get(value[2:-1])
     return value
-
-
-def get_value_with_env_override(d, key, conversion_func=lambda x: x):
-    """
-    Gets a value from a dictionary
-    If the value is a string with the format ${SOME_VAR}
-    Then the environment variable SOME_VAL will be read and
-    conversion_func(SOME_VAR) will be returned
-
-    eg: get_value_with_env_override({"x":"${MY_VAR}"}, "x", int)
-    will fetch the MY_VAR env var and try to convert it to int
-
-    """
-    val = d.get(key)
-    if val is None:
-        return None
-
-    if isinstance(val, str):
-        if val.startswith("${") and val.endswith("}"):
-            var_name = val[2:-1]
-            val = os.getenv(var_name)
-            if val is not None:
-                return conversion_func(val)
-
-    return val
 
 
 TIMEDELTA_REGEX = (

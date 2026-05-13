@@ -19,7 +19,7 @@ local enviroment.
 
 ### Configuration
 
-The load tester can be run both against the Fake Sentry Server and against a full Relay-Sentry chain.
+The load tester is run against a full Relay-Sentry chain.
 
 Configuration is split across two files:
 
@@ -33,8 +33,7 @@ Configuration is split across two files:
   parameters (query params, wait times, etc.). Weights for HTTP tasks are controlled by the
   org profile in `locust.config.yml`, not in the test YAML.
 
-Under the `relay` key in `locust.config.yml` one configures the upstream which is either the url of the
-FakeSentry or the url of a running `relay` server.
+Under the `relay` key in `locust.config.yml` one configures the upstream URL of a running `relay` server.
 
 Under the `kafka` key one configures the address of the broker and the names of the ingest and outcome
 topics (which normally should be left to their default values).

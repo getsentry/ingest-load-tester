@@ -38,17 +38,6 @@ data:
           - name: TransactionEvents
             weight: 1
 
-    metrics:
-      enabled: true
-
-      influxdb:
-        url: "http://localhost:8086"
-        token: "${INFLUX_DB_API_TOKEN}"
-        org: "sentry"
-        bucket: "locust"
-
-      default_tags: {}
-
   http.test.yml: |
     users:
       SimpleLoadTest:

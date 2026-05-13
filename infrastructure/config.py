@@ -9,9 +9,9 @@ import requests
 from yaml import load
 
 try:
-    from yaml import CLoader as Loader, CDumper as Dumper, CFullLoader as FullLoader
+    from yaml import CFullLoader as FullLoader
 except ImportError:
-    from yaml import Loader, Dumper, FullLoader
+    from yaml import FullLoader
 
 from .util import full_path_from_module_relative_path, memoize, resolve_env_var
 
@@ -181,18 +181,6 @@ def relay_address():
 def kafka_config():
     config = locust_config()
     return config.get("kafka", {})
-
-
-@memoize
-def get_metrics_config():
-    config = locust_config()
-    return config.get("metrics", {})
-
-
-@memoize
-def metrics_enabled():
-    metrics = get_metrics_config()
-    return metrics.get("enabled", False)
 
 
 @memoize
