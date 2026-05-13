@@ -22,7 +22,7 @@ spec:
             - name: LOCUST_FILE
               value: http_locustfile.py
             - name: LOCUST_CONFIG
-              value: "/app/config/http.yml"
+              value: "/app/config/http.test.yml"
             - name: MASTER_HOST
               value: locust-master
             - name: WORKER_PROCESSES
