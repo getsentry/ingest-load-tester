@@ -20,13 +20,13 @@ spec:
           args: ["run-worker"]
           env:
             - name: LOCUST_FILE
-              value: ingest_locustfile.py
-            - name: LOCUST_CONFIG
-              value: "/app/config/ingest.yml"
+              value: http_locustfile.py
             - name: MASTER_HOST
               value: locust-master
             - name: WORKER_PROCESSES
               value: "6"
+            - name: SENTRY_AUTH_TOKEN
+              value: "TODO-add-a-token"
           volumeMounts:
             - name: config
               mountPath: /app/config

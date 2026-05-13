@@ -20,9 +20,9 @@ spec:
           args: ["run-master"]
           env:
             - name: LOCUST_FILE
-              value: ingest_locustfile.py
-            - name: LOCUST_CONFIG
-              value: "/app/config/ingest.yml"
+              value: http_locustfile.py
+            - name: SENTRY_AUTH_TOKEN
+              value: "lol-fake"
           ports:
             - name: web-ui
               containerPort: 8089
