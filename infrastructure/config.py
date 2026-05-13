@@ -9,9 +9,9 @@ import requests
 from yaml import load
 
 try:
-    from yaml import CLoader as Loader, CDumper as Dumper, CFullLoader as FullLoader
+    from yaml import CFullLoader as FullLoader
 except ImportError:
-    from yaml import Loader, Dumper, FullLoader
+    from yaml import FullLoader
 
 from .util import full_path_from_module_relative_path, memoize, resolve_env_var
 

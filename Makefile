@@ -18,7 +18,7 @@ msg:
 .PHONY: msg
 
 about:
-	less readme.md
+	less README.md
 .PHONY: about
 
 config: setup-venv setup-config setup-hooks
@@ -57,8 +57,8 @@ setup-venv: .venv/bin/python
 .venv/bin/python:
 	@rm -rf .venv
 	python3 -m venv --copies .venv
-	.venv/bin/pip install -U pip wheel
-	.venv/bin/pip install -U -r requirements.txt
+	.venv/bin/pip install -U pip wheel uv
+	.venv/bin/uv pip install -e .
 
 format: setup-venv
 	.venv/bin/black .
