@@ -11,7 +11,7 @@ API tokens are stored in a Kubernetes Secret. Create it **before** deploying
 the other resources:
 
 ```sh
-kubectl create secret generic load-tester-secrets \
+kubectl create secret generic load-tester-secrets -n load-test \
   --from-literal=sentry-auth-token='<your-sentry-auth-token>'
 ```
 
@@ -51,10 +51,11 @@ web UI (port 8089), and scale up `replicas` until you hit your target RPS or the
 system under test saturates.
 
 Steps:
-1. Create the secret (see above)
-2. Define the test configuration in `configmap.yaml`
-3. Deploy all resources: `kubectl apply -f k8s/`
-4. To change configuration, update and re-apply the ConfigMap, then
+1. Create the namespace: `kubectl apply -f k8s/00-namespace.yaml`
+2. Create the secret (see above)
+3. Define the test configuration in `configmap.yaml`
+4. Deploy all resources: `kubectl apply -f k8s/`
+5. To change configuration, update and re-apply the ConfigMap, then
    `kubectl rollout restart deployment locust-master locust-worker`
 
 ## Building images

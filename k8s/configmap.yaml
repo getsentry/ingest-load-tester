@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: locust-config
+  namespace: load-test
 data:
   locust.config.yml: |
     # Config file for the load tester
