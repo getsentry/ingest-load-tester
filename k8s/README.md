@@ -11,7 +11,7 @@ API tokens are stored in a Kubernetes Secret. Create it **before** deploying
 the other resources:
 
 ```sh
-kubectl create secret generic load-tester-secrets \
+kubectl create secret generic load-tester-secrets -n load-test \
   --from-literal=sentry-auth-token='<your-sentry-auth-token>'
 ```
 
