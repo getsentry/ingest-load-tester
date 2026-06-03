@@ -1,9 +1,9 @@
 import pathlib
-import gzip
 import json
 import random
 import time
 import uuid
+import zlib
 
 
 FIXTURE_PATH = pathlib.Path(__file__).parent.parent.parent / "test-events"
@@ -31,10 +31,13 @@ def replay_envelope_generator(
     Returns:
         A generator function that creates replay items
     """
-    replay_id = uuid.uuid4().hex
-    replay_start_timestamp = time.time()
 
     def inner():
+        # A fresh replay_id per call so every envelope is a distinct replay
+        # rather than a flood of duplicate segments that the pipeline would dedupe
+        replay_id = uuid.uuid4().hex
+        replay_start_timestamp = time.time()
+
         num_segments = random.randint(min_segments, max_segments)
         items = []
         # Create the replay_event item
@@ -160,7 +163,10 @@ def create_replay_recording_item(
     The replay_recording format is:
     1. A JSON object with metadata (segment_id)
     2. A newline
-    3. A JSON array of recording events (optionally gzip-compressed)
+    3. A JSON array of recording events (optionally zlib/deflate-compressed)
+
+    NOTE: Relay decompresses recording bodies with a zlib decoder (see
+    relay-replays `RecordingScrubber::transcode_replay`)
     """
     # Metadata line
     metadata = {"segment_id": segment_id}
@@ -170,7 +176,7 @@ def create_replay_recording_item(
 
     # Optionally compress the recording data
     if compress:
-        recording_bytes = gzip.compress(recording_event_bytes)
+        recording_bytes = zlib.compress(recording_event_bytes)
     else:
         recording_bytes = recording_event_bytes
 
