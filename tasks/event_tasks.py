@@ -510,6 +510,90 @@ def span_envelope_task_factory(task_params=None):
     return inner
 
 
+_TRACE_METRIC_TYPES = ("counter", "gauge", "distribution")
+_TRACE_METRIC_NAMES = (
+    "api.response_time",
+    "api.request_count",
+    "db.query_time",
+    "cache.hit_count",
+    "queue.depth",
+    "http.requests",
+    "worker.jobs_processed",
+    "memory.usage",
+)
+_TRACE_METRIC_UNITS = (None, "millisecond", "second", "byte", "none")
+
+
+@host("relay_host")
+def trace_metric_envelope_task_factory(task_params=None):
+    """
+    Create a generator for trace_metric type envelopes.
+
+    Each envelope contains a single trace_metric item holding between
+    min_items and max_items metric payloads sharing a single trace.
+    """
+    params = _trace_metric_task_params(task_params)
+
+    def make_metric(trace_id):
+        metric_type = random.choice(_TRACE_METRIC_TYPES)
+        if metric_type == "counter":
+            value = float(random.randint(1, 1000))
+        elif metric_type == "gauge":
+            value = random.uniform(0, 1000)
+        else:  # distribution
+            value = random.uniform(0, 5000)
+
+        attributes = {}
+        if params["release"]:
+            attributes["sentry.release"] = {
+                "value": params["release"],
+                "type": "string",
+            }
+        if params["environment"]:
+            attributes["sentry.environment"] = {
+                "value": params["environment"],
+                "type": "string",
+            }
+        num_attrs = random.randint(params["min_attributes"], params["max_attributes"])
+        for i in range(num_attrs):
+            attributes[f"attribute-name-{i}"] = {
+                "value": f"value-{i}",
+                "type": "string",
+            }
+
+        metric = {
+            "timestamp": time.time(),
+            "trace_id": trace_id,
+            "span_id": uuid.uuid4().hex[:16],
+            "name": random.choice(_TRACE_METRIC_NAMES),
+            "type": metric_type,
+            "value": value,
+            "attributes": attributes,
+        }
+        unit = random.choice(_TRACE_METRIC_UNITS)
+        if unit is not None:
+            metric["unit"] = unit
+        return metric
+
+    def inner(user):
+        trace_id = uuid.uuid4().hex
+        num_items = random.randint(params["min_items"], params["max_items"])
+        metrics = [make_metric(trace_id) for _ in range(num_items)]
+        project_info = get_project_info(user)
+        item = Item(
+            type="trace_metric",
+            payload=PayloadRef(json={"items": metrics}),
+            content_type="application/vnd.sentry.items.trace-metric+json",
+            headers={"item_count": len(metrics)},
+        )
+        envelope = Envelope()
+        envelope.add_item(item)
+
+        return send_envelope(user.client, project_info.id, project_info.key, envelope)
+
+    return inner
+
+
 @host("relay_host")
 def replay_envelope_task_factory(task_params=None):
     """
@@ -565,6 +649,20 @@ def _span_task_params(task_params):
         "release": (None, None),
         "environment": (None, None),
         "operations": (["http", "db", "browser", "resource"], None),
+    }
+    return _convert_params(params_converter=conv, task_params=task_params)
+
+
+def _trace_metric_task_params(task_params):
+    if task_params is None:
+        task_params = {}
+    conv = {
+        "min_items": (1, None),
+        "max_items": (25, None),
+        "min_attributes": (3, None),
+        "max_attributes": (20, None),
+        "release": (None, None),
+        "environment": (None, None),
     }
     return _convert_params(params_converter=conv, task_params=task_params)
 
