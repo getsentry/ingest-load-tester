@@ -10,6 +10,7 @@ from infrastructure.config import (
     generate_project_info,
     _resolve_projects,
     _parse_user_tasks,
+    _api_session,
 )
 from infrastructure.util import resolve_env_var
 from infrastructure.configurable_user import (
@@ -627,6 +628,19 @@ class TestResolveProjects:
         ]
         with pytest.raises(ValueError, match="not found via API"):
             _resolve_projects("org", [{"slug": "missing"}], "https://sentry.io", "tok")
+
+
+class TestApiSession:
+    def test_session_is_reused(self):
+        assert _api_session() is _api_session()
+
+    def test_session_has_retry_adapter(self):
+        session = _api_session()
+        adapter = session.get_adapter("https://sentry.io")
+        retry = adapter.max_retries
+        assert retry.total == 5
+        assert 429 in retry.status_forcelist
+        assert 503 in retry.status_forcelist
 
 
 class TestDetectHostField:
