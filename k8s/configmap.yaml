@@ -114,6 +114,13 @@ data:
               - resource.img
               - resource.other
 
+      MinidumpEvents:
+        wait_time: constant(1)
+        num_projects: 10
+        tasks:
+          minidump_envelope_task_factory:
+            weight: 1
+
       RandomEvents:
         wait_time: constant(1)
         num_projects: 10

@@ -95,6 +95,17 @@ users:
   #          - format results
 
 
+  # Uploads a minidump attachment per request to exercise the attachment
+  # ingest / objectstore / symbolicator path.
+  MinidumpEvents:
+    wait_time: constant(1)
+    num_projects: 10
+    tasks:
+      minidump_envelope_task_factory:
+        weight: 1
+        # filename: test-events/minidump.dmp   # override to point at a different .dmp
+
+
   # A task that generates random events based on config parameters
   RandomEvents:
     wait_time: constant(1)

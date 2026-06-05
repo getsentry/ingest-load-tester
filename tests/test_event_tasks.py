@@ -239,3 +239,98 @@ class TestTraceMetricTaskParams:
         assert params["environment"] == "prod"
         # untouched keys keep defaults
         assert params["min_items"] == 1
+
+
+def _run_minidump_factory(task_params, runs=1):
+    """
+    Build minidump_envelope_task_factory and invoke its inner() `runs` times,
+    returning the list of envelopes handed to send_envelope.
+    """
+    inner = et.minidump_envelope_task_factory(
+        dict(task_params) if task_params else task_params
+    )
+
+    project_info = MagicMock()
+    project_info.id = 42
+    project_info.key = "deadbeefdeadbeefdeadbeefdeadbeef"
+
+    captured = []
+
+    def capture(_client, _pid, _key, envelope):
+        captured.append(envelope)
+
+    with patch.object(et, "send_envelope", side_effect=capture), patch.object(
+        et, "get_project_info", return_value=project_info
+    ):
+        user = MagicMock()
+        for _ in range(runs):
+            inner(user)
+
+    return captured
+
+
+def _attachment_item(envelope):
+    items = [i for i in envelope.items if i.type == "attachment"]
+    assert len(items) == 1
+    return items[0]
+
+
+class TestMinidumpEnvelope:
+    def test_factory_is_relay_hosted(self):
+        assert et.minidump_envelope_task_factory.__name__.endswith("_task_factory")
+        assert et.minidump_envelope_task_factory.host_field == "relay_host"
+
+    def test_attachment_item_has_minidump_headers(self):
+        envelope = _run_minidump_factory(None)[0]
+        item = _attachment_item(envelope)
+        assert item.type == "attachment"
+        assert item.headers["attachment_type"] == "event.minidump"
+        assert item.headers["content_type"] == "application/octet-stream"
+        assert item.headers["filename"] == "minidump.dmp"
+
+    def test_attachment_payload_is_the_minidump_bytes(self):
+        envelope = _run_minidump_factory(None)[0]
+        data = _attachment_item(envelope).get_bytes()
+        assert len(data) > 0
+        # minidump files start with the "MDMP" magic
+        assert data[:4] == b"MDMP"
+
+    def test_envelope_header_carries_event_id(self):
+        envelope = _run_minidump_factory(None)[0]
+        event_id = envelope.headers["event_id"]
+        assert len(event_id) == 32
+        int(event_id, 16)  # raises if not hex
+
+    def test_each_envelope_gets_a_fresh_event_id(self):
+        envelopes = _run_minidump_factory(None, runs=5)
+        event_ids = {e.headers["event_id"] for e in envelopes}
+        assert len(event_ids) == 5
+
+    def test_only_the_attachment_item_is_present(self):
+        envelope = _run_minidump_factory(None)[0]
+        assert [i.type for i in envelope.items] == ["attachment"]
+
+    def test_envelope_serializes_and_roundtrips(self):
+        envelope = _run_minidump_factory(None)[0]
+
+        buf = io.BytesIO()
+        envelope.serialize_into(buf)
+        buf.seek(0)
+
+        from sentry_sdk.envelope import Envelope
+
+        parsed = Envelope.deserialize_from(buf)
+        item = _attachment_item(parsed)
+        assert item.headers["attachment_type"] == "event.minidump"
+        assert item.get_bytes()[:4] == b"MDMP"
+
+
+class TestMinidumpTaskParams:
+    def test_defaults(self):
+        assert et._minidump_task_params(None) == {
+            "filename": "test-events/minidump.dmp",
+        }
+
+    def test_overrides_are_respected(self):
+        params = et._minidump_task_params({"filename": "test-events/other.dmp"})
+        assert params["filename"] == "test-events/other.dmp"
