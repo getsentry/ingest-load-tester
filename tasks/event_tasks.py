@@ -26,6 +26,7 @@ from infrastructure.generators.contexts import (
 )
 from infrastructure.generators.event import base_event_generator
 from infrastructure.generators.log import log_envelope_item_generator
+from infrastructure.generators.minidump import minidump_generator
 from infrastructure.generators.profile import profile_chunk_item_generator
 from infrastructure.generators.spans import span_envelope_item_generator
 from infrastructure.generators.replay import replay_envelope_generator
@@ -634,6 +635,48 @@ def replay_envelope_task_factory(task_params=None):
         return send_envelope(user.client, project_info.id, project_info.key, envelope)
 
     return inner
+
+
+@host("relay_host")
+def minidump_envelope_task_factory(task_params=None):
+    """
+    Each envelope contains an attachment item with attachment_type
+    event.minidump plus an event_id in the envelope header, which causes
+    Relay to synthesize a crash event and run symbolication
+
+    Parameters:
+        filename: Path to the minidump fixture (default: minidump.dmp, relative to the test-events fixture dir)
+    """
+    params = _minidump_task_params(task_params)
+    generator = minidump_generator(filename=params["filename"])
+
+    def inner(user):
+        project_info = get_project_info(user)
+        md = generator()
+        event_id = uuid.uuid4().hex
+
+        envelope = Envelope(headers={"event_id": event_id})
+        item = Item(
+            type="attachment",
+            payload=PayloadRef(bytes=md["data"]),
+            content_type="application/octet-stream",
+            filename=md["filename"],
+            headers={"attachment_type": "event.minidump"},
+        )
+        envelope.add_item(item)
+
+        return send_envelope(user.client, project_info.id, project_info.key, envelope)
+
+    return inner
+
+
+def _minidump_task_params(task_params):
+    if task_params is None:
+        task_params = {}
+    conv = {
+        "filename": ("minidump.dmp", None),
+    }
+    return _convert_params(params_converter=conv, task_params=task_params)
 
 
 def _span_task_params(task_params):
