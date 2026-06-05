@@ -6,6 +6,8 @@ from random import random
 import urllib.parse
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from yaml import load
 
 try:
@@ -16,6 +18,33 @@ except ImportError:
 from .util import full_path_from_module_relative_path, memoize, resolve_env_var
 
 logger = logging.getLogger(__name__)
+
+# How long to wait when talking to the Sentry API at boot: (connect, read).
+_API_TIMEOUT = (5, 30)
+
+
+@memoize
+def _api_session():
+    """
+    Collapses the burst of per-org/per-project requests we
+    make at import time into a handful of pooled connections which is
+    way friendler to Cloud NAT (a load test could make ~60 separate TCP
+    connections otherwise, depending on the configuration)
+    """
+    session = requests.Session()
+    retry = Retry(
+        total=5,
+        connect=5,
+        read=5,
+        backoff_factor=0.5,  # 0.5, 1, 2, 4, 8s between attempts
+        status_forcelist=(429, 500, 502, 503, 504),  # no point retrying 401s, 404s, etc
+        allowed_methods=frozenset(["GET"]),  # just to be explicit
+        respect_retry_after_header=True,  # honor server's Retry-After on 429
+    )
+    adapter = HTTPAdapter(max_retries=retry, pool_connections=4, pool_maxsize=10)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    return session
 
 
 OrgProfile = namedtuple(
@@ -130,7 +159,7 @@ def _fetch_org_projects(org_slug, api_host, auth_token):
     url = "{}/api/0/organizations/{}/projects/".format(api_host, org_slug)
     headers = {"Authorization": "Bearer {}".format(auth_token)}
     try:
-        resp = requests.get(url, headers=headers, timeout=30)
+        resp = _api_session().get(url, headers=headers, timeout=_API_TIMEOUT)
         resp.raise_for_status()
         return resp.json()
     except Exception as e:
@@ -143,7 +172,7 @@ def _fetch_project_key(org_slug, project_slug, api_host, auth_token):
     url = "{}/api/0/projects/{}/{}/keys/".format(api_host, org_slug, project_slug)
     headers = {"Authorization": "Bearer {}".format(auth_token)}
     try:
-        resp = requests.get(url, headers=headers, timeout=30)
+        resp = _api_session().get(url, headers=headers, timeout=_API_TIMEOUT)
         resp.raise_for_status()
         keys = resp.json()
         if not keys:
