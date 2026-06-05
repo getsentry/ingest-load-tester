@@ -3,7 +3,7 @@ import pathlib
 
 FIXTURE_PATH = pathlib.Path(__file__).parent.parent.parent / "test-events"
 
-DEFAULT_MINIDUMP = "test-events/minidump.dmp"
+DEFAULT_MINIDUMP = "minidump.dmp"
 
 
 def minidump_generator(filename: str = DEFAULT_MINIDUMP, **kwargs):
@@ -20,7 +20,7 @@ def minidump_generator(filename: str = DEFAULT_MINIDUMP, **kwargs):
     """
     path = pathlib.Path(filename)
     if not path.is_absolute() and not path.exists():
-        path = FIXTURE_PATH / path.name
+        path = FIXTURE_PATH / filename
 
     with open(path, "rb") as f:
         data = f.read()

@@ -103,7 +103,7 @@ users:
     tasks:
       minidump_envelope_task_factory:
         weight: 1
-        # filename: test-events/minidump.dmp   # override to point at a different .dmp
+        # filename: minidump.dmp   # override to point at a different .dmp (relative to test-events/)
 
 
   # A task that generates random events based on config parameters

@@ -328,9 +328,9 @@ class TestMinidumpEnvelope:
 class TestMinidumpTaskParams:
     def test_defaults(self):
         assert et._minidump_task_params(None) == {
-            "filename": "test-events/minidump.dmp",
+            "filename": "minidump.dmp",
         }
 
     def test_overrides_are_respected(self):
-        params = et._minidump_task_params({"filename": "test-events/other.dmp"})
-        assert params["filename"] == "test-events/other.dmp"
+        params = et._minidump_task_params({"filename": "other.dmp"})
+        assert params["filename"] == "other.dmp"

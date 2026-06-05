@@ -645,7 +645,7 @@ def minidump_envelope_task_factory(task_params=None):
     Relay to synthesize a crash event and run symbolication
 
     Parameters:
-        filename: Path to the minidump fixture (default: test-events/minidump.dmp)
+        filename: Path to the minidump fixture (default: minidump.dmp, relative to the test-events fixture dir)
     """
     params = _minidump_task_params(task_params)
     generator = minidump_generator(filename=params["filename"])
@@ -674,7 +674,7 @@ def _minidump_task_params(task_params):
     if task_params is None:
         task_params = {}
     conv = {
-        "filename": ("test-events/minidump.dmp", None),
+        "filename": ("minidump.dmp", None),
     }
     return _convert_params(params_converter=conv, task_params=task_params)
 
