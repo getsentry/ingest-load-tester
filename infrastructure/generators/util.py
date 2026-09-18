@@ -127,7 +127,7 @@ def sentence_generator():
         else:
             article1 = random.choice(_articles1)
 
-        if _direct_object[0] == "a":
+        if direct_object[0] == "a":
             article2 = random.choice(_articles2)
         else:
             article2 = random.choice(_articles1)
