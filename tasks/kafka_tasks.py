@@ -38,7 +38,7 @@ def kafka_configurable_outcome_task_factory(task_params):
     A task factory that can be configured from the locust yaml file.
 
     IMPORTANT NOTE: in order to function as intended the yaml task definition using this
-    factory needs too have at least one parameter (that is not the optional weight parameter)
+    factory needs to have at least one parameter (that is not the optional weight parameter)
 
     Example:
 
@@ -58,7 +58,7 @@ def kafka_configurable_outcome_task_factory(task_params):
             total_freq += val
             frequencies.append([outcome_names[name], total_freq])
     if total_freq == 0:
-        ValueError("kafka_configurable_outcome_task has no configured outcomes")
+        raise ValueError("kafka_configurable_outcome_task has no configured outcomes")
 
     def task(user):
         outcome_idx = random.randint(1, total_freq)
