@@ -270,7 +270,9 @@ def transaction_event_task_factory(task_params=None):
         transaction_data = generator()
         project_info = get_project_info(user)
         envelope = Envelope()
-        envelope.add_transaction(transaction_data)
+        envelope.add_item(
+            Item(payload=PayloadRef(json=transaction_data), type="transaction")
+        )
         return send_envelope(user.client, project_info.id, project_info.key, envelope)
 
     return inner
